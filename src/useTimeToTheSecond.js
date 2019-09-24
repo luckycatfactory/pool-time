@@ -1,4 +1,3 @@
-import { useContext } from 'react';
 import SecondContext from './TimeProvider/SecondContext';
 import { generateTimeContextConsumptionHook } from './utilities';
 

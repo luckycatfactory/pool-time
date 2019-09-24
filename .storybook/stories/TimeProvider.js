@@ -1,24 +1,33 @@
 import React from 'react';
-import { TimeProvider, useTimeToTheMinute, useTimeToTheSecond } from '../../src/index.js';
+import { TimeProvider, useTimeToTheDay, useTimeToTheHour, useTimeToTheMinute, useTimeToTheMonth, useTimeToTheSecond, useTimeToTheYear } from '../../src/index.js';
 import useRenderCount from '../useRenderCount';
 
-const displayLayoutStyles = { display: 'flex', 'flex-direction': 'column', height: '100%' };
+const displayLayoutStyles = { display: 'flex', 'flexDirection': 'column', height: '100%' };
 
 const DisplayLayout = React.memo(({ children }) => <div style={displayLayoutStyles}>{children}</div>);
 
-const timeDisplayStyles = { flexGrow: '1', 'text-align': 'center' };
+const timeDisplayStyles = { flexGrow: '1', 'textAlign': 'center' };
 
 const TimeDisplay = React.memo(({ children }) => <div style={timeDisplayStyles}>{children}</div>);
 
-const renderCountDisplayStyles = { 'background-color': 'grey', color: 'white', height: '24px', 'text-align': 'center' };
+const renderCountDisplayStyles = { 'backgroundColor': 'grey', color: 'white', height: '24px', 'textAlign': 'center' };
 
 const RenderCountDisplay = React.memo(({ children }) => <div style={renderCountDisplayStyles}># of Renders: {children}</div>)
 
-const secondTimeFormatter = time => new Date(time).getSeconds();
+const dayTimeFormatter = time => new Date(time).getDate();
 
-const SecondRenderer = React.memo(() => {
+const DayRenderer = React.memo(() => {
   const renderCount = useRenderCount();
-  const time = useTimeToTheSecond(secondTimeFormatter);
+  const time = useTimeToTheDay(dayTimeFormatter);
+
+  return <DisplayLayout><TimeDisplay>{time}</TimeDisplay><RenderCountDisplay>{renderCount}</RenderCountDisplay></DisplayLayout>;
+});
+
+const hourTimeFormatter = time => new Date(time).getHours();
+
+const HourRenderer = React.memo(() => {
+  const renderCount = useRenderCount();
+  const time = useTimeToTheHour(hourTimeFormatter);
 
   return <DisplayLayout><TimeDisplay>{time}</TimeDisplay><RenderCountDisplay>{renderCount}</RenderCountDisplay></DisplayLayout>;
 });
@@ -32,7 +41,34 @@ const MinuteRenderer = React.memo(() => {
   return <DisplayLayout><TimeDisplay>{time}</TimeDisplay><RenderCountDisplay>{renderCount}</RenderCountDisplay></DisplayLayout>;
 });
 
-const timeLayoutStyles = { display: 'flex', 'flex-direction': 'row', width: '100%' };
+const monthTimeFormatter = time => new Date(time).getMonth() + 1;
+
+const MonthRenderer = React.memo(() => {
+  const renderCount = useRenderCount();
+  const time = useTimeToTheMonth(monthTimeFormatter);
+
+  return <DisplayLayout><TimeDisplay>{time}</TimeDisplay><RenderCountDisplay>{renderCount}</RenderCountDisplay></DisplayLayout>;
+});
+
+const secondTimeFormatter = time => new Date(time).getSeconds();
+
+const SecondRenderer = React.memo(() => {
+  const renderCount = useRenderCount();
+  const time = useTimeToTheSecond(secondTimeFormatter);
+
+  return <DisplayLayout><TimeDisplay>{time}</TimeDisplay><RenderCountDisplay>{renderCount}</RenderCountDisplay></DisplayLayout>;
+});
+
+const yearTimeFormatter = time => new Date(time).getFullYear();
+
+const YearRenderer = React.memo(() => {
+  const renderCount = useRenderCount();
+  const time = useTimeToTheYear(yearTimeFormatter);
+
+  return <DisplayLayout><TimeDisplay>{time}</TimeDisplay><RenderCountDisplay>{renderCount}</RenderCountDisplay></DisplayLayout>;
+});
+
+const timeLayoutStyles = { display: 'flex', 'flexDirection': 'row', width: '100%' };
 
 const TimeLayout = React.memo(({ children }) => <div style={timeLayoutStyles}>{children}</div>);
 
@@ -46,6 +82,18 @@ const TimeItem = React.memo(({ children }) => (
 const TimeProviderRenderer = React.memo(() => (
   <TimeProvider>
     <TimeLayout>
+      <TimeItem>
+        <YearRenderer />
+      </TimeItem>
+      <TimeItem>
+        <MonthRenderer />
+      </TimeItem>
+      <TimeItem>
+        <DayRenderer />
+      </TimeItem>
+      <TimeItem>
+        <HourRenderer />
+      </TimeItem>
       <TimeItem>
         <MinuteRenderer />
       </TimeItem>
