@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import MinuteContext from './MinuteContext';
 import SecondContext from './SecondContext';
 import useInterval from '../useInterval';
-import { ONE_MINUTE } from '../constants';
+import { ONE_MINUTE, ONE_SECOND } from '../constants';
 
 const initialNow = Date.now();
 
@@ -47,4 +47,4 @@ const TimeProvider = React.memo(({ children }) => {
   )
 })
 
-export default TimeContext;
+export default TimeProvider;
