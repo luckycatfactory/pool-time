@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import DayContext from './DayContext';
@@ -8,7 +8,7 @@ import MonthContext from './MonthContext';
 import SecondContext from './SecondContext';
 import YearContext from './YearContext';
 import useInterval from '../useInterval';
-import { ONE_MINUTE, ONE_SECOND } from '../constants';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../constants';
 
 const TimeProviders = React.memo(({ children }) => {
   const now = Date.now();
@@ -65,15 +65,56 @@ const TimeProviders = React.memo(({ children }) => {
     }
   }, ONE_SECOND);
 
+  const yearValue = useMemo(
+    () => ({
+      scale: ONE_YEAR,
+      time: currentTimeToTheYear,
+    }),
+    [currentTimeToTheYear]
+  );
+  const monthValue = useMemo(
+    () => ({
+      scale: ONE_MONTH,
+      time: currentTimeToTheMonth,
+    }),
+    [currentTimeToTheMonth]
+  );
+  const dayValue = useMemo(
+    () => ({
+      scale: ONE_DAY,
+      time: currentTimeToTheDay,
+    }),
+    [currentTimeToTheDay]
+  );
+  const hourValue = useMemo(
+    () => ({
+      scale: ONE_HOUR,
+      time: currentTimeToTheHour,
+    }),
+    [currentTimeToTheHour]
+  );
+  const minuteValue = useMemo(
+    () => ({
+      scale: ONE_MINUTE,
+      time: currentTimeToTheMinute,
+    }),
+    [currentTimeToTheMinute]
+  );
+  const secondValue = useMemo(
+    () => ({
+      scale: ONE_SECOND,
+      time: currentTimeToTheSecond,
+    }),
+    [currentTimeToTheSecond]
+  );
+
   return (
-    <YearContext.Provider value={currentTimeToTheYear}>
-      <MonthContext.Provider value={currentTimeToTheMonth}>
-        <DayContext.Provider value={currentTimeToTheDay}>
-          <HourContext.Provider value={currentTimeToTheHour}>
-            <MinuteContext.Provider value={currentTimeToTheMinute}>
-              <SecondContext.Provider value={currentTimeToTheSecond}>
-                {children}
-              </SecondContext.Provider>
+    <YearContext.Provider value={yearValue}>
+      <MonthContext.Provider value={monthValue}>
+        <DayContext.Provider value={dayValue}>
+          <HourContext.Provider value={hourValue}>
+            <MinuteContext.Provider value={minuteValue}>
+              <SecondContext.Provider value={secondValue}>{children}</SecondContext.Provider>
             </MinuteContext.Provider>
           </HourContext.Provider>
         </DayContext.Provider>

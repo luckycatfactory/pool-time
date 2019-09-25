@@ -1,5 +1,5 @@
 {
-  "name": "time-loop-pool-emit",
+  "name": "react-pool-time",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -12,6 +12,7 @@
     "@storybook/react": "^5.2.1",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
+    "date-fns": "^2.3.0",
     "eslint": "^6.4.0",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-react": "^7.14.3",

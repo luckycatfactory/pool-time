@@ -1,7 +1,11 @@
 import React from 'react';
+import { ONE_MINUTE } from '../constants';
 
-const initialNow = Date.now();
+const defaultValue = {
+  scale: ONE_MINUTE,
+  time: Date.now(),
+};
 
-const MinuteContext = React.createContext(initialNow);
+const MinuteContext = React.createContext(defaultValue);
 
 export default MinuteContext;

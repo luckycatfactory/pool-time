@@ -1,7 +1,11 @@
 import React from 'react';
+import { ONE_YEAR } from '../constants';
 
-const initialNow = Date.now();
+const defaultValue = {
+  scale: ONE_YEAR,
+  time: Date.now(),
+};
 
-const YearContext = React.createContext(initialNow);
+const YearContext = React.createContext(defaultValue);
 
 export default YearContext;

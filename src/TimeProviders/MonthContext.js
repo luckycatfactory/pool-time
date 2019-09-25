@@ -1,7 +1,11 @@
 import React from 'react';
+import { ONE_MONTH } from '../constants';
 
-const initialNow = Date.now();
+const defaultValue = {
+  scale: ONE_MONTH,
+  time: Date.now(),
+};
 
-const MonthContext = React.createContext(initialNow);
+const MonthContext = React.createContext(defaultValue);
 
 export default MonthContext;
