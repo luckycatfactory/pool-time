@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 import DayContext from './DayContext';
 import HourContext from './HourContext';
@@ -9,8 +10,6 @@ import YearContext from './YearContext';
 import useInterval from '../useInterval';
 import { ONE_MINUTE, ONE_SECOND } from '../constants';
 
-const initialNow = Date.now();
-
 const TimeProvider = React.memo(({ children }) => {
   const now = Date.now();
 
@@ -19,6 +18,7 @@ const TimeProvider = React.memo(({ children }) => {
   const [currentTimeToTheMinute, setCurrentTimeToTheMinute] = useState(now);
   const [currentTimeToTheMonth, setCurrentTimeToTheMonth] = useState(now);
   const [currentTimeToTheSecond, setCurrentTimeToTheSecond] = useState(now);
+  const [currentTimeToTheYear, setCurrentTimeToTheYear] = useState(now);
 
   useInterval(() => {
     const now = Date.now();
@@ -46,7 +46,7 @@ const TimeProvider = React.memo(({ children }) => {
           setCurrentTimeToTheDay(now);
 
           const previousMonth = Math.floor(previousDay / 30);
-          const thisMonth = Math.floor(thisDay / 24);
+          const thisMonth = Math.floor(thisDay / 30);
           const isNewMonth = previousMonth !== thisMonth;
 
           if (isNewMonth) {
@@ -66,18 +66,26 @@ const TimeProvider = React.memo(({ children }) => {
   }, ONE_SECOND);
 
   return (
-    <MonthContext.Provider value={currentTimeToTheMonth}>
-      <DayContext.Provider value={currentTimeToTheDay}>
-        <HourContext.Provider value={currentTimeToTheHour}>
-          <MinuteContext.Provider value={currentTimeToTheMinute}>
-            <SecondContext.Provider value={currentTimeToTheSecond}>
-              {children}
-            </SecondContext.Provider>
-          </MinuteContext.Provider>
-        </HourContext.Provider>
-      </DayContext.Provider>
-    </MonthContext.Provider>
-  )
-})
+    <YearContext.Provider value={currentTimeToTheYear}>
+      <MonthContext.Provider value={currentTimeToTheMonth}>
+        <DayContext.Provider value={currentTimeToTheDay}>
+          <HourContext.Provider value={currentTimeToTheHour}>
+            <MinuteContext.Provider value={currentTimeToTheMinute}>
+              <SecondContext.Provider value={currentTimeToTheSecond}>
+                {children}
+              </SecondContext.Provider>
+            </MinuteContext.Provider>
+          </HourContext.Provider>
+        </DayContext.Provider>
+      </MonthContext.Provider>
+    </YearContext.Provider>
+  );
+});
+
+TimeProvider.displayName = 'TimeProvider';
+
+TimeProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 export default TimeProvider;

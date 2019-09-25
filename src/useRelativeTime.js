@@ -1,4 +1,4 @@
-const useRelativeTime = (baseTime) => {
+const useRelativeTime = () => {
   const now = Date.now();
 
   return now;

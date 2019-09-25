@@ -1,6 +1,12 @@
 const config = {
+  extends: [
+    'eslint:recommended',
+
+    // A side effect of this: No more incorrect 'unused' errors for variables used in JSX
+    'plugin:react/recommended',
+  ],
   parser: 'babel-eslint',
-  // plugins: ['jest'],
+  plugins: ['prettier', 'react-hooks'],
   // extends: ['airbnb', 'plugin:prettier/recommended', 'prettier/react'],
   rules: {
     'no-plusplus': 'off',
@@ -23,7 +29,7 @@ const config = {
     //   webpack: {},
     // },
     react: { version: 'detect' },
-  }
+  },
 };
 
 module.exports = config;
