@@ -1,4 +1,4 @@
-import SecondContext from './TimeProvider/SecondContext';
+import SecondContext from './TimeProviders/SecondContext';
 import { generateTimeContextConsumptionHook } from './utilities';
 
 const useTimeToTheSecond = generateTimeContextConsumptionHook(SecondContext);

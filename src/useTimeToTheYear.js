@@ -1,4 +1,4 @@
-import YearContext from './TimeProvider/YearContext';
+import YearContext from './TimeProviders/YearContext';
 import { generateTimeContextConsumptionHook } from './utilities';
 
 const useTimeToTheYear = generateTimeContextConsumptionHook(YearContext);

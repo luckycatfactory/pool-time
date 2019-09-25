@@ -1,4 +1,4 @@
-import MinuteContext from './TimeProvider/MinuteContext';
+import MinuteContext from './TimeProviders/MinuteContext';
 import { generateTimeContextConsumptionHook } from './utilities';
 
 const useTimeToTheMinute = generateTimeContextConsumptionHook(MinuteContext);

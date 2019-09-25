@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  TimeProvider,
+  TimeProviders,
   useTimeToTheDay,
   useTimeToTheHour,
   useTimeToTheMinute,
@@ -149,8 +149,8 @@ const timeItemStyles = {
 
 const TimeItem = React.memo(({ children }) => <div style={timeItemStyles}>{children}</div>);
 
-export const timeProvider = () => (
-  <TimeProvider>
+const Hooks = React.memo(() => (
+  <TimeProviders>
     <TimeLayout>
       <TimeItem>
         <YearRenderer />
@@ -171,11 +171,13 @@ export const timeProvider = () => (
         <SecondRenderer />
       </TimeItem>
     </TimeLayout>
-  </TimeProvider>
-);
+  </TimeProviders>
+));
+
+export const hooks = () => <Hooks />;
 
 const storyDetails = {
-  title: 'TimeProvider',
+  title: 'Primitives',
 };
 
 export default storyDetails;

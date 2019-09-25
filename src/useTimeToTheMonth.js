@@ -1,4 +1,4 @@
-import MonthContext from './TimeProvider/MonthContext';
+import MonthContext from './TimeProviders/MonthContext';
 import { generateTimeContextConsumptionHook } from './utilities';
 
 const useTimeToTheDay = generateTimeContextConsumptionHook(MonthContext);

@@ -10,7 +10,7 @@ import YearContext from './YearContext';
 import useInterval from '../useInterval';
 import { ONE_MINUTE, ONE_SECOND } from '../constants';
 
-const TimeProvider = React.memo(({ children }) => {
+const TimeProviders = React.memo(({ children }) => {
   const now = Date.now();
 
   const [currentTimeToTheDay, setCurrentTimeToTheDay] = useState(now);
@@ -82,10 +82,10 @@ const TimeProvider = React.memo(({ children }) => {
   );
 });
 
-TimeProvider.displayName = 'TimeProvider';
+TimeProviders.displayName = 'TimeProviders';
 
-TimeProvider.propTypes = {
+TimeProviders.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-export default TimeProvider;
+export default TimeProviders;

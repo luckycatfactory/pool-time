@@ -1,4 +1,4 @@
-export { default as TimeProvider } from './TimeProvider/index.js';
+export { default as TimeProviders } from './TimeProviders/index.js';
 export { default as useTimeToTheDay } from './useTimeToTheDay';
 export { default as useTimeToTheHour } from './useTimeToTheHour';
 export { default as useTimeToTheMinute } from './useTimeToTheMinute';
