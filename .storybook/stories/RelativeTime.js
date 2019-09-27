@@ -1,16 +1,17 @@
 import React from 'react';
-import { distanceInWordsStrict } from 'date-fns';
+import { formatDistanceStrict } from 'date-fns';
 import { TimeProviders, useRelativeTime } from '../../src/index.js';
 
-const targetTime = Date.now() - 55 * 1000;
+const targetTime = Date.now();
+const dateFnsOptions = { roundingMethod: 'floor' };
 
 const RelativeTime = React.memo(() => {
-  const time = useRelativeTime(targetTime);
+  const difference = useRelativeTime(targetTime);
 
-  const timeAsDate = new Date(time);
-  const targetTimeAsDate = new Date(targetTime);
+  const timeDate = new Date(targetTime);
+  const now = new Date(Date.now());
 
-  return distanceInWordsStrict(timeAsDate, targetTimeAsDate);
+  return formatDistanceStrict(timeDate, now, dateFnsOptions);
 });
 
 export const hooks = () => (
