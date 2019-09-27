@@ -150,31 +150,33 @@ const timeItemStyles = {
 const TimeItem = React.memo(({ children }) => <div style={timeItemStyles}>{children}</div>);
 
 const Hooks = React.memo(() => (
-  <TimeProviders>
-    <TimeLayout>
-      <TimeItem>
-        <YearRenderer />
-      </TimeItem>
-      <TimeItem>
-        <MonthRenderer />
-      </TimeItem>
-      <TimeItem>
-        <DayRenderer />
-      </TimeItem>
-      <TimeItem>
-        <HourRenderer />
-      </TimeItem>
-      <TimeItem>
-        <MinuteRenderer />
-      </TimeItem>
-      <TimeItem>
-        <SecondRenderer />
-      </TimeItem>
-    </TimeLayout>
-  </TimeProviders>
+  <TimeLayout>
+    <TimeItem>
+      <YearRenderer />
+    </TimeItem>
+    <TimeItem>
+      <MonthRenderer />
+    </TimeItem>
+    <TimeItem>
+      <DayRenderer />
+    </TimeItem>
+    <TimeItem>
+      <HourRenderer />
+    </TimeItem>
+    <TimeItem>
+      <MinuteRenderer />
+    </TimeItem>
+    <TimeItem>
+      <SecondRenderer />
+    </TimeItem>
+  </TimeLayout>
 ));
 
-export const hooks = () => <Hooks />;
+export const uncontrolledExamples = () => (
+  <TimeProviders>
+    <Hooks />
+  </TimeProviders>
+);
 
 const storyDetails = {
   title: 'Primitives',
