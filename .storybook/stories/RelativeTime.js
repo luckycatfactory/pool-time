@@ -15,10 +15,12 @@ import { ONE_HOUR, ONE_MINUTE } from '../../src/constants';
 
 const dateFnsOptions = { roundingMethod: 'floor' };
 
-const RelativeTime = React.memo(({ targetTime }) => {
+const RelativeTime = React.memo(({ globalMaximumTolerance, targetTime }) => {
   const renderCount = useRef(0);
   const [isStrict, setIsStrict] = useState(false);
-  const { scale, time, timeDifference } = useRelativeTime(targetTime, undefined, isStrict);
+  const { scale, time, timeDifference } = useRelativeTime(targetTime, {
+    globalMaximumTolerance: HourContext,
+  });
 
   const handleStrictOnClick = useCallback(() => {
     setIsStrict(!isStrict);
