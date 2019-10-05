@@ -12,11 +12,12 @@ import MonthContext from '../../src/TimeProviders/MonthContext';
 import SecondContext from '../../src/TimeProviders/SecondContext';
 import YearContext from '../../src/TimeProviders/YearContext';
 import { ONE_HOUR, ONE_MINUTE } from '../../src/constants';
+import useRenderCount from '../useRenderCount';
 
 const dateFnsOptions = { roundingMethod: 'floor' };
 
 const RelativeTime = React.memo(({ globalMaximumTolerance, targetTime }) => {
-  const renderCount = useRef(0);
+  const renderCount = useRenderCount();
   const [isStrict, setIsStrict] = useState(false);
   const { scale, time, timeDifference } = useRelativeTime(targetTime, {
     globalMaximumTolerance: HourContext,
@@ -29,13 +30,11 @@ const RelativeTime = React.memo(({ globalMaximumTolerance, targetTime }) => {
   const timeDate = new Date(time - timeDifference);
   const nowAsDate = new Date(time);
 
-  renderCount.current = renderCount.current + 1;
-
   return (
     <div>
       <div>{formatDistanceStrict(timeDate, nowAsDate, dateFnsOptions)} ago</div>
       <div>Degree of Accuracy: {scale}ms.</div>
-      <div>Render count: {renderCount.current}</div>
+      <div>Render count: {renderCount}</div>
       <div>
         <button onClick={handleStrictOnClick}>{isStrict ? 'Unmake Strict' : 'Make Strict'}</button>
       </div>

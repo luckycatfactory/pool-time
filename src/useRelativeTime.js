@@ -6,7 +6,7 @@ import MonthContext from './TimeProviders/MonthContext';
 import SecondContext from './TimeProviders/SecondContext';
 import YearContext from './TimeProviders/YearContext';
 
-import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from './constants';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_YEAR } from './constants';
 
 const generateRelativeTimeObject = (scale, time, timeDifference, timeWithFormat) => ({
   scale,
@@ -15,27 +15,23 @@ const generateRelativeTimeObject = (scale, time, timeDifference, timeWithFormat)
   timeWithFormat,
 });
 
-const contextsAndDurationsInIncreasingDuration = [
-  { context: SecondContext, duration: ONE_SECOND },
-  { context: MinuteContext, duration: ONE_MINUTE },
-  { context: HourContext, duration: ONE_HOUR },
-  { context: DayContext, duration: ONE_DAY },
-  { context: MonthContext, duration: ONE_MONTH },
-  { context: YearContext, duration: ONE_YEAR },
+const contextsInIncreasingDuration = [
+  SecondContext,
+  MinuteContext,
+  HourContext,
+  DayContext,
+  MonthContext,
+  YearContext,
 ];
 
-const contextsAndDurationsByIndex = contextsAndDurationsInIncreasingDuration.reduce(
-  (map, { context, duration }, index) => {
-    map.set(context, index);
-    map.set(duration, index);
-    return map;
-  },
-  new Map()
-);
+const contextsByIndex = contextsInIncreasingDuration.reduce((map, context, index) => {
+  map.set(context, index);
+  return map;
+}, new Map());
 
 const compareContexts = (targetContext, globalMaximumTolerance) => {
-  const targetContextIndex = contextsAndDurationsByIndex.get(targetContext);
-  const globalMaximumToleranceIndex = contextsAndDurationsByIndex.get(globalMaximumTolerance);
+  const targetContextIndex = contextsByIndex.get(targetContext);
+  const globalMaximumToleranceIndex = contextsByIndex.get(globalMaximumTolerance);
 
   if (targetContextIndex === globalMaximumToleranceIndex) return 0;
 
@@ -43,7 +39,7 @@ const compareContexts = (targetContext, globalMaximumTolerance) => {
 };
 
 const getContextWithinGlobalMaximum = (targetContext, globalMaximumTolerance) => {
-  if (targetContext === globalMaximumTolerance) return targetContext;
+  if (!globalMaximumTolerance || targetContext === globalMaximumTolerance) return targetContext;
 
   const comparisonValue = compareContexts(targetContext, globalMaximumTolerance);
 
@@ -86,7 +82,7 @@ const getOptimalTimeContext = (difference, globalMaximumTolerance, strictnessOpt
 
 const useRelativeTime = (targetTime, options = {}) => {
   const {
-    globalMaximumTolerance = YearContext,
+    globalMaximumTolerance,
     scrictnessOptions = {
       days: DayContext,
       hours: HourContext,
