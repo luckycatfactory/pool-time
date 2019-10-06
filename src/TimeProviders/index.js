@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import DayContext from './DayContext';
@@ -11,14 +11,20 @@ import useInterval from '../useInterval';
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../constants';
 
 const TimeProviders = React.memo(({ children, onIntervalUpdate, onRegistrationsChange }) => {
-  const now = Date.now();
+  // For consistency, we prefer to always ensure that all "now" references are the same in a single
+  // render.
+  const nowOnInitialRendering = useRef(Date.now());
 
-  const [currentTimeToTheDay, setCurrentTimeToTheDay] = useState(now);
-  const [currentTimeToTheHour, setCurrentTimeToTheHour] = useState(now);
-  const [currentTimeToTheMinute, setCurrentTimeToTheMinute] = useState(now);
-  const [currentTimeToTheMonth, setCurrentTimeToTheMonth] = useState(now);
-  const [currentTimeToTheSecond, setCurrentTimeToTheSecond] = useState(now);
-  const [currentTimeToTheYear, setCurrentTimeToTheYear] = useState(now);
+  const [currentTimeToTheDay, setCurrentTimeToTheDay] = useState(nowOnInitialRendering.current);
+  const [currentTimeToTheHour, setCurrentTimeToTheHour] = useState(nowOnInitialRendering.current);
+  const [currentTimeToTheMinute, setCurrentTimeToTheMinute] = useState(
+    nowOnInitialRendering.current
+  );
+  const [currentTimeToTheMonth, setCurrentTimeToTheMonth] = useState(nowOnInitialRendering.current);
+  const [currentTimeToTheSecond, setCurrentTimeToTheSecond] = useState(
+    nowOnInitialRendering.current
+  );
+  const [currentTimeToTheYear, setCurrentTimeToTheYear] = useState(nowOnInitialRendering.current);
   const [dayConsumerRegistrations, setDayConsumerRegistrations] = useState(0);
   const [hourConsumerRegistrations, setHourConsumerRegistrations] = useState(0);
   const [minuteConsumerRegistrations, setMinuteConsumerRegistrations] = useState(0);
@@ -120,43 +126,34 @@ const TimeProviders = React.memo(({ children, onIntervalUpdate, onRegistrationsC
 
   // Year
   const registerYearConsumer = useCallback(() => {
-    console.log('registering year');
     setYearConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterYearConsumer = useCallback(() => {
-    console.log('unregistering year');
     setYearConsumerRegistrations(previousCount => previousCount - 1);
   }, []);
   // Month
   const registerMonthConsumer = useCallback(() => {
-    console.log('registering month');
     setMonthConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterMonthConsumer = useCallback(() => {
-    console.log('unregistering month');
     setMonthConsumerRegistrations(previousCount => previousCount - 1);
   }, []);
   // Day
   const registerDayConsumer = useCallback(() => {
-    console.log('registering day');
     setDayConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterDayConsumer = useCallback(() => {
-    console.log('unregistering day');
     setDayConsumerRegistrations(previousCount => previousCount - 1);
   }, []);
   // Hour
   const registerHourConsumer = useCallback(() => {
-    console.log('registering hour');
     setHourConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterHourConsumer = useCallback(() => {
-    console.log('unregistering hour');
     setHourConsumerRegistrations(previousCount => previousCount - 1);
   }, []);
   // Minute
   const registerMinuteConsumer = useCallback(() => {
-    console.log('registering minute');
     setMinuteConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterMinuteConsumer = useCallback(() => {
@@ -164,7 +161,6 @@ const TimeProviders = React.memo(({ children, onIntervalUpdate, onRegistrationsC
   }, []);
   // Second
   const registerSecondConsumer = useCallback(() => {
-    console.log('registering second');
     setSecondConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterSecondConsumer = useCallback(() => {
