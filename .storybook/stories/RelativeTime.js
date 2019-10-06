@@ -11,7 +11,7 @@ import MinuteContext from '../../src/TimeProviders/MinuteContext';
 import MonthContext from '../../src/TimeProviders/MonthContext';
 import SecondContext from '../../src/TimeProviders/SecondContext';
 import YearContext from '../../src/TimeProviders/YearContext';
-import { ONE_HOUR, ONE_MINUTE } from '../../src/constants';
+import { ONE_HOUR, ONE_MINUTE, ONE_SECOND } from '../../src/constants';
 import useRenderCount from '../useRenderCount';
 
 const dateFnsOptions = { roundingMethod: 'floor' };
@@ -43,7 +43,7 @@ const RelativeTime = React.memo(({ globalMaximumTolerance, targetTime }) => {
 });
 
 export const uncontrolledExamples = () => {
-  const targetTimeForSecond = useMemo(() => Date.now(), []);
+  const targetTimeForSecond = useMemo(() => Date.now() - 50 * 1000, []);
   const targetTimeForMinute = useMemo(() => Date.now() - ONE_MINUTE, []);
   const targetTimeForHour = useMemo(() => Date.now() - ONE_HOUR, []);
   const [comments, setComments] = useState([
@@ -51,16 +51,31 @@ export const uncontrolledExamples = () => {
     { targetTime: targetTimeForMinute, text: 'Wow, so performant!' },
     { targetTime: targetTimeForHour, text: 'Very nice, very nice.' },
   ]);
+  const [currentIntervalDuration, setCurrentIntervalDuration] = useState(ONE_SECOND);
+  const handleIntervalUpdate = useCallback(interval => {
+    setCurrentIntervalDuration(interval);
+  }, []);
+
+  const addNewComment = useCallback(() => {
+    setComments(comments => {
+      const newComment = { targetTime: Date.now(), text: 'new comment' };
+      return [...comments, newComment];
+    });
+  }, []);
 
   return (
-    <TimeProviders>
+    <TimeProviders onIntervalUpdate={handleIntervalUpdate}>
       <div>
+        <div>Current Global Interval: {currentIntervalDuration}</div>
         {comments.map(({ targetTime, text }) => (
-          <div>
+          <div key={`${targetTime}-${text}`}>
             <span>{text}</span>
             <RelativeTime targetTime={targetTime} />
           </div>
         ))}
+      </div>
+      <div>
+        <button onClick={addNewComment}>Add New Comment</button>
       </div>
     </TimeProviders>
   );

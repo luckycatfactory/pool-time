@@ -1,4 +1,4 @@
-import { useContext, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import DayContext from './TimeProviders/DayContext';
 import HourContext from './TimeProviders/HourContext';
 import MinuteContext from './TimeProviders/MinuteContext';
@@ -94,15 +94,38 @@ const useRelativeTime = (targetTime, options = {}) => {
     timeFormatter = inputTime => inputTime,
   } = options;
   const TimeContext = useRef(SecondContext);
+  const hasRegisteredConsumer = useRef(false);
+  const previousUnregisterConsumer = useRef(null);
 
   const difference = Date.now() - targetTime;
-  TimeContext.current = getOptimalTimeContext(
+  const nextTimeContext = getOptimalTimeContext(
     difference,
     globalMaximumTolerance,
     scrictnessOptions
   );
+  if (TimeContext.current !== nextTimeContext && previousUnregisterConsumer.current) {
+    previousUnregisterConsumer.current();
+    hasRegisteredConsumer.current = false;
+  }
+  TimeContext.current = nextTimeContext;
 
-  const { scale, time } = useContext(TimeContext.current);
+  const { registerConsumer, scale, time, unregisterConsumer } = useContext(TimeContext.current);
+
+  previousUnregisterConsumer.current = unregisterConsumer;
+
+  if (!hasRegisteredConsumer.current) {
+    registerConsumer();
+    hasRegisteredConsumer.current = true;
+  }
+
+  // This performs the unregistration after unmount.
+  useEffect(
+    () => () => {
+      unregisterConsumer();
+    },
+    []
+  );
+
   const rawDifference = time - targetTime;
   const timeDifference =
     rawDifference >= 0 ? Math.max(rawDifference, scale) : Math.min(rawDifference, scale);

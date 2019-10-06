@@ -1,7 +1,13 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 
 export const generateTimeContextConsumptionHook = TimeContext => timeFormatter => {
-  const { time } = useContext(TimeContext);
+  const { registerConsumer, time, unregisterConsumer } = useContext(TimeContext);
+
+  useEffect(() => {
+    registerConsumer();
+
+    return unregisterConsumer;
+  }, []);
 
   if (timeFormatter) {
     return timeFormatter(time);

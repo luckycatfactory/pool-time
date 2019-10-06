@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import DayContext from './DayContext';
@@ -10,7 +10,7 @@ import YearContext from './YearContext';
 import useInterval from '../useInterval';
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../constants';
 
-const TimeProviders = React.memo(({ children }) => {
+const TimeProviders = React.memo(({ children, onIntervalUpdate }) => {
   const now = Date.now();
 
   const [currentTimeToTheDay, setCurrentTimeToTheDay] = useState(now);
@@ -19,6 +19,47 @@ const TimeProviders = React.memo(({ children }) => {
   const [currentTimeToTheMonth, setCurrentTimeToTheMonth] = useState(now);
   const [currentTimeToTheSecond, setCurrentTimeToTheSecond] = useState(now);
   const [currentTimeToTheYear, setCurrentTimeToTheYear] = useState(now);
+  const [dayConsumerRegistrations, setDayConsumerRegistrations] = useState(0);
+  const [hourConsumerRegistrations, setHourConsumerRegistrations] = useState(0);
+  const [minuteConsumerRegistrations, setMinuteConsumerRegistrations] = useState(0);
+  const [monthConsumerRegistrations, setMonthConsumerRegistrations] = useState(0);
+  const [secondConsumerRegistrations, setSecondConsumerRegistrations] = useState(0);
+  const [yearConsumerRegistrations, setYearConsumerRegistrations] = useState(0);
+
+  console.log(yearConsumerRegistrations);
+  console.log(monthConsumerRegistrations);
+  console.log(dayConsumerRegistrations);
+  console.log(hourConsumerRegistrations);
+  console.log(minuteConsumerRegistrations);
+  console.log(secondConsumerRegistrations);
+
+  const intervalToUse = useMemo(() => {
+    if (secondConsumerRegistrations) {
+      return ONE_SECOND;
+    } else if (minuteConsumerRegistrations) {
+      return ONE_MINUTE;
+    } else if (hourConsumerRegistrations) {
+      return ONE_HOUR;
+    } else if (dayConsumerRegistrations) {
+      return ONE_DAY;
+    } else if (monthConsumerRegistrations) {
+      return ONE_MONTH;
+    } else if (yearConsumerRegistrations) {
+      return ONE_YEAR;
+    }
+  }, [
+    dayConsumerRegistrations,
+    hourConsumerRegistrations,
+    minuteConsumerRegistrations,
+    monthConsumerRegistrations,
+    secondConsumerRegistrations,
+    yearConsumerRegistrations,
+  ]);
+
+  useEffect(() => {
+    onIntervalUpdate(intervalToUse);
+    console.log(intervalToUse);
+  }, [intervalToUse]);
 
   useInterval(() => {
     const now = Date.now();
@@ -63,47 +104,102 @@ const TimeProviders = React.memo(({ children }) => {
         }
       }
     }
-  }, ONE_SECOND);
+  }, intervalToUse);
+
+  // Year
+  const registerYearConsumer = useCallback(() => {
+    setYearConsumerRegistrations(previousCount => previousCount + 1);
+  }, []);
+  const unregisterYearConsumer = useCallback(() => {
+    setYearConsumerRegistrations(previousCount => previousCount - 1);
+  }, []);
+  // Month
+  const registerMonthConsumer = useCallback(() => {
+    setMonthConsumerRegistrations(previousCount => previousCount + 1);
+  }, []);
+  const unregisterMonthConsumer = useCallback(() => {
+    setMonthConsumerRegistrations(previousCount => previousCount - 1);
+  }, []);
+  // Day
+  const registerDayConsumer = useCallback(() => {
+    setDayConsumerRegistrations(previousCount => previousCount + 1);
+  }, []);
+  const unregisterDayConsumer = useCallback(() => {
+    setDayConsumerRegistrations(previousCount => previousCount - 1);
+  }, []);
+  // Hour
+  const registerHourConsumer = useCallback(() => {
+    setHourConsumerRegistrations(previousCount => previousCount + 1);
+  }, []);
+  const unregisterHourConsumer = useCallback(() => {
+    setHourConsumerRegistrations(previousCount => previousCount - 1);
+  }, []);
+  // Minute
+  const registerMinuteConsumer = useCallback(() => {
+    setMinuteConsumerRegistrations(previousCount => previousCount + 1);
+  }, []);
+  const unregisterMinuteConsumer = useCallback(() => {
+    setMinuteConsumerRegistrations(previousCount => previousCount - 1);
+  }, []);
+  // Second
+  const registerSecondConsumer = useCallback(() => {
+    setSecondConsumerRegistrations(previousCount => previousCount + 1);
+  }, []);
+  const unregisterSecondConsumer = useCallback(() => {
+    setSecondConsumerRegistrations(previousCount => previousCount - 1);
+  }, []);
 
   const yearValue = useMemo(
     () => ({
+      registerConsumer: registerYearConsumer,
       scale: ONE_YEAR,
       time: currentTimeToTheYear,
+      unregisterConsumer: unregisterYearConsumer,
     }),
     [currentTimeToTheYear]
   );
   const monthValue = useMemo(
     () => ({
+      registerConsumer: registerMonthConsumer,
       scale: ONE_MONTH,
       time: currentTimeToTheMonth,
+      unregisterConsumer: unregisterMonthConsumer,
     }),
     [currentTimeToTheMonth]
   );
   const dayValue = useMemo(
     () => ({
+      registerConsumer: registerDayConsumer,
       scale: ONE_DAY,
       time: currentTimeToTheDay,
+      unregisterConsumer: unregisterDayConsumer,
     }),
     [currentTimeToTheDay]
   );
   const hourValue = useMemo(
     () => ({
+      registerConsumer: registerHourConsumer,
       scale: ONE_HOUR,
       time: currentTimeToTheHour,
+      unregisterConsumer: unregisterHourConsumer,
     }),
     [currentTimeToTheHour]
   );
   const minuteValue = useMemo(
     () => ({
+      registerConsumer: registerMinuteConsumer,
       scale: ONE_MINUTE,
       time: currentTimeToTheMinute,
+      unregisterConsumer: unregisterMinuteConsumer,
     }),
     [currentTimeToTheMinute]
   );
   const secondValue = useMemo(
     () => ({
+      registerConsumer: registerSecondConsumer,
       scale: ONE_SECOND,
       time: currentTimeToTheSecond,
+      unregisterConsumer: unregisterSecondConsumer,
     }),
     [currentTimeToTheSecond]
   );
@@ -127,6 +223,11 @@ TimeProviders.displayName = 'TimeProviders';
 
 TimeProviders.propTypes = {
   children: PropTypes.node.isRequired,
+  onIntervalUpdate: PropTypes.func,
+};
+
+TimeProviders.defaultProps = {
+  onIntervalUpdate: () => {},
 };
 
 export default TimeProviders;
