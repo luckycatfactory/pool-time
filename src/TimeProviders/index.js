@@ -10,7 +10,7 @@ import YearContext from './YearContext';
 import useInterval from '../useInterval';
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../constants';
 
-const TimeProviders = React.memo(({ children, onIntervalUpdate, onRegistrationsChange }) => {
+const TimeProviders = React.memo(({ children, onIntervalUpdate, onRegistrationsUpdate }) => {
   // For consistency, we prefer to always ensure that all "now" references are the same in a single
   // render.
   const nowOnInitialRendering = useRef(Date.now());
@@ -62,7 +62,7 @@ const TimeProviders = React.memo(({ children, onIntervalUpdate, onRegistrationsC
   }, [intervalToUse]);
 
   useEffect(() => {
-    onRegistrationsChange({
+    onRegistrationsUpdate({
       dayConsumerRegistrations,
       hourConsumerRegistrations,
       minuteConsumerRegistrations,
@@ -242,12 +242,12 @@ TimeProviders.displayName = 'TimeProviders';
 TimeProviders.propTypes = {
   children: PropTypes.node.isRequired,
   onIntervalUpdate: PropTypes.func,
-  onRegistrationsChange: PropTypes.func,
+  onRegistrationsUpdate: PropTypes.func,
 };
 
 TimeProviders.defaultProps = {
   onIntervalUpdate: () => {},
-  onRegistrationsChange: () => {},
+  onRegistrationsUpdate: () => {},
 };
 
 export default TimeProviders;

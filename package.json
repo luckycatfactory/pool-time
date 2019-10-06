@@ -11,6 +11,11 @@
     "@babel/preset-react": "^7.0.0",
     "@storybook/addon-knobs": "^5.2.1",
     "@storybook/react": "^5.2.1",
+    "@zendeskgarden/react-avatars": "^6.7.0",
+    "@zendeskgarden/react-buttons": "^6.7.1",
+    "@zendeskgarden/react-dropdowns": "^6.7.1",
+    "@zendeskgarden/react-forms": "^6.7.1",
+    "@zendeskgarden/react-theming": "^6.5.0",
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
     "date-fns": "^2.3.0",
@@ -21,7 +26,8 @@
     "prettier": "^1.18.2",
     "rollup": "^1.21.4",
     "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-eslint": "^7.0.0"
+    "rollup-plugin-eslint": "^7.0.0",
+    "styled-components": "^4.4.0"
   },
   "scripts": {
     "build": "rollup -c",
