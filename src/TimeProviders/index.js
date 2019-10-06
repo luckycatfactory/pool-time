@@ -46,6 +46,8 @@ const TimeProviders = React.memo(({ children, onIntervalUpdate }) => {
       return ONE_MONTH;
     } else if (yearConsumerRegistrations) {
       return ONE_YEAR;
+    } else {
+      return null;
     }
   }, [
     dayConsumerRegistrations,

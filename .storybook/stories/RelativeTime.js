@@ -42,35 +42,43 @@ const RelativeTime = React.memo(({ globalMaximumTolerance, targetTime }) => {
   );
 });
 
+let id = 0;
+
+const generateId = () => id++;
+
 export const uncontrolledExamples = () => {
-  const targetTimeForSecond = useMemo(() => Date.now() - 50 * 1000, []);
-  const targetTimeForMinute = useMemo(() => Date.now() - ONE_MINUTE, []);
-  const targetTimeForHour = useMemo(() => Date.now() - ONE_HOUR, []);
   const [comments, setComments] = useState([
-    { targetTime: targetTimeForSecond, text: 'This is so cool!' },
-    { targetTime: targetTimeForMinute, text: 'Wow, so performant!' },
-    { targetTime: targetTimeForHour, text: 'Very nice, very nice.' },
+    { id: generateId(), targetTime: Date.now() - 50 * ONE_SECOND, text: 'This is so cool!' },
+    { id: generateId(), targetTime: Date.now() - ONE_MINUTE, text: 'Wow, so performant!' },
+    { id: generateId(), targetTime: Date.now() - ONE_HOUR, text: 'Very nice, very nice.' },
   ]);
-  const [currentIntervalDuration, setCurrentIntervalDuration] = useState(ONE_SECOND);
+  const [currentIntervalDuration, setCurrentIntervalDuration] = useState(null);
   const handleIntervalUpdate = useCallback(interval => {
     setCurrentIntervalDuration(interval);
   }, []);
 
   const addNewComment = useCallback(() => {
     setComments(comments => {
-      const newComment = { targetTime: Date.now(), text: 'new comment' };
+      const newComment = { id: generateId(), targetTime: Date.now(), text: 'new comment' };
       return [...comments, newComment];
     });
+  }, []);
+  const handleRemovalClick = useCallback(e => {
+    const id = e.currentTarget.getAttribute('data-comment-id');
+    setComments(comments => comments.filter(comment => comment.id !== parseInt(id)));
   }, []);
 
   return (
     <TimeProviders onIntervalUpdate={handleIntervalUpdate}>
       <div>
         <div>Current Global Interval: {currentIntervalDuration}</div>
-        {comments.map(({ targetTime, text }) => (
-          <div key={`${targetTime}-${text}`}>
+        {comments.map(({ id, targetTime, text }) => (
+          <div key={id}>
             <span>{text}</span>
             <RelativeTime targetTime={targetTime} />
+            <button onClick={handleRemovalClick} data-comment-id={id}>
+              Remove
+            </button>
           </div>
         ))}
       </div>
