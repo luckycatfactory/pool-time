@@ -56,6 +56,11 @@ export const uncontrolledExamples = () => {
   const handleIntervalUpdate = useCallback(interval => {
     setCurrentIntervalDuration(interval);
   }, []);
+  const [currentRegistrations, setCurrentRegistrations] = useState({});
+  const handleRegistrationsUpdate = useCallback(
+    registrations => setCurrentRegistrations(registrations),
+    []
+  );
 
   const addNewComment = useCallback(() => {
     setComments(comments => {
@@ -69,9 +74,13 @@ export const uncontrolledExamples = () => {
   }, []);
 
   return (
-    <TimeProviders onIntervalUpdate={handleIntervalUpdate}>
+    <TimeProviders
+      onIntervalUpdate={handleIntervalUpdate}
+      onRegistrationsChange={handleRegistrationsUpdate}
+    >
       <div>
         <div>Current Global Interval: {currentIntervalDuration}</div>
+        <div>{JSON.stringify(currentRegistrations)}</div>
         {comments.map(({ id, targetTime, text }) => (
           <div key={id}>
             <span>{text}</span>

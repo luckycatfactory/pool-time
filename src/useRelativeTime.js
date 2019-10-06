@@ -121,7 +121,7 @@ const useRelativeTime = (targetTime, options = {}) => {
   // This performs the unregistration after unmount.
   useEffect(
     () => () => {
-      unregisterConsumer();
+      previousUnregisterConsumer.current();
     },
     []
   );

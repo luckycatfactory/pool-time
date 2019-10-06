@@ -10,7 +10,7 @@ import YearContext from './YearContext';
 import useInterval from '../useInterval';
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../constants';
 
-const TimeProviders = React.memo(({ children, onIntervalUpdate }) => {
+const TimeProviders = React.memo(({ children, onIntervalUpdate, onRegistrationsChange }) => {
   const now = Date.now();
 
   const [currentTimeToTheDay, setCurrentTimeToTheDay] = useState(now);
@@ -25,13 +25,6 @@ const TimeProviders = React.memo(({ children, onIntervalUpdate }) => {
   const [monthConsumerRegistrations, setMonthConsumerRegistrations] = useState(0);
   const [secondConsumerRegistrations, setSecondConsumerRegistrations] = useState(0);
   const [yearConsumerRegistrations, setYearConsumerRegistrations] = useState(0);
-
-  console.log(yearConsumerRegistrations);
-  console.log(monthConsumerRegistrations);
-  console.log(dayConsumerRegistrations);
-  console.log(hourConsumerRegistrations);
-  console.log(minuteConsumerRegistrations);
-  console.log(secondConsumerRegistrations);
 
   const intervalToUse = useMemo(() => {
     if (secondConsumerRegistrations) {
@@ -60,8 +53,25 @@ const TimeProviders = React.memo(({ children, onIntervalUpdate }) => {
 
   useEffect(() => {
     onIntervalUpdate(intervalToUse);
-    console.log(intervalToUse);
   }, [intervalToUse]);
+
+  useEffect(() => {
+    onRegistrationsChange({
+      dayConsumerRegistrations,
+      hourConsumerRegistrations,
+      minuteConsumerRegistrations,
+      monthConsumerRegistrations,
+      secondConsumerRegistrations,
+      yearConsumerRegistrations,
+    });
+  }, [
+    dayConsumerRegistrations,
+    hourConsumerRegistrations,
+    minuteConsumerRegistrations,
+    monthConsumerRegistrations,
+    secondConsumerRegistrations,
+    yearConsumerRegistrations,
+  ]);
 
   useInterval(() => {
     const now = Date.now();
@@ -110,34 +120,43 @@ const TimeProviders = React.memo(({ children, onIntervalUpdate }) => {
 
   // Year
   const registerYearConsumer = useCallback(() => {
+    console.log('registering year');
     setYearConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterYearConsumer = useCallback(() => {
+    console.log('unregistering year');
     setYearConsumerRegistrations(previousCount => previousCount - 1);
   }, []);
   // Month
   const registerMonthConsumer = useCallback(() => {
+    console.log('registering month');
     setMonthConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterMonthConsumer = useCallback(() => {
+    console.log('unregistering month');
     setMonthConsumerRegistrations(previousCount => previousCount - 1);
   }, []);
   // Day
   const registerDayConsumer = useCallback(() => {
+    console.log('registering day');
     setDayConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterDayConsumer = useCallback(() => {
+    console.log('unregistering day');
     setDayConsumerRegistrations(previousCount => previousCount - 1);
   }, []);
   // Hour
   const registerHourConsumer = useCallback(() => {
+    console.log('registering hour');
     setHourConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterHourConsumer = useCallback(() => {
+    console.log('unregistering hour');
     setHourConsumerRegistrations(previousCount => previousCount - 1);
   }, []);
   // Minute
   const registerMinuteConsumer = useCallback(() => {
+    console.log('registering minute');
     setMinuteConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterMinuteConsumer = useCallback(() => {
@@ -145,6 +164,7 @@ const TimeProviders = React.memo(({ children, onIntervalUpdate }) => {
   }, []);
   // Second
   const registerSecondConsumer = useCallback(() => {
+    console.log('registering second');
     setSecondConsumerRegistrations(previousCount => previousCount + 1);
   }, []);
   const unregisterSecondConsumer = useCallback(() => {
@@ -226,10 +246,12 @@ TimeProviders.displayName = 'TimeProviders';
 TimeProviders.propTypes = {
   children: PropTypes.node.isRequired,
   onIntervalUpdate: PropTypes.func,
+  onRegistrationsChange: PropTypes.func,
 };
 
 TimeProviders.defaultProps = {
   onIntervalUpdate: () => {},
+  onRegistrationsChange: () => {},
 };
 
 export default TimeProviders;
