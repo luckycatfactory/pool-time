@@ -124,9 +124,7 @@ const dateFnsOptions = { roundingMethod: 'floor' };
 
 const RelativeTime = React.memo(({ globalMaximumTolerance, targetTime }) => {
   const renderCount = useRenderCount();
-  const { scale, time, timeDifference } = useRelativeTime(targetTime, {
-    globalMaximumTolerance: HourContext,
-  });
+  const { scale, time, timeDifference } = useRelativeTime(targetTime);
 
   const timeDate = new Date(time - timeDifference);
   const nowAsDate = new Date(time);

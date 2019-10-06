@@ -1,12 +1,13 @@
 import { useContext, useEffect, useRef } from 'react';
 import DayContext from './TimeProviders/DayContext';
+import GlobalMinimumAccuracyContext from './TimeProviders/GlobalMinimumAccuracyContext';
 import HourContext from './TimeProviders/HourContext';
 import MinuteContext from './TimeProviders/MinuteContext';
 import MonthContext from './TimeProviders/MonthContext';
 import SecondContext from './TimeProviders/SecondContext';
 import YearContext from './TimeProviders/YearContext';
 
-import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_YEAR } from './constants';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from './constants';
 
 const generateRelativeTimeObject = (scale, time, timeDifference, timeWithFormat) => ({
   scale,
@@ -15,74 +16,64 @@ const generateRelativeTimeObject = (scale, time, timeDifference, timeWithFormat)
   timeWithFormat,
 });
 
-const contextsInIncreasingDuration = [
-  SecondContext,
-  MinuteContext,
-  HourContext,
-  DayContext,
-  MonthContext,
-  YearContext,
-];
-
-const contextsByIndex = contextsInIncreasingDuration.reduce((map, context, index) => {
-  map.set(context, index);
-  return map;
-}, new Map());
-
-const compareContexts = (targetContext, globalMaximumTolerance) => {
-  const targetContextIndex = contextsByIndex.get(targetContext);
-  const globalMaximumToleranceIndex = contextsByIndex.get(globalMaximumTolerance);
-
-  if (targetContextIndex === globalMaximumToleranceIndex) return 0;
-
-  return targetContextIndex > globalMaximumToleranceIndex ? 1 : -1;
+const durationsToContexts = {
+  [ONE_DAY]: DayContext,
+  [ONE_HOUR]: HourContext,
+  [ONE_MINUTE]: MinuteContext,
+  [ONE_MONTH]: MonthContext,
+  [ONE_SECOND]: SecondContext,
+  [ONE_YEAR]: YearContext,
 };
 
-const getContextWithinGlobalMaximum = (targetContext, globalMaximumTolerance) => {
-  if (!globalMaximumTolerance || targetContext === globalMaximumTolerance) return targetContext;
+const getContextWithinGlobalMinimumAccuracy = (targetContext, globalMinimumAccuracy) => {
+  if (!globalMinimumAccuracy || targetContext === globalMinimumAccuracy) return targetContext;
 
-  const comparisonValue = compareContexts(targetContext, globalMaximumTolerance);
+  const targetDuration = Object.keys(durationsToContexts).find(key => {
+    const context = durationsToContexts[key];
+    return context === targetContext;
+  });
 
-  return comparisonValue === 1 ? globalMaximumTolerance : targetContext;
+  const ultimateDuration = Math.min(targetDuration, globalMinimumAccuracy);
+
+  return durationsToContexts[ultimateDuration];
 };
 
-const getOptimalTimeContext = (difference, globalMaximumTolerance, strictnessOptions) => {
+const getOptimalTimeContext = (difference, globalMinimumAccuracy, strictnessOptions) => {
   if (difference < ONE_MINUTE) {
-    return getContextWithinGlobalMaximum(
+    return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.seconds || SecondContext,
-      globalMaximumTolerance
+      globalMinimumAccuracy
     );
   } else if (difference >= ONE_MINUTE && difference < ONE_HOUR) {
-    return getContextWithinGlobalMaximum(
+    return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.minutes || MinuteContext,
-      globalMaximumTolerance
+      globalMinimumAccuracy
     );
   } else if (difference >= ONE_HOUR && difference < ONE_DAY) {
-    return getContextWithinGlobalMaximum(
+    return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.hours || HourContext,
-      globalMaximumTolerance
+      globalMinimumAccuracy
     );
   } else if (difference >= ONE_DAY && difference < ONE_MONTH) {
-    return getContextWithinGlobalMaximum(
+    return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.days || DayContext,
-      globalMaximumTolerance
+      globalMinimumAccuracy
     );
   } else if (difference >= ONE_MONTH && difference < ONE_YEAR) {
-    return getContextWithinGlobalMaximum(
+    return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.months || MonthContext,
-      globalMaximumTolerance
+      globalMinimumAccuracy
     );
   } else if (difference >= ONE_YEAR) {
-    return getContextWithinGlobalMaximum(
+    return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.years || YearContext,
-      globalMaximumTolerance
+      globalMinimumAccuracy
     );
   }
 };
 
 const useRelativeTime = (targetTime, options = {}) => {
   const {
-    globalMaximumTolerance,
     scrictnessOptions = {
       days: DayContext,
       hours: HourContext,
@@ -96,13 +87,15 @@ const useRelativeTime = (targetTime, options = {}) => {
   const TimeContext = useRef(SecondContext);
   const hasRegisteredConsumer = useRef(false);
   const previousUnregisterConsumer = useRef(null);
+  const globalMinimumAccuracy = useContext(GlobalMinimumAccuracyContext);
 
   const difference = Date.now() - targetTime;
   const nextTimeContext = getOptimalTimeContext(
     difference,
-    globalMaximumTolerance,
+    globalMinimumAccuracy,
     scrictnessOptions
   );
+
   if (TimeContext.current !== nextTimeContext && previousUnregisterConsumer.current) {
     previousUnregisterConsumer.current();
     hasRegisteredConsumer.current = false;
