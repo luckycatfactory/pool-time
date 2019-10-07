@@ -6,6 +6,7 @@ module.exports = {
     '!**/dist/**',
     '!**/coverage/**',
   ],
+  setupFilesAfterEnv: ['<rootDir>/setUpTests.js'],
   transform: {
     '^.+\\.js$': 'babel-jest',
   },
