@@ -19,10 +19,13 @@
     "babel-eslint": "^10.0.3",
     "babel-loader": "^8.0.6",
     "date-fns": "^2.3.0",
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-react-16": "^1.14.0",
     "eslint": "^6.4.0",
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-react": "^7.14.3",
     "eslint-plugin-react-hooks": "^2.0.1",
+    "jest": "^24.9.0",
     "prettier": "^1.18.2",
     "rollup": "^1.21.4",
     "rollup-plugin-babel": "^4.3.3",
@@ -30,7 +33,7 @@
     "styled-components": "^4.4.0"
   },
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && gzip -c ./dist/bundle.min.js > ./dist/bundle.min.js.gz",
     "storybook": "start-storybook"
   },
   "dependencies": {

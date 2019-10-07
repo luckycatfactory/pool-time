@@ -22,6 +22,18 @@ const validateGlobalMinimumAccuracy = globalMinimumAccuracy => {
 const getIntervalToUseOrMinimumallyAccepted = (targetDuration, globalMinimumAccuracy) =>
   Math.min(targetDuration, globalMinimumAccuracy);
 
+const generateConsumerRegistrationIncrementer = setConsumerRegistration => () =>
+  setConsumerRegistration(previousValue => previousValue + 1);
+const generateConsumerRegistrationDecrementer = setConsumerRegistration => () =>
+  setConsumerRegistration(previousValue => previousValue - 1);
+
+const generateValueObjectCreator = (registerConsumer, scale, time, unregisterConsumer) => () => ({
+  registerConsumer,
+  scale,
+  time,
+  unregisterConsumer,
+});
+
 const TimeProviders = React.memo(
   ({ children, globalMinimumAccuracy, onIntervalUpdate, onRegistrationsUpdate }) => {
     // For consistency, we prefer to always ensure that all "now" references are the same in a single
@@ -146,100 +158,112 @@ const TimeProviders = React.memo(
     }, intervalToUse);
 
     // Year
-    const registerYearConsumer = useCallback(() => {
-      setYearConsumerRegistrations(previousCount => previousCount + 1);
-    }, []);
-    const unregisterYearConsumer = useCallback(() => {
-      setYearConsumerRegistrations(previousCount => previousCount - 1);
-    }, []);
+    const registerYearConsumer = useCallback(
+      generateConsumerRegistrationIncrementer(setYearConsumerRegistrations),
+      []
+    );
+    const unregisterYearConsumer = useCallback(
+      generateConsumerRegistrationDecrementer(setYearConsumerRegistrations),
+      []
+    );
     // Month
-    const registerMonthConsumer = useCallback(() => {
-      setMonthConsumerRegistrations(previousCount => previousCount + 1);
-    }, []);
-    const unregisterMonthConsumer = useCallback(() => {
-      setMonthConsumerRegistrations(previousCount => previousCount - 1);
-    }, []);
+    const registerMonthConsumer = useCallback(
+      generateConsumerRegistrationIncrementer(setMonthConsumerRegistrations),
+      []
+    );
+    const unregisterMonthConsumer = useCallback(
+      generateConsumerRegistrationDecrementer(setMonthConsumerRegistrations),
+      []
+    );
     // Day
-    const registerDayConsumer = useCallback(() => {
-      setDayConsumerRegistrations(previousCount => previousCount + 1);
-    }, []);
-    const unregisterDayConsumer = useCallback(() => {
-      setDayConsumerRegistrations(previousCount => previousCount - 1);
-    }, []);
+    const registerDayConsumer = useCallback(
+      generateConsumerRegistrationIncrementer(setDayConsumerRegistrations),
+      []
+    );
+    const unregisterDayConsumer = useCallback(
+      generateConsumerRegistrationDecrementer(setDayConsumerRegistrations),
+      []
+    );
     // Hour
-    const registerHourConsumer = useCallback(() => {
-      setHourConsumerRegistrations(previousCount => previousCount + 1);
-    }, []);
-    const unregisterHourConsumer = useCallback(() => {
-      setHourConsumerRegistrations(previousCount => previousCount - 1);
-    }, []);
+    const registerHourConsumer = useCallback(
+      generateConsumerRegistrationIncrementer(setHourConsumerRegistrations),
+      []
+    );
+    const unregisterHourConsumer = useCallback(
+      generateConsumerRegistrationDecrementer(setHourConsumerRegistrations),
+      []
+    );
     // Minute
-    const registerMinuteConsumer = useCallback(() => {
-      setMinuteConsumerRegistrations(previousCount => previousCount + 1);
-    }, []);
-    const unregisterMinuteConsumer = useCallback(() => {
-      setMinuteConsumerRegistrations(previousCount => previousCount - 1);
-    }, []);
+    const registerMinuteConsumer = useCallback(
+      generateConsumerRegistrationIncrementer(setMinuteConsumerRegistrations),
+      []
+    );
+    const unregisterMinuteConsumer = useCallback(
+      generateConsumerRegistrationDecrementer(setMinuteConsumerRegistrations),
+      []
+    );
     // Second
-    const registerSecondConsumer = useCallback(() => {
-      setSecondConsumerRegistrations(previousCount => previousCount + 1);
-    }, []);
-    const unregisterSecondConsumer = useCallback(() => {
-      setSecondConsumerRegistrations(previousCount => previousCount - 1);
-    }, []);
+    const registerSecondConsumer = useCallback(
+      generateConsumerRegistrationIncrementer(setSecondConsumerRegistrations),
+      []
+    );
+    const unregisterSecondConsumer = useCallback(
+      generateConsumerRegistrationDecrementer(setSecondConsumerRegistrations),
+      []
+    );
 
     const yearValue = useMemo(
-      () => ({
-        registerConsumer: registerYearConsumer,
-        scale: ONE_YEAR,
-        time: currentTimeToTheYear,
-        unregisterConsumer: unregisterYearConsumer,
-      }),
+      generateValueObjectCreator(
+        registerYearConsumer,
+        ONE_YEAR,
+        currentTimeToTheYear,
+        unregisterYearConsumer
+      ),
       [currentTimeToTheYear]
     );
     const monthValue = useMemo(
-      () => ({
-        registerConsumer: registerMonthConsumer,
-        scale: ONE_MONTH,
-        time: currentTimeToTheMonth,
-        unregisterConsumer: unregisterMonthConsumer,
-      }),
+      generateValueObjectCreator(
+        registerMonthConsumer,
+        ONE_MONTH,
+        currentTimeToTheMonth,
+        unregisterMonthConsumer
+      ),
       [currentTimeToTheMonth]
     );
     const dayValue = useMemo(
-      () => ({
-        registerConsumer: registerDayConsumer,
-        scale: ONE_DAY,
-        time: currentTimeToTheDay,
-        unregisterConsumer: unregisterDayConsumer,
-      }),
+      generateValueObjectCreator(
+        registerDayConsumer,
+        ONE_DAY,
+        currentTimeToTheDay,
+        unregisterDayConsumer
+      ),
       [currentTimeToTheDay]
     );
     const hourValue = useMemo(
-      () => ({
-        registerConsumer: registerHourConsumer,
-        scale: ONE_HOUR,
-        time: currentTimeToTheHour,
-        unregisterConsumer: unregisterHourConsumer,
-      }),
+      generateValueObjectCreator(
+        registerHourConsumer,
+        ONE_HOUR,
+        currentTimeToTheHour,
+        unregisterHourConsumer
+      ),
       [currentTimeToTheHour]
     );
     const minuteValue = useMemo(
-      () => ({
-        registerConsumer: registerMinuteConsumer,
-        scale: ONE_MINUTE,
-        time: currentTimeToTheMinute,
-        unregisterConsumer: unregisterMinuteConsumer,
-      }),
+      generateValueObjectCreator(
+        registerMinuteConsumer,
+        ONE_MINUTE,
+        currentTimeToTheMinute,
+        unregisterMinuteConsumer
+      ),
       [currentTimeToTheMinute]
     );
     const secondValue = useMemo(
-      () => ({
-        registerConsumer: registerSecondConsumer,
-        scale: ONE_SECOND,
-        time: currentTimeToTheSecond,
-        unregisterConsumer: unregisterSecondConsumer,
-      }),
+      generateValueObjectCreator(
+        registerSecondConsumer,
+        ONE_SECOND,
+        currentTimeToTheSecond,
+        unregisterSecondConsumer
+      ),
       [currentTimeToTheSecond]
     );
 

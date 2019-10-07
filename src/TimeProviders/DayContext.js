@@ -1,12 +1,8 @@
 import React from 'react';
 import { ONE_DAY } from '../constants';
+import { generateTimeContextDefaultObject } from '../utilities';
 
-const defaultValue = {
-  registerConsumer: () => {},
-  scale: ONE_DAY,
-  time: Date.now(),
-  unregisterConsumer: () => {},
-};
+const defaultValue = generateTimeContextDefaultObject(ONE_DAY);
 
 const DayContext = React.createContext(defaultValue);
 

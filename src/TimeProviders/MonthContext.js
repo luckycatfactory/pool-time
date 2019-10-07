@@ -1,12 +1,8 @@
 import React from 'react';
 import { ONE_MONTH } from '../constants';
+import { generateTimeContextDefaultObject } from '../utilities';
 
-const defaultValue = {
-  registerConsumer: () => {},
-  scale: ONE_MONTH,
-  time: Date.now(),
-  unregisterConsumer: () => {},
-};
+const defaultValue = generateTimeContextDefaultObject(ONE_MONTH);
 
 const MonthContext = React.createContext(defaultValue);
 

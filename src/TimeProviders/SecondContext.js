@@ -1,12 +1,8 @@
 import React from 'react';
 import { ONE_SECOND } from '../constants';
+import { generateTimeContextDefaultObject } from '../utilities';
 
-const defaultValue = {
-  registerConsumer: () => {},
-  scale: ONE_SECOND,
-  time: Date.now(),
-  unregisterConsumer: () => {},
-};
+const defaultValue = generateTimeContextDefaultObject(ONE_SECOND);
 
 const SecondContext = React.createContext(defaultValue);
 
