@@ -1,5 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { mount } from 'enzyme';
+import { act } from 'react-dom/test-utils';
 
 import TimeProviders from '../';
 import DayContext from '../DayContext';
@@ -120,22 +121,150 @@ describe('<TimeProviders />', () => {
     });
   });
 
-  it('passes the correct scale and time to each time renderer', () => {
-    const mockNow = Date.now();
-    getDateNow.mockImplementation(() => mockNow);
-    allTimeRenderersWithScales.forEach(([renderer, expectedScale]) => {
-      const ProviderTester = generateProviderTester();
-      const wrapper = mount(
-        <TimeProviders>
-          <ProviderTester />
-        </TimeProviders>
-      );
-      const timeRenderer = wrapper.find(renderer);
-      expect(timeRenderer).toHaveLength(1);
-      const scale = timeRenderer.find(Scale);
-      const time = timeRenderer.find(Time);
-      expect(scale.props()).toEqual({ children: expectedScale });
-      expect(time.props()).toEqual({ children: mockNow });
+  describe('provided context updates', () => {
+    const generateSingleConsumerTester = TargetContext => {
+      const SingleConsumerTester = () => {
+        const targetContext = useContext(TargetContext);
+
+        useEffect(() => {
+          targetContext.registerConsumer();
+
+          return () => {
+            targetContext.unregisterConsumer();
+          };
+        }, []);
+
+        return (
+          <>
+            <Scale>{targetContext.scale}</Scale>
+            <Time>{targetContext.time}</Time>
+          </>
+        );
+      };
+
+      return SingleConsumerTester;
+    };
+    const generateExpectedRegistrationObject = (overrides = {}) => ({
+      day: 0,
+      hour: 0,
+      minute: 0,
+      month: 0,
+      second: 0,
+      year: 0,
+      ...overrides,
+    });
+
+    it('should initially call onIntervalUpdate at the beginning with null and not again when there are no consumers', () => {
+      const mockOnIntervalUpdate = jest.fn();
+      mount(<TimeProviders onIntervalUpdate={mockOnIntervalUpdate}>Children</TimeProviders>);
+      expect(mockOnIntervalUpdate).toHaveBeenCalledTimes(1);
+      expect(mockOnIntervalUpdate).toHaveBeenLastCalledWith(null);
+      act(() => {
+        jest.advanceTimersByTime(1000);
+      });
+      expect(mockOnIntervalUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    it('passes the correct initial scale and time to each time renderer', () => {
+      const now = Date.now();
+      getDateNow.mockImplementation(() => now);
+      allTimeRenderersWithScales.forEach(([renderer, expectedScale]) => {
+        const ProviderTester = generateProviderTester();
+        const wrapper = mount(
+          <TimeProviders>
+            <ProviderTester />
+          </TimeProviders>
+        );
+        const timeRenderer = wrapper.find(renderer);
+        expect(timeRenderer).toHaveLength(1);
+        const scale = timeRenderer.find(Scale);
+        const time = timeRenderer.find(Time);
+        expect(scale.props()).toEqual({ children: expectedScale });
+        expect(time.props()).toEqual({ children: now });
+      });
+    });
+
+    describe.each([
+      ['second', SecondContext, ONE_SECOND],
+      ['minute', MinuteContext, ONE_MINUTE],
+      ['hour', HourContext, ONE_HOUR],
+      ['day', DayContext, ONE_DAY],
+      ['month', MonthContext, ONE_MONTH],
+      ['year', YearContext, ONE_YEAR],
+    ])(`when there is a single %s consumer`, (key, context, duration) => {
+      beforeEach(() => {
+        jest.advanceTimersByTime(1);
+      });
+      it('should initially call onRegistrationsUpdate with the correct value', () => {
+        const SingleConsumerTester = generateSingleConsumerTester(context);
+        const mockOnRegistrationUpdate = jest.fn();
+        mount(
+          <TimeProviders onRegistrationsUpdate={mockOnRegistrationUpdate}>
+            <SingleConsumerTester />
+          </TimeProviders>
+        );
+        expect(mockOnRegistrationUpdate).toHaveBeenCalledTimes(2);
+        expect(mockOnRegistrationUpdate).toHaveBeenCalledWith(generateExpectedRegistrationObject());
+        expect(mockOnRegistrationUpdate).toHaveBeenLastCalledWith(
+          generateExpectedRegistrationObject({ [key]: 1 })
+        );
+      });
+
+      it('should call onRegistrationUpdate with the registrations removed when they are unmounted', () => {
+        const SingleConsumerTester = generateSingleConsumerTester(context);
+        const DynamicConsumerWrapper = ({ children, shouldRenderConsumer }) =>
+          children({ shouldRenderConsumer });
+        const mockOnRegistrationUpdate = jest.fn();
+        const wrapper = mount(
+          <DynamicConsumerWrapper shouldRenderConsumer>
+            {({ shouldRenderConsumer }) => (
+              <TimeProviders onRegistrationsUpdate={mockOnRegistrationUpdate}>
+                {shouldRenderConsumer && <SingleConsumerTester />}
+              </TimeProviders>
+            )}
+          </DynamicConsumerWrapper>
+        );
+        expect(mockOnRegistrationUpdate).toHaveBeenCalledTimes(2);
+        expect(mockOnRegistrationUpdate).toHaveBeenCalledWith(generateExpectedRegistrationObject());
+        expect(mockOnRegistrationUpdate).toHaveBeenLastCalledWith(
+          generateExpectedRegistrationObject({ [key]: 1 })
+        );
+        wrapper.setProps({ shouldRenderConsumer: false });
+        expect(mockOnRegistrationUpdate).toHaveBeenCalledTimes(3);
+        expect(mockOnRegistrationUpdate).toHaveBeenLastCalledWith(
+          generateExpectedRegistrationObject()
+        );
+      });
+
+      // it('properly updates time values', () => {
+      //   const now = Date.now();
+      //   getDateNow.mockImplementation(() => now);
+      //   const SingleConsumerTester = generateSingleConsumerTester(context);
+      //   const wrapper = mount(
+      //     <TimeProviders>
+      //       <SingleConsumerTester />
+      //     </TimeProviders>
+      //   );
+      //
+      //   const time = wrapper.find(Time);
+      //   expect(time.props()).toEqual({ children: now });
+      //
+      //   const promise = new Promise(resolve => {
+      //     getDateNow.mockImplementation(() => now + duration - 1);
+      //
+      //     act(() => {
+      //       jest.advanceTimersByTime(duration);
+      //     });
+      //
+      //     resolve();
+      //   });
+      //
+      //   return promise.then(() => {
+      //     console.log('making it!?');
+      //     expect(1).toBe(2);
+      //     expect(wrapper.find(Time).props()).toEqual({ children: now });
+      //   });
+      // });
     });
   });
 });
