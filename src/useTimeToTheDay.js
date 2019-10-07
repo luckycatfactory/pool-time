@@ -1,5 +1,5 @@
 import DayContext from './TimeProviders/DayContext';
-import { generateTimeContextConsumptionHook } from './utilities';
+import { generateTimeContextConsumptionHook } from './TimeProviders/utilities';
 
 const useTimeToTheDay = generateTimeContextConsumptionHook(DayContext);
 

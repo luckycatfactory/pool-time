@@ -10,6 +10,13 @@ import MonthContext from '../MonthContext';
 import SecondContext from '../SecondContext';
 import YearContext from '../YearContext';
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../../constants';
+import { getDateNow } from '../../utilities';
+
+jest.mock('../../utilities', () => ({
+  getDateNow: jest.fn(() => Date.now()),
+}));
+
+jest.useFakeTimers();
 
 describe('<TimeProviders />', () => {
   const Scale = ({ children }) => children;
@@ -39,6 +46,7 @@ describe('<TimeProviders />', () => {
 
     return rendererObj[fullComponentName];
   };
+  const GlobalMinimumAccuracyRenderer = ({ children }) => children;
   const DayRenderer = generateTimeRenderer('Day');
   const HourRenderer = generateTimeRenderer('Hour');
   const MinuteRenderer = generateTimeRenderer('Minute');
@@ -55,6 +63,7 @@ describe('<TimeProviders />', () => {
   ];
   const generateProviderTester = () => {
     const ProviderTester = () => {
+      const globalMinimumAccuracy = useContext(GlobalMinimumAccuracyContext);
       const dayContext = useContext(DayContext);
       const hourContext = useContext(HourContext);
       const minuteContext = useContext(MinuteContext);
@@ -64,6 +73,7 @@ describe('<TimeProviders />', () => {
 
       return (
         <>
+          <GlobalMinimumAccuracyRenderer>{globalMinimumAccuracy}</GlobalMinimumAccuracyRenderer>
           <DayRenderer {...dayContext} />
           <HourRenderer {...hourContext} />
           <MinuteRenderer {...minuteContext} />
@@ -82,22 +92,50 @@ describe('<TimeProviders />', () => {
     expect(wrapper.text()).toBe('Children');
   });
 
-  it('passes the correct scale and time to each time renderer', () => {
-    expect(
-      allTimeRenderersWithScales.every(([renderer, expectedScale]) => {
+  describe('global minimum accuracy', () => {
+    it('passes the correct default value', () => {
+      const ProviderTester = generateProviderTester();
+      const wrapper = mount(
+        <TimeProviders>
+          <ProviderTester />
+        </TimeProviders>
+      );
+
+      expect(wrapper.find(GlobalMinimumAccuracyRenderer).props()).toEqual({ children: ONE_MINUTE });
+    });
+
+    it('passes the correct set values', () => {
+      allTimeRenderersWithScales.forEach(([_, duration]) => {
         const ProviderTester = generateProviderTester();
         const wrapper = mount(
-          <TimeProviders>
+          <TimeProviders globalMinimumAccuracy={duration}>
             <ProviderTester />
           </TimeProviders>
         );
-        const timeRenderer = wrapper.find(renderer);
-        expect(timeRenderer).toHaveLength(1);
-        const scale = timeRenderer.find(Scale).text();
-        const time = timeRenderer.find(Time).text();
-        expect(scale).toEqual(String(expectedScale));
-        return time;
-      })
-    ).toBe(true);
+
+        expect(wrapper.find(GlobalMinimumAccuracyRenderer).props()).toEqual({
+          children: duration,
+        });
+      });
+    });
+  });
+
+  it('passes the correct scale and time to each time renderer', () => {
+    const mockNow = Date.now();
+    getDateNow.mockImplementation(() => mockNow);
+    allTimeRenderersWithScales.forEach(([renderer, expectedScale]) => {
+      const ProviderTester = generateProviderTester();
+      const wrapper = mount(
+        <TimeProviders>
+          <ProviderTester />
+        </TimeProviders>
+      );
+      const timeRenderer = wrapper.find(renderer);
+      expect(timeRenderer).toHaveLength(1);
+      const scale = timeRenderer.find(Scale);
+      const time = timeRenderer.find(Time);
+      expect(scale.props()).toEqual({ children: expectedScale });
+      expect(time.props()).toEqual({ children: mockNow });
+    });
   });
 });

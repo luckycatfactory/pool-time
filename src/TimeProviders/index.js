@@ -10,6 +10,7 @@ import SecondContext from './SecondContext';
 import YearContext from './YearContext';
 import useInterval from '../useInterval';
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../constants';
+import { getDateNow } from '../utilities';
 
 const durationSet = new Set([ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR]);
 const validateGlobalMinimumAccuracy = globalMinimumAccuracy => {
@@ -61,7 +62,7 @@ const TimeProviders = React.memo(
   ({ children, globalMinimumAccuracy, onIntervalUpdate, onRegistrationsUpdate }) => {
     // For consistency, we prefer to always ensure that all "now" references are the same in a single
     // render.
-    const nowOnInitialRendering = useRef(Date.now());
+    const nowOnInitialRendering = useRef(getDateNow());
     const [currentTimes, setCurrentTimes] = useState(
       createInitialStateObject(nowOnInitialRendering.current)
     );
@@ -110,7 +111,7 @@ const TimeProviders = React.memo(
     );
 
     useInterval(() => {
-      const now = Date.now();
+      const now = getDateNow();
       setCurrentTimes(previousTimes => ({
         ...previousTimes,
         second: now,
