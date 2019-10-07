@@ -75,6 +75,7 @@ const TimeProviders = React.memo(
       monthConsumerRegistrations,
       secondConsumerRegistrations,
       yearConsumerRegistrations,
+      vaildatedGlobalMinimumAccuracy,
     ]);
 
     useEffect(() => {

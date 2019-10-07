@@ -236,14 +236,29 @@ const AddComment = React.memo(({ onSubmit }) => {
   );
 });
 
+const durationToLabel = {
+  [ONE_SECOND]: 'One Second',
+  [ONE_MINUTE]: 'One Minute',
+  [ONE_HOUR]: 'One Hour',
+  [ONE_DAY]: 'One Day',
+  [ONE_MONTH]: 'One Day',
+  [ONE_YEAR]: 'One Year',
+};
+
 export const uncontrolledExamples = () => {
   const generateId = useIdGenerator();
+  const [globalMinimumAccuracy, setGlobalMinimumAccuracy] = useState(ONE_MINUTE);
   const [comments, setComments] = useState([
     { id: generateId(), targetTime: Date.now() - ONE_HOUR, text: 'Very nice, very nice.' },
     { id: generateId(), targetTime: Date.now() - ONE_MINUTE, text: 'Wow, so performant!' },
     { id: generateId(), targetTime: Date.now() - 50 * ONE_SECOND, text: 'This is so cool!' },
   ]);
   const [currentIntervalDuration, setCurrentIntervalDuration] = useState(null);
+
+  const handleGlobalMinimumAccuracySelect = useCallback(selectedItem => {
+    setGlobalMinimumAccuracy(selectedItem);
+  }, []);
+
   const handleIntervalUpdate = useCallback(interval => {
     setCurrentIntervalDuration(interval);
   }, []);
@@ -266,14 +281,35 @@ export const uncontrolledExamples = () => {
   }, []);
 
   return (
-    <ThemeProvider>
-      <TimeProviders
-        onIntervalUpdate={handleIntervalUpdate}
-        onRegistrationsUpdate={handleRegistrationsUpdate}
-      >
+    <TimeProviders
+      globalMinimumAccuracy={globalMinimumAccuracy}
+      onIntervalUpdate={handleIntervalUpdate}
+      onRegistrationsUpdate={handleRegistrationsUpdate}
+    >
+      <ThemeProvider>
         <Layout>
           <Information>
             <h1>Relative Time</h1>
+            <Field>
+              <Dropdown
+                onSelect={handleGlobalMinimumAccuracySelect}
+                selectedItem={globalMinimumAccuracy}
+              >
+                <DropdownField>
+                  <Label>Global Minimum Accuracy</Label>
+                  <Select>{durationToLabel[globalMinimumAccuracy]}</Select>
+                </DropdownField>
+                <Menu>
+                  {[ONE_SECOND, ONE_MINUTE, ONE_HOUR, ONE_DAY, ONE_MONTH, ONE_YEAR].map(
+                    duration => (
+                      <Item key={duration} value={duration}>
+                        {durationToLabel[duration]}
+                      </Item>
+                    )
+                  )}
+                </Menu>
+              </Dropdown>
+            </Field>
             {currentIntervalDuration && (
               <p>The global interval is currently set to {currentIntervalDuration} milliseconds.</p>
             )}
@@ -308,8 +344,8 @@ export const uncontrolledExamples = () => {
           </Comments>
           <AddComment onSubmit={handleAddCommentSubmit} />
         </Layout>
-      </TimeProviders>
-    </ThemeProvider>
+      </ThemeProvider>
+    </TimeProviders>
   );
 };
 
