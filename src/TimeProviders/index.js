@@ -92,7 +92,7 @@ const TimeProviders = React.memo(
 
     useEffect(() => {
       onIntervalUpdate(intervalToUse);
-    }, [intervalToUse]);
+    }, [intervalToUse, onIntervalUpdate]);
 
     useEffect(() => {
       onRegistrationsUpdate({
@@ -108,51 +108,36 @@ const TimeProviders = React.memo(
       hourConsumerRegistrations,
       minuteConsumerRegistrations,
       monthConsumerRegistrations,
+      onRegistrationsUpdate,
       secondConsumerRegistrations,
       yearConsumerRegistrations,
     ]);
+
+    const scaleSequence = [
+      [ONE_MINUTE, currentTimeToTheMinute, setCurrentTimeToTheMinute],
+      [ONE_HOUR, currentTimeToTheHour, setCurrentTimeToTheHour],
+      [ONE_DAY, currentTimeToTheDay, setCurrentTimeToTheDay],
+      [ONE_MONTH, currentTimeToTheMonth, setCurrentTimeToTheMonth],
+      [ONE_YEAR, currentTimeToTheYear, setCurrentTimeToTheYear],
+    ];
 
     useInterval(() => {
       const now = Date.now();
       setCurrentTimeToTheSecond(now);
 
-      const previousMinute = Math.floor(currentTimeToTheMinute / ONE_MINUTE);
-      const thisMinute = Math.floor(now / ONE_MINUTE);
-      const isNewMinute = previousMinute !== thisMinute;
+      let scaleIndex = 0;
+      let keepGoing = true;
 
-      if (isNewMinute) {
-        setCurrentTimeToTheMinute(now);
+      while (keepGoing) {
+        const [currentScale, currentGetter, currentSetter] = scaleSequence[scaleIndex];
+        const previousValueAtScale = Math.floor(currentGetter / currentScale);
+        const thisValueAtScale = Math.floor(now / currentScale);
 
-        const previousHour = Math.floor(previousMinute / 60);
-        const thisHour = Math.floor(thisMinute / 60);
-        const isNewHour = previousHour !== thisHour;
-
-        if (isNewHour) {
-          setCurrentTimeToTheHour(now);
-
-          const previousDay = Math.floor(previousHour / 24);
-          const thisDay = Math.floor(thisHour / 24);
-          const isNewDay = previousDay !== thisDay;
-
-          if (isNewDay) {
-            setCurrentTimeToTheDay(now);
-
-            const previousMonth = Math.floor(previousDay / 30);
-            const thisMonth = Math.floor(thisDay / 30);
-            const isNewMonth = previousMonth !== thisMonth;
-
-            if (isNewMonth) {
-              setCurrentTimeToTheMonth(now);
-
-              const previousYear = Math.floor(previousDay / 365);
-              const thisYear = Math.floor(thisDay / 365);
-              const isNewYear = previousYear !== thisYear;
-
-              if (isNewYear) {
-                setCurrentTimeToTheYear(now);
-              }
-            }
-          }
+        if (previousValueAtScale !== thisValueAtScale) {
+          currentSetter(now);
+          scaleIndex = scaleIndex + 1;
+        } else {
+          keepGoing = false;
         }
       }
     }, intervalToUse);
