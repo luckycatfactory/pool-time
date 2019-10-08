@@ -15,7 +15,7 @@ import { getDateNow } from '../utilities';
 const durationSet = new Set([ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR]);
 const validateGlobalMinimumAccuracy = globalMinimumAccuracy => {
   if (!durationSet.has(globalMinimumAccuracy)) {
-    throw new Error('globalMinimumAccuracy must be a valid duration.');
+    throw new Error('globalMinimumAccuracy must be a valid duration');
   }
   return globalMinimumAccuracy;
 };
@@ -131,6 +131,10 @@ const TimeProviders = React.memo(
             [currentKey]: now,
           }));
           scaleIndex = scaleIndex + 1;
+
+          if (scaleIndex >= scaleSequence.length) {
+            keepGoing = false;
+          }
         } else {
           keepGoing = false;
         }
