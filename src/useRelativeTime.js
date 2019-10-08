@@ -6,8 +6,8 @@ import MinuteContext from './TimeProviders/MinuteContext';
 import MonthContext from './TimeProviders/MonthContext';
 import SecondContext from './TimeProviders/SecondContext';
 import YearContext from './TimeProviders/YearContext';
-
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from './constants';
+import { getDateNow } from './utilities';
 
 const generateRelativeTimeObject = (scale, time, timeDifference, timeWithFormat) => ({
   scale,
@@ -74,7 +74,7 @@ const getOptimalTimeContext = (difference, globalMinimumAccuracy, strictnessOpti
 
 const useRelativeTime = (targetTime, options = {}) => {
   const {
-    scrictnessOptions = {
+    strictnessOptions = {
       days: DayContext,
       hours: HourContext,
       minutes: MinuteContext,
@@ -89,14 +89,16 @@ const useRelativeTime = (targetTime, options = {}) => {
   const previousUnregisterConsumer = useRef(null);
   const globalMinimumAccuracy = useContext(GlobalMinimumAccuracyContext);
 
-  const difference = Date.now() - targetTime;
+  const difference = getDateNow() - targetTime;
   const nextTimeContext = getOptimalTimeContext(
     difference,
     globalMinimumAccuracy,
-    scrictnessOptions
+    strictnessOptions
   );
 
-  if (TimeContext.current !== nextTimeContext && previousUnregisterConsumer.current) {
+  const hasContextUpdated = TimeContext.current !== nextTimeContext;
+
+  if (hasContextUpdated && previousUnregisterConsumer.current) {
     previousUnregisterConsumer.current();
     hasRegisteredConsumer.current = false;
   }
@@ -119,12 +121,16 @@ const useRelativeTime = (targetTime, options = {}) => {
     []
   );
 
-  const rawDifference = time - targetTime;
-  const timeDifference =
-    rawDifference >= 0 ? Math.max(rawDifference, scale) : Math.min(rawDifference, scale);
-  const timeWithFormat = timeFormatter(time);
+  const rawDifference = hasContextUpdated ? difference : time - targetTime;
+  const timeDifference = hasContextUpdated
+    ? rawDifference >= 0
+      ? Math.max(rawDifference, scale)
+      : Math.min(rawDifference, scale)
+    : rawDifference;
+  const preferredTime = hasContextUpdated ? getDateNow() : time;
+  const timeWithFormat = timeFormatter(preferredTime);
 
-  return generateRelativeTimeObject(scale, time, timeDifference, timeWithFormat);
+  return generateRelativeTimeObject(scale, preferredTime, timeDifference, timeWithFormat);
 };
 
 export default useRelativeTime;
