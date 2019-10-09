@@ -38,33 +38,44 @@ const getContextWithinGlobalMinimumAccuracy = (targetContext, globalMinimumAccur
   return durationsToContexts[ultimateDuration];
 };
 
+const isAbsolutelyLessThanDuration = (
+  difference,
+  absoluteDifference,
+  upperBound = Number.POSITIVE_INFINITY,
+  lowerBound = Number.NEGATIVE_INFINITY
+) =>
+  (difference >= 0 && difference >= lowerBound && difference < upperBound) ||
+  (difference <= 0 && absoluteDifference > lowerBound && absoluteDifference <= upperBound);
+
 const getOptimalTimeContext = (difference, globalMinimumAccuracy, strictnessOptions) => {
-  if (difference < ONE_MINUTE) {
+  const absoluteDifference = Math.abs(difference);
+
+  if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_MINUTE)) {
     return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.seconds || SecondContext,
       globalMinimumAccuracy
     );
-  } else if (difference >= ONE_MINUTE && difference < ONE_HOUR) {
+  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_HOUR, ONE_MINUTE)) {
     return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.minutes || MinuteContext,
       globalMinimumAccuracy
     );
-  } else if (difference >= ONE_HOUR && difference < ONE_DAY) {
+  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_DAY, ONE_HOUR)) {
     return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.hours || HourContext,
       globalMinimumAccuracy
     );
-  } else if (difference >= ONE_DAY && difference < ONE_MONTH) {
+  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_MONTH, ONE_DAY)) {
     return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.days || DayContext,
       globalMinimumAccuracy
     );
-  } else if (difference >= ONE_MONTH && difference < ONE_YEAR) {
+  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_YEAR, ONE_MONTH)) {
     return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.months || MonthContext,
       globalMinimumAccuracy
     );
-  } else if (difference >= ONE_YEAR) {
+  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, undefined, ONE_YEAR)) {
     return getContextWithinGlobalMinimumAccuracy(
       strictnessOptions.years || YearContext,
       globalMinimumAccuracy
