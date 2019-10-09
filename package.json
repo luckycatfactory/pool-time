@@ -40,7 +40,7 @@
     "build": "NODE_ENV=production rollup -c && gzip -c ./dist/bundle.min.js > ./dist/bundle.min.js.gz",
     "storybook": "start-storybook",
     "test": "jest --watch",
-    "test:coverage": "jest --coverage --silent",
+    "test:coverage": "jest --coverage --silent && open coverage/lcov-report/index.html",
     "validate-bundle-size": "./scripts/validate-bundle-size.sh"
   },
   "dependencies": {

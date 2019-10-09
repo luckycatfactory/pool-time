@@ -36,6 +36,87 @@ describe('useRelativeTime()', () => {
     return TestComponent;
   };
 
+  describe('registrations', () => {
+    const generateExpectedRegistrationObject = (overrides = {}) => ({
+      day: 0,
+      hour: 0,
+      minute: 0,
+      month: 0,
+      second: 0,
+      year: 0,
+      ...overrides,
+    });
+    const generateUnmountableTestComponent = (TestComponent, handleRegistrationsUpdate) => {
+      // eslint-disable-next-line react/prop-types
+      const UnmountableTestComponent = ({ hasTestComponent }) => (
+        <TimeProviders
+          onRegistrationsUpdate={handleRegistrationsUpdate}
+          globalMinimumAccuracy={ONE_YEAR}
+        >
+          {hasTestComponent && <TestComponent />}
+        </TimeProviders>
+      );
+
+      return UnmountableTestComponent;
+    };
+
+    describe.each([
+      ['second', ONE_SECOND],
+      ['minute', ONE_MINUTE],
+      ['hour', ONE_HOUR],
+      ['day', ONE_DAY],
+      ['month', ONE_MONTH],
+      ['year', ONE_YEAR],
+    ])('when updating the registration for %s', (key, duration) => {
+      it('calls onRegistrationsUpdate with the correct registration state when mounting', () => {
+        const now = Date.now() - duration;
+        const TestComponent = generateTestComponent(now);
+        const handleRegistrationsUpdate = jest.fn();
+        const UnmountableTestComponent = generateUnmountableTestComponent(
+          TestComponent,
+          handleRegistrationsUpdate
+        );
+
+        mount(<UnmountableTestComponent hasTestComponent />);
+        expect(handleRegistrationsUpdate).toHaveBeenCalledTimes(2);
+        expect(handleRegistrationsUpdate).toHaveBeenNthCalledWith(
+          1,
+          generateExpectedRegistrationObject()
+        );
+        expect(handleRegistrationsUpdate).toHaveBeenNthCalledWith(
+          2,
+          generateExpectedRegistrationObject({
+            [key]: 1,
+          })
+        );
+      });
+
+      it(`calls onRegistrationsUpdate with the correct registration state when unmounting`, () => {
+        const now = Date.now() - duration;
+        const TestComponent = generateTestComponent(now);
+        const handleRegistrationsUpdate = jest.fn();
+        const UnmountableTestComponent = generateUnmountableTestComponent(
+          TestComponent,
+          handleRegistrationsUpdate
+        );
+
+        const wrapper = mount(<UnmountableTestComponent hasTestComponent />);
+        const testComponent = wrapper.find(TestComponent);
+        expect(testComponent).toHaveLength(1);
+
+        handleRegistrationsUpdate.mockClear();
+
+        wrapper.setProps({ hasTestComponent: false });
+
+        expect(wrapper.find(TestComponent)).toHaveLength(0);
+
+        expect(handleRegistrationsUpdate).toHaveBeenLastCalledWith(
+          generateExpectedRegistrationObject()
+        );
+      });
+    });
+  });
+
   describe('time updates', () => {
     afterEach(() => {
       jest.clearAllTimers();
@@ -80,7 +161,13 @@ describe('useRelativeTime()', () => {
       }
     );
 
-    it.each([['one second to one minute', ONE_SECOND, ONE_MINUTE]])(
+    it.each([
+      ['one second to one minute', ONE_SECOND, ONE_MINUTE],
+      ['one minute to one hour', ONE_MINUTE, ONE_HOUR],
+      ['one hour to one day', ONE_HOUR, ONE_DAY],
+      ['one day to one month', ONE_DAY, ONE_MONTH],
+      ['one month to one year', ONE_MONTH, ONE_YEAR],
+    ])(
       `renders with the correct values after the transition to a new context when moving from %s`,
       (_, initialDuration, finalDuration) => {
         let now = Date.now();
