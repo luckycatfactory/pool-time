@@ -9,7 +9,7 @@ import MonthContext from './MonthContext';
 import SecondContext from './SecondContext';
 import YearContext from './YearContext';
 import useInterval from '../useInterval';
-import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../constants';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../durations';
 import { getDateNow } from '../utilities';
 
 const durationSet = new Set([ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR]);

@@ -2,7 +2,7 @@ import React from 'react';
 import { mount } from 'enzyme';
 
 import { generateTimeContextConsumptionHook, generateTimeContextDefaultObject } from '../utilities';
-import * as DURATIONS from '../../constants';
+import * as DURATIONS from '../../durations';
 
 describe('utilities', () => {
   describe('generateTimeContextConsumptionHook()', () => {

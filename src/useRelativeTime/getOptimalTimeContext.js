@@ -4,7 +4,7 @@ import MinuteContext from '../TimeProviders/MinuteContext';
 import MonthContext from '../TimeProviders/MonthContext';
 import SecondContext from '../TimeProviders/SecondContext';
 import YearContext from '../TimeProviders/YearContext';
-import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../constants';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../durations';
 
 const durationsToContexts = {
   [ONE_DAY]: DayContext,

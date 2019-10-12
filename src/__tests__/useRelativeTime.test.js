@@ -6,7 +6,7 @@ import { act } from 'react-dom/test-utils';
 import useRelativeTime from '../useRelativeTime';
 import TimeProviders from '../TimeProviders';
 import { getDateNow } from '../utilities';
-import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../constants';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../durations';
 
 jest.mock('../utilities', () => ({
   getDateNow: jest.fn(() => Date.now()),

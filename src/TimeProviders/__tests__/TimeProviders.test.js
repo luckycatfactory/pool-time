@@ -10,7 +10,7 @@ import MinuteContext from '../MinuteContext';
 import MonthContext from '../MonthContext';
 import SecondContext from '../SecondContext';
 import YearContext from '../YearContext';
-import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../../constants';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../../durations';
 import { getDateNow } from '../../utilities';
 
 jest.mock('../../utilities', () => ({

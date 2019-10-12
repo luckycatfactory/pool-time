@@ -1,4 +1,4 @@
-import * as DURATIONS from '../constants';
+import * as DURATIONS from '../durations';
 
 describe('durations', () => {
   it('exports exactly the correct durations', () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ONE_HOUR } from '../constants';
+import { ONE_HOUR } from '../durations';
 import { generateTimeContextDefaultObject } from './utilities';
 
 const defaultValue = generateTimeContextDefaultObject(ONE_HOUR);

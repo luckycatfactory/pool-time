@@ -1,5 +1,5 @@
 import React from 'react';
-import { ONE_MINUTE } from '../constants';
+import { ONE_MINUTE } from '../durations';
 
 const defaultValue = ONE_MINUTE;
 
