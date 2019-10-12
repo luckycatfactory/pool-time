@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 
@@ -16,6 +17,15 @@ jest.useFakeTimers();
 // What follows is essentially integration tests between useRelativeTime and TimeProviders and all
 // dependencies.
 describe('useRelativeTime()', () => {
+  const allDurationsInAscendingOrderWithStrings = [
+    ['one second', ONE_SECOND],
+    ['one minute', ONE_MINUTE],
+    ['one hour', ONE_HOUR],
+    ['one day', ONE_DAY],
+    ['one month', ONE_MONTH],
+    ['one year', ONE_YEAR],
+  ];
+
   const Scale = ({ children }) => children;
   const Time = ({ children }) => children;
   const TimeDifference = ({ children }) => children;
@@ -294,57 +304,145 @@ describe('useRelativeTime()', () => {
       );
     });
 
-    describe('globalMinimumAccuracy', () => {
-      const allDurationsInAscendingOrderWithStrings = [
-        ['one second', ONE_SECOND],
-        ['one minute', ONE_MINUTE],
-        ['one hour', ONE_HOUR],
-        ['one day', ONE_DAY],
-        ['one month', ONE_MONTH],
-        ['one year', ONE_YEAR],
-      ];
+    describe('when new time renderers are initialized', () => {
+      const generateNewRendererTester = (TestComponent, NewComponentToRender) => {
+        const NewRendererTester = ({ renderNewTimeRenderer }) => (
+          <TimeProviders globalMinimumAccuracy={ONE_YEAR}>
+            <TestComponent />
+            {renderNewTimeRenderer && <NewComponentToRender />}
+          </TimeProviders>
+        );
 
-      describe.each(allDurationsInAscendingOrderWithStrings)(
-        `when the global minimum accuracy is set to %s`,
-        (_, globalMinimumAccuracy) => {
-          const durationsEqualToOrGreaterThanTarget = allDurationsInAscendingOrderWithStrings.filter(
-            testCase => globalMinimumAccuracy <= testCase[1]
-          );
+        NewRendererTester.propTypes = {
+          renderNewTimeRenderer: PropTypes.bool,
+        };
 
-          it.each(durationsEqualToOrGreaterThanTarget)(
-            `updates at the rate of the global minimum accuracy when set to %s`,
-            (_, currentAccuracy) => {
-              const now = Date.now();
-              getDateNow.mockImplementation(() => now);
-              const TestComponent = generateTestComponent(now);
-              const wrapper = mount(
-                <TimeProviders globalMinimumAccuracy={globalMinimumAccuracy}>
-                  <TestComponent />
-                </TimeProviders>
-              );
+        NewRendererTester.defaultProps = {
+          renderNewTimeRenderer: false,
+        };
 
-              expect(wrapper.find(Scale).props()).toEqual({ children: ONE_SECOND });
-              expect(wrapper.find(Time).props()).toEqual({ children: now });
-              expect(wrapper.find(TimeDifference).props()).toEqual({ children: 0 });
-              expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
+        return NewRendererTester;
+      };
 
-              const nextNow = now + currentAccuracy;
-              getDateNow.mockImplementation(() => nextNow);
+      it.each(allDurationsInAscendingOrderWithStrings)(
+        `renders with the correct initial time when a new %s renderer comes to exist`,
+        (_, duration) => {
+          const now = Date.now();
+          getDateNow.mockImplementation(() => now);
+          const TestComponent = generateTestComponent(now);
+          const nextNow = now + duration;
+          const NewComponentToRender = generateTestComponent(nextNow);
+          const NewRendererTester = generateNewRendererTester(TestComponent, NewComponentToRender);
+          const wrapper = mount(<NewRendererTester />);
+          expect(wrapper.find(TestComponent)).toHaveLength(1);
+          expect(wrapper.find(NewComponentToRender)).toHaveLength(0);
 
-              act(() => {
-                jest.runOnlyPendingTimers();
-              });
-              wrapper.update();
-              expect(wrapper.find(Scale).props()).toEqual({ children: globalMinimumAccuracy });
-              expect(wrapper.find(Time).props()).toEqual({ children: nextNow });
-              expect(wrapper.find(TimeDifference).props()).toEqual({
-                children: currentAccuracy,
-              });
-              expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: nextNow });
+          getDateNow.mockImplementation(() => nextNow);
+
+          act(() => {
+            jest.runOnlyPendingTimers();
+          });
+          wrapper.update();
+
+          wrapper.setProps({ renderNewTimeRenderer: true });
+
+          const testComponent = wrapper.find(TestComponent);
+          expect(testComponent).toHaveLength(1);
+          const newComponentToRender = wrapper.find(NewComponentToRender);
+          expect(newComponentToRender).toHaveLength(1);
+
+          expect(newComponentToRender.find(Scale).props()).toEqual({ children: ONE_SECOND });
+          expect(newComponentToRender.find(Time).props()).toEqual({ children: nextNow });
+          expect(newComponentToRender.find(TimeDifference).props()).toEqual({ children: 0 });
+          expect(newComponentToRender.find(TimeWithFormat).props()).toEqual({ children: nextNow });
+        }
+      );
+
+      it.each(allDurationsInAscendingOrderWithStrings)(
+        `renders with the correct initial time when a new %s renderer comes to exist at a faster rate than the current time context`,
+        (_, duration) => {
+          const targetNow = Date.now();
+          getDateNow.mockImplementation(() => targetNow);
+          const TestComponent = generateTestComponent(targetNow);
+          // For these tests, let's add a bit of noise so it's not exactly lined up.
+          const offset = duration + ONE_SECOND;
+          const now = targetNow + offset;
+          const NewComponentToRender = generateTestComponent(now);
+          const NewRendererTester = generateNewRendererTester(TestComponent, NewComponentToRender);
+          const wrapper = mount(<NewRendererTester />);
+          expect(wrapper.find(TestComponent)).toHaveLength(1);
+          expect(wrapper.find(NewComponentToRender)).toHaveLength(0);
+
+          getDateNow.mockImplementation(() => now);
+
+          act(() => {
+            if (duration >= ONE_MONTH) {
+              jest.runOnlyPendingTimers();
+              jest.advanceTimersByTime(ONE_SECOND);
+            } else {
+              jest.advanceTimersByTime(offset);
             }
-          );
+          });
+          wrapper.update();
+
+          wrapper.setProps({ renderNewTimeRenderer: true });
+          wrapper.update();
+
+          const testComponent = wrapper.find(TestComponent);
+          expect(testComponent).toHaveLength(1);
+          const newComponentToRender = wrapper.find(NewComponentToRender);
+          expect(newComponentToRender).toHaveLength(1);
+
+          expect(newComponentToRender.find(Scale).props()).toEqual({ children: ONE_SECOND });
+          expect(newComponentToRender.find(Time).props()).toEqual({ children: now });
+          expect(newComponentToRender.find(TimeDifference).props()).toEqual({ children: 0 });
+          expect(newComponentToRender.find(TimeWithFormat).props()).toEqual({ children: now });
         }
       );
     });
+  });
+
+  describe('globalMinimumAccuracy', () => {
+    describe.each(allDurationsInAscendingOrderWithStrings)(
+      `when the global minimum accuracy is set to %s`,
+      (_, globalMinimumAccuracy) => {
+        const durationsEqualToOrGreaterThanTarget = allDurationsInAscendingOrderWithStrings.filter(
+          testCase => globalMinimumAccuracy <= testCase[1]
+        );
+
+        it.each(durationsEqualToOrGreaterThanTarget)(
+          `updates at the rate of the global minimum accuracy when set to %s`,
+          (_, currentAccuracy) => {
+            const now = Date.now();
+            getDateNow.mockImplementation(() => now);
+            const TestComponent = generateTestComponent(now);
+            const wrapper = mount(
+              <TimeProviders globalMinimumAccuracy={globalMinimumAccuracy}>
+                <TestComponent />
+              </TimeProviders>
+            );
+
+            expect(wrapper.find(Scale).props()).toEqual({ children: ONE_SECOND });
+            expect(wrapper.find(Time).props()).toEqual({ children: now });
+            expect(wrapper.find(TimeDifference).props()).toEqual({ children: 0 });
+            expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
+
+            const nextNow = now + currentAccuracy;
+            getDateNow.mockImplementation(() => nextNow);
+
+            act(() => {
+              jest.runOnlyPendingTimers();
+            });
+            wrapper.update();
+            expect(wrapper.find(Scale).props()).toEqual({ children: globalMinimumAccuracy });
+            expect(wrapper.find(Time).props()).toEqual({ children: nextNow });
+            expect(wrapper.find(TimeDifference).props()).toEqual({
+              children: currentAccuracy,
+            });
+            expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: nextNow });
+          }
+        );
+      }
+    );
   });
 });

@@ -98,11 +98,12 @@ const useRelativeTime = (targetTime, options = {}) => {
   const TimeContext = useRef(SecondContext);
   const hasRegisteredConsumer = useRef(false);
   const previousUnregisterConsumer = useRef(null);
+  const isInitialRender = useRef(true);
   const globalMinimumAccuracy = useContext(GlobalMinimumAccuracyContext);
 
-  const difference = getDateNow() - targetTime;
+  const rawDifference = getDateNow() - targetTime;
   const nextTimeContext = getOptimalTimeContext(
-    difference,
+    rawDifference,
     globalMinimumAccuracy,
     strictnessOptions
   );
@@ -132,16 +133,24 @@ const useRelativeTime = (targetTime, options = {}) => {
     []
   );
 
-  const rawDifference = hasContextUpdated ? difference : time - targetTime;
-  const timeDifference = hasContextUpdated
-    ? rawDifference >= 0
-      ? Math.max(rawDifference, scale)
-      : Math.min(rawDifference, scale)
-    : rawDifference;
+  const differenceAccountingForContextChange = hasContextUpdated
+    ? rawDifference
+    : time - targetTime;
+  const timeDifferenceToUse = hasContextUpdated
+    ? differenceAccountingForContextChange >= 0
+      ? Math.max(differenceAccountingForContextChange, scale)
+      : Math.min(differenceAccountingForContextChange, scale)
+    : isInitialRender.current
+    ? rawDifference
+    : differenceAccountingForContextChange;
   const preferredTime = hasContextUpdated ? getDateNow() : time;
   const timeWithFormat = timeFormatter(preferredTime);
 
-  return generateRelativeTimeObject(scale, preferredTime, timeDifference, timeWithFormat);
+  if (isInitialRender.current) {
+    isInitialRender.current = false;
+  }
+
+  return generateRelativeTimeObject(scale, preferredTime, timeDifferenceToUse, timeWithFormat);
 };
 
 export default useRelativeTime;
