@@ -295,42 +295,54 @@ describe('useRelativeTime()', () => {
     });
 
     describe('globalMinimumAccuracy', () => {
-      xit.each([
-        ['one second', ONE_SECOND, 60],
-        ['one minute', ONE_MINUTE, 60],
-        ['one hour', ONE_HOUR, 24],
-        ['one day', ONE_DAY, 30],
-        ['one month', ONE_MONTH, 12],
-        ['one year', ONE_YEAR, 1],
-      ])(
-        `renders with the correct initial values up until the turn of context for %s`,
-        (_, duration, numberInNextDuration) => {
-          let now = Date.now();
-          getDateNow.mockImplementation(() => now);
-          const TestComponent = generateTestComponent(now);
-          const wrapper = mount(
-            <TimeProviders globalMinimumAccuracy={ONE_YEAR}>
-              <TestComponent />
-            </TimeProviders>
+      const allDurationsInAscendingOrderWithStrings = [
+        ['one second', ONE_SECOND],
+        ['one minute', ONE_MINUTE],
+        ['one hour', ONE_HOUR],
+        ['one day', ONE_DAY],
+        ['one month', ONE_MONTH],
+        ['one year', ONE_YEAR],
+      ];
+
+      describe.each(allDurationsInAscendingOrderWithStrings)(
+        `when the global minimum accuracy is set to %s`,
+        (_, globalMinimumAccuracy) => {
+          const durationsEqualToOrGreaterThanTarget = allDurationsInAscendingOrderWithStrings.filter(
+            testCase => globalMinimumAccuracy <= testCase[1]
           );
 
-          expect(wrapper.find(Scale).props()).toEqual({ children: ONE_SECOND });
-          expect(wrapper.find(Time).props()).toEqual({ children: now });
-          expect(wrapper.find(TimeDifference).props()).toEqual({ children: 0 });
-          expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
+          it.each(durationsEqualToOrGreaterThanTarget)(
+            `updates at the rate of the global minimum accuracy when set to %s`,
+            (_, currentAccuracy) => {
+              const now = Date.now();
+              getDateNow.mockImplementation(() => now);
+              const TestComponent = generateTestComponent(now);
+              const wrapper = mount(
+                <TimeProviders globalMinimumAccuracy={globalMinimumAccuracy}>
+                  <TestComponent />
+                </TimeProviders>
+              );
 
-          for (let i = 1; i < numberInNextDuration; i++) {
-            now = now + duration;
-            getDateNow.mockImplementation(() => now);
-            act(() => {
-              jest.runOnlyPendingTimers();
-            });
-            wrapper.update();
-            expect(wrapper.find(Scale).props()).toEqual({ children: duration });
-            expect(wrapper.find(Time).props()).toEqual({ children: now });
-            expect(wrapper.find(TimeDifference).props()).toEqual({ children: duration * i });
-            expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
-          }
+              expect(wrapper.find(Scale).props()).toEqual({ children: ONE_SECOND });
+              expect(wrapper.find(Time).props()).toEqual({ children: now });
+              expect(wrapper.find(TimeDifference).props()).toEqual({ children: 0 });
+              expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
+
+              const nextNow = now + currentAccuracy;
+              getDateNow.mockImplementation(() => nextNow);
+
+              act(() => {
+                jest.runOnlyPendingTimers();
+              });
+              wrapper.update();
+              expect(wrapper.find(Scale).props()).toEqual({ children: globalMinimumAccuracy });
+              expect(wrapper.find(Time).props()).toEqual({ children: nextNow });
+              expect(wrapper.find(TimeDifference).props()).toEqual({
+                children: currentAccuracy,
+              });
+              expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: nextNow });
+            }
+          );
         }
       );
     });
