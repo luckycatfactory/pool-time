@@ -1,13 +1,27 @@
-export const ONE_SECOND = 1000;
+import DayContext from './TimeProviders/DayContext';
+import HourContext from './TimeProviders/HourContext';
+import MinuteContext from './TimeProviders/MinuteContext';
+import MonthContext from './TimeProviders/MonthContext';
+import SecondContext from './TimeProviders/SecondContext';
+import YearContext from './TimeProviders/YearContext';
 
-export const ONE_MINUTE = 60 * ONE_SECOND;
+const generateDurationObject = (context, key, value) => ({
+  context,
+  key,
+  value,
+});
 
-export const ONE_HOUR = 60 * ONE_MINUTE;
+export const ONE_SECOND = generateDurationObject(SecondContext, 'oneSecond', 1000);
 
-export const ONE_DAY = 24 * ONE_HOUR;
+export const ONE_MINUTE = generateDurationObject(MinuteContext, 'oneMinute', 60 * ONE_SECOND.value);
 
-export const ONE_WEEK = 7 * ONE_DAY;
+export const ONE_HOUR = generateDurationObject(HourContext, 'oneHour', 60 * ONE_MINUTE.value);
 
-export const ONE_MONTH = 30 * ONE_DAY;
+export const ONE_DAY = generateDurationObject(DayContext, 'oneDay', 24 * ONE_HOUR.value);
 
-export const ONE_YEAR = 365 * ONE_DAY;
+// Currently unusued, and there's no context yet. Add back later.
+// export const ONE_WEEK = generateDurationObject(WeekContext, 'oneWeek', 7 * ONE_DAY.value);
+
+export const ONE_MONTH = generateDurationObject(MonthContext, 'oneMonth', 30 * ONE_DAY.value);
+
+export const ONE_YEAR = generateDurationObject(YearContext, 'oneYear', 365 * ONE_DAY.value);

@@ -1,31 +1,12 @@
-import DayContext from '../TimeProviders/DayContext';
-import HourContext from '../TimeProviders/HourContext';
-import MinuteContext from '../TimeProviders/MinuteContext';
-import MonthContext from '../TimeProviders/MonthContext';
-import SecondContext from '../TimeProviders/SecondContext';
-import YearContext from '../TimeProviders/YearContext';
-import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../durations';
+import { ONE_SECOND, ONE_MINUTE, ONE_HOUR, ONE_DAY, ONE_MONTH, ONE_YEAR } from '../durations';
 
-const durationsToContexts = {
-  [ONE_DAY]: DayContext,
-  [ONE_HOUR]: HourContext,
-  [ONE_MINUTE]: MinuteContext,
-  [ONE_MONTH]: MonthContext,
-  [ONE_SECOND]: SecondContext,
-  [ONE_YEAR]: YearContext,
-};
+const getContextWithinGlobalMinimumAccuracy = (targetDuration, globalMinimumAccuracy) => {
+  if (!globalMinimumAccuracy || targetDuration === globalMinimumAccuracy)
+    return targetDuration.context;
 
-const getContextWithinGlobalMinimumAccuracy = (targetContext, globalMinimumAccuracy) => {
-  if (!globalMinimumAccuracy || targetContext === globalMinimumAccuracy) return targetContext;
-
-  const targetDuration = Object.keys(durationsToContexts).find(key => {
-    const context = durationsToContexts[key];
-    return context === targetContext;
-  });
-
-  const ultimateDuration = Math.min(targetDuration, globalMinimumAccuracy);
-
-  return durationsToContexts[ultimateDuration];
+  return globalMinimumAccuracy.value < targetDuration.value
+    ? globalMinimumAccuracy.context
+    : targetDuration.context;
 };
 
 const isAbsolutelyLessThanDuration = (
@@ -40,34 +21,44 @@ const isAbsolutelyLessThanDuration = (
 const getOptimalTimeContext = (difference, globalMinimumAccuracy, strictnessOptions) => {
   const absoluteDifference = Math.abs(difference);
 
-  if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_MINUTE)) {
+  if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_MINUTE.value)) {
     return getContextWithinGlobalMinimumAccuracy(
-      strictnessOptions.seconds || SecondContext,
+      strictnessOptions[ONE_SECOND.key] || ONE_SECOND,
       globalMinimumAccuracy
     );
-  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_HOUR, ONE_MINUTE)) {
+  } else if (
+    isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_HOUR.value, ONE_MINUTE.value)
+  ) {
     return getContextWithinGlobalMinimumAccuracy(
-      strictnessOptions.minutes || MinuteContext,
+      strictnessOptions[ONE_MINUTE.key] || ONE_MINUTE,
       globalMinimumAccuracy
     );
-  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_DAY, ONE_HOUR)) {
+  } else if (
+    isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_DAY.value, ONE_HOUR.value)
+  ) {
     return getContextWithinGlobalMinimumAccuracy(
-      strictnessOptions.hours || HourContext,
+      strictnessOptions[ONE_HOUR.key] || ONE_HOUR,
       globalMinimumAccuracy
     );
-  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_MONTH, ONE_DAY)) {
+  } else if (
+    isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_MONTH.value, ONE_DAY.value)
+  ) {
     return getContextWithinGlobalMinimumAccuracy(
-      strictnessOptions.days || DayContext,
+      strictnessOptions[ONE_DAY.key] || ONE_DAY,
       globalMinimumAccuracy
     );
-  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_YEAR, ONE_MONTH)) {
+  } else if (
+    isAbsolutelyLessThanDuration(difference, absoluteDifference, ONE_YEAR.value, ONE_MONTH.value)
+  ) {
     return getContextWithinGlobalMinimumAccuracy(
-      strictnessOptions.months || MonthContext,
+      strictnessOptions[ONE_MONTH.key] || ONE_MONTH,
       globalMinimumAccuracy
     );
-  } else if (isAbsolutelyLessThanDuration(difference, absoluteDifference, undefined, ONE_YEAR)) {
+  } else if (
+    isAbsolutelyLessThanDuration(difference, absoluteDifference, undefined, ONE_YEAR.value)
+  ) {
     return getContextWithinGlobalMinimumAccuracy(
-      strictnessOptions.years || YearContext,
+      strictnessOptions[ONE_YEAR.key] || ONE_YEAR,
       globalMinimumAccuracy
     );
   }

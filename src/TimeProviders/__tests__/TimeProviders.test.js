@@ -20,13 +20,13 @@ jest.mock('../../utilities', () => ({
 jest.useFakeTimers();
 
 describe('<TimeProviders />', () => {
-  const Scale = ({ children }) => children;
+  const Duration = ({ children }) => children;
   const Time = ({ children }) => children;
   const generateTimeRenderer = namePrefix => {
     const rendererObj = {};
     const fullComponentName = `${namePrefix}TimeRenderer`;
     // eslint-disable-next-line react/prop-types
-    const Renderer = ({ registerConsumer, scale, time, unregisterConsumer }) => {
+    const Renderer = ({ duration, registerConsumer, time, unregisterConsumer }) => {
       useEffect(() => {
         registerConsumer();
 
@@ -37,7 +37,7 @@ describe('<TimeProviders />', () => {
 
       return (
         <>
-          <Scale>{scale}</Scale>
+          <Duration>{duration}</Duration>
           <Time>{time}</Time>
         </>
       );
@@ -54,7 +54,7 @@ describe('<TimeProviders />', () => {
   const MonthRenderer = generateTimeRenderer('Month');
   const SecondRenderer = generateTimeRenderer('Second');
   const YearRenderer = generateTimeRenderer('Year');
-  const allTimeRenderersWithScales = [
+  const allTimeRenderersWithDurations = [
     [DayRenderer, ONE_DAY],
     [HourRenderer, ONE_HOUR],
     [MinuteRenderer, ONE_MINUTE],
@@ -74,7 +74,9 @@ describe('<TimeProviders />', () => {
 
       return (
         <>
-          <GlobalMinimumAccuracyRenderer>{globalMinimumAccuracy}</GlobalMinimumAccuracyRenderer>
+          <GlobalMinimumAccuracyRenderer>
+            {globalMinimumAccuracy.value}
+          </GlobalMinimumAccuracyRenderer>
           <DayRenderer {...dayContext} />
           <HourRenderer {...hourContext} />
           <MinuteRenderer {...minuteContext} />
@@ -86,6 +88,10 @@ describe('<TimeProviders />', () => {
     };
     return ProviderTester;
   };
+
+  afterEach(() => {
+    jest.clearAllTimers();
+  });
 
   it('renders its children', () => {
     const wrapper = mount(<TimeProviders>Children</TimeProviders>);
@@ -102,11 +108,13 @@ describe('<TimeProviders />', () => {
         </TimeProviders>
       );
 
-      expect(wrapper.find(GlobalMinimumAccuracyRenderer).props()).toEqual({ children: ONE_MINUTE });
+      expect(wrapper.find(GlobalMinimumAccuracyRenderer).props()).toEqual({
+        children: ONE_MINUTE.value,
+      });
     });
 
     it('passes the correct set values', () => {
-      allTimeRenderersWithScales.forEach(([_, duration]) => {
+      allTimeRenderersWithDurations.forEach(([_, duration]) => {
         const ProviderTester = generateProviderTester();
         const wrapper = mount(
           <TimeProviders globalMinimumAccuracy={duration}>
@@ -115,7 +123,7 @@ describe('<TimeProviders />', () => {
         );
 
         expect(wrapper.find(GlobalMinimumAccuracyRenderer).props()).toEqual({
-          children: duration,
+          children: duration.value,
         });
       });
     });
@@ -124,7 +132,7 @@ describe('<TimeProviders />', () => {
       const ProviderTester = generateProviderTester();
       expect(() => {
         mount(
-          <TimeProviders globalMinimumAccuracy={1}>
+          <TimeProviders globalMinimumAccuracy={1000}>
             <ProviderTester />
           </TimeProviders>
         );
@@ -147,7 +155,7 @@ describe('<TimeProviders />', () => {
 
         return (
           <>
-            <Scale>{targetContext.scale}</Scale>
+            <Duration>{targetContext.duration}</Duration>
             <Time>{targetContext.time}</Time>
           </>
         );
@@ -156,12 +164,12 @@ describe('<TimeProviders />', () => {
       return SingleConsumerTester;
     };
     const generateExpectedRegistrationObject = (overrides = {}) => ({
-      day: 0,
-      hour: 0,
-      minute: 0,
-      month: 0,
-      second: 0,
-      year: 0,
+      oneDay: 0,
+      oneHour: 0,
+      oneMinute: 0,
+      oneMonth: 0,
+      oneSecond: 0,
+      oneYear: 0,
       ...overrides,
     });
 
@@ -176,10 +184,10 @@ describe('<TimeProviders />', () => {
       expect(mockOnIntervalUpdate).toHaveBeenCalledTimes(1);
     });
 
-    it('passes the correct initial scale and time to each time renderer', () => {
+    it('passes the correct initial duration and time to each time renderer', () => {
       const now = Date.now();
       getDateNow.mockImplementation(() => now);
-      allTimeRenderersWithScales.forEach(([renderer, expectedScale]) => {
+      allTimeRenderersWithDurations.forEach(([renderer, expectedDuration]) => {
         const ProviderTester = generateProviderTester();
         const wrapper = mount(
           <TimeProviders>
@@ -188,21 +196,21 @@ describe('<TimeProviders />', () => {
         );
         const timeRenderer = wrapper.find(renderer);
         expect(timeRenderer).toHaveLength(1);
-        const scale = timeRenderer.find(Scale);
+        const duration = timeRenderer.find(Duration);
         const time = timeRenderer.find(Time);
-        expect(scale.props()).toEqual({ children: expectedScale });
+        expect(duration.props()).toEqual({ children: expectedDuration.value });
         expect(time.props()).toEqual({ children: now });
       });
     });
 
     describe('context value changes', () => {
       describe.each([
-        ['second', SecondContext, ONE_SECOND],
-        ['minute', MinuteContext, ONE_MINUTE],
-        ['hour', HourContext, ONE_HOUR],
-        ['day', DayContext, ONE_DAY],
-        ['month', MonthContext, ONE_MONTH],
-        ['year', YearContext, ONE_YEAR],
+        [ONE_SECOND.key, SecondContext, ONE_SECOND.value],
+        [ONE_MINUTE.key, MinuteContext, ONE_MINUTE.value],
+        [ONE_HOUR.key, HourContext, ONE_HOUR.value],
+        [ONE_DAY.key, DayContext, ONE_DAY.value],
+        [ONE_MONTH.key, MonthContext, ONE_MONTH.value],
+        [ONE_YEAR.key, YearContext, ONE_YEAR.value],
       ])(`when there is a single %s consumer`, (key, context, duration) => {
         afterEach(() => {
           jest.clearAllTimers();
@@ -270,7 +278,7 @@ describe('<TimeProviders />', () => {
           getDateNow.mockImplementation(() => nextNow);
           // Unfortunately, advancing time by a year causes so many timers to be created that we
           // can't perform this check.
-          if (duration < ONE_YEAR) {
+          if (duration < ONE_YEAR.value) {
             act(() => {
               jest.advanceTimersByTime(duration - 1);
             });
@@ -279,8 +287,8 @@ describe('<TimeProviders />', () => {
             expect(time.props()).toEqual({ children: now });
           }
           act(() => {
-            if (duration < ONE_YEAR) {
-              jest.advanceTimersByTime(1);
+            if (duration < ONE_YEAR.value) {
+              jest.advanceTimersByTime(10000);
             } else {
               jest.runOnlyPendingTimers();
             }

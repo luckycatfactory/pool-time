@@ -3,16 +3,25 @@ import PropTypes from 'prop-types';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 
-import useRelativeTime from '../useRelativeTime';
-import TimeProviders from '../TimeProviders';
-import { getDateNow } from '../utilities';
-import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../durations';
+import useRelativeTime from '../';
+import TimeProviders from '../../TimeProviders';
+import { getDateNow } from '../../utilities';
+import { ONE_SECOND, ONE_MINUTE, ONE_HOUR, ONE_DAY, ONE_MONTH, ONE_YEAR } from '../../durations';
 
-jest.mock('../utilities', () => ({
+jest.mock('../../utilities', () => ({
   getDateNow: jest.fn(() => Date.now()),
 }));
 
 jest.useFakeTimers();
+
+const DURATIONS_IN_ASCENDING_ORDER = [
+  ONE_SECOND,
+  ONE_MINUTE,
+  ONE_HOUR,
+  ONE_DAY,
+  ONE_MONTH,
+  ONE_YEAR,
+];
 
 // What follows is essentially integration tests between useRelativeTime and TimeProviders and all
 // dependencies.
@@ -26,18 +35,21 @@ describe('useRelativeTime()', () => {
     ['one year', ONE_YEAR],
   ];
 
-  const Scale = ({ children }) => children;
+  const Duration = ({ children }) => children;
   const Time = ({ children }) => children;
   const TimeDifference = ({ children }) => children;
   const TimeWithFormat = ({ children }) => children;
 
   const generateTestComponent = (targetTime, options) => {
     const TestComponent = () => {
-      const { scale, time, timeDifference, timeWithFormat } = useRelativeTime(targetTime, options);
+      const { duration, time, timeDifference, timeWithFormat } = useRelativeTime(
+        targetTime,
+        options
+      );
 
       return (
         <>
-          <Scale>{scale}</Scale>
+          <Duration>{duration}</Duration>
           <Time>{time}</Time>
           <TimeDifference>{timeDifference}</TimeDifference>
           <TimeWithFormat>{timeWithFormat}</TimeWithFormat>
@@ -50,12 +62,12 @@ describe('useRelativeTime()', () => {
 
   describe('registrations', () => {
     const generateExpectedRegistrationObject = (overrides = {}) => ({
-      day: 0,
-      hour: 0,
-      minute: 0,
-      month: 0,
-      second: 0,
-      year: 0,
+      [ONE_SECOND.key]: 0,
+      [ONE_MINUTE.key]: 0,
+      [ONE_HOUR.key]: 0,
+      [ONE_DAY.key]: 0,
+      [ONE_MONTH.key]: 0,
+      [ONE_YEAR.key]: 0,
       ...overrides,
     });
     const generateUnmountableTestComponent = (TestComponent, handleRegistrationsUpdate) => {
@@ -72,16 +84,11 @@ describe('useRelativeTime()', () => {
       return UnmountableTestComponent;
     };
 
-    describe.each([
-      ['second', ONE_SECOND],
-      ['minute', ONE_MINUTE],
-      ['hour', ONE_HOUR],
-      ['day', ONE_DAY],
-      ['month', ONE_MONTH],
-      ['year', ONE_YEAR],
-    ])('when updating the registration for %s', (key, duration) => {
+    const allDurations = DURATIONS_IN_ASCENDING_ORDER.map(duration => [duration.key, duration]);
+
+    describe.each([allDurations[0]])('when updating the registration for %s', (key, duration) => {
       it('calls onRegistrationsUpdate with the correct registration state when mounting', () => {
-        const now = Date.now() - duration;
+        const now = Date.now() - duration.value;
         const TestComponent = generateTestComponent(now);
         const handleRegistrationsUpdate = jest.fn();
         const UnmountableTestComponent = generateUnmountableTestComponent(
@@ -104,7 +111,7 @@ describe('useRelativeTime()', () => {
       });
 
       it(`calls onRegistrationsUpdate with the correct registration state when unmounting`, () => {
-        const now = Date.now() - duration;
+        const now = Date.now() - duration.value;
         const TestComponent = generateTestComponent(now);
         const handleRegistrationsUpdate = jest.fn();
         const UnmountableTestComponent = generateUnmountableTestComponent(
@@ -154,21 +161,21 @@ describe('useRelativeTime()', () => {
             </TimeProviders>
           );
 
-          expect(wrapper.find(Scale).props()).toEqual({ children: ONE_SECOND });
+          expect(wrapper.find(Duration).props()).toEqual({ children: ONE_SECOND.value });
           expect(wrapper.find(Time).props()).toEqual({ children: now });
           expect(wrapper.find(TimeDifference).props()).toEqual({ children: 0 });
           expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
 
           for (let i = 1; i < numberInNextDuration; i++) {
-            now = now + duration;
+            now = now + duration.value;
             getDateNow.mockImplementation(() => now);
             act(() => {
               jest.runOnlyPendingTimers();
             });
             wrapper.update();
-            expect(wrapper.find(Scale).props()).toEqual({ children: duration });
+            expect(wrapper.find(Duration).props()).toEqual({ children: duration.value });
             expect(wrapper.find(Time).props()).toEqual({ children: now });
-            expect(wrapper.find(TimeDifference).props()).toEqual({ children: duration * i });
+            expect(wrapper.find(TimeDifference).props()).toEqual({ children: duration.value * i });
             expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
           }
         }
@@ -184,7 +191,7 @@ describe('useRelativeTime()', () => {
         `renders with the correct values after the transition to a new context when moving from %s`,
         (_, initialDuration, finalDuration) => {
           let now = Date.now();
-          const then = now - finalDuration + initialDuration;
+          const then = now - finalDuration.value + initialDuration.value;
           getDateNow.mockImplementation(() => now);
           const TestComponent = generateTestComponent(then);
           const wrapper = mount(
@@ -193,24 +200,24 @@ describe('useRelativeTime()', () => {
             </TimeProviders>
           );
 
-          expect(wrapper.find(Scale).props()).toEqual({ children: initialDuration });
+          expect(wrapper.find(Duration).props()).toEqual({ children: initialDuration.value });
           expect(wrapper.find(Time).props()).toEqual({ children: now });
           expect(wrapper.find(TimeDifference).props()).toEqual({
-            children: finalDuration - initialDuration,
+            children: finalDuration.value - initialDuration.value,
           });
           expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
 
-          const nextNow = now + initialDuration;
+          const nextNow = now + initialDuration.value;
           getDateNow.mockImplementation(() => nextNow);
           act(() => {
             jest.runOnlyPendingTimers();
           });
           wrapper.update();
 
-          expect(wrapper.find(Scale).props()).toEqual({ children: finalDuration });
+          expect(wrapper.find(Duration).props()).toEqual({ children: finalDuration.value });
           expect(wrapper.find(Time).props()).toEqual({ children: nextNow });
           expect(wrapper.find(TimeDifference).props()).toEqual({
-            children: finalDuration,
+            children: finalDuration.value,
           });
           expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: nextNow });
         }
@@ -230,7 +237,7 @@ describe('useRelativeTime()', () => {
         (_, duration, numberInDuration) => {
           let now = Date.now();
           getDateNow.mockImplementation(() => now);
-          const targetTime = now + duration * numberInDuration;
+          const targetTime = now + duration.value * numberInDuration;
           const TestComponent = generateTestComponent(targetTime);
           const wrapper = mount(
             <TimeProviders globalMinimumAccuracy={ONE_YEAR}>
@@ -238,24 +245,24 @@ describe('useRelativeTime()', () => {
             </TimeProviders>
           );
 
-          expect(wrapper.find(Scale).props()).toEqual({ children: duration });
+          expect(wrapper.find(Duration).props()).toEqual({ children: duration.value });
           expect(wrapper.find(Time).props()).toEqual({ children: now });
           expect(wrapper.find(TimeDifference).props()).toEqual({
-            children: 0 - duration * numberInDuration,
+            children: 0 - duration.value * numberInDuration,
           });
           expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
 
           for (let i = 1; i < numberInDuration - 1; i++) {
-            now = now + duration;
+            now = now + duration.value;
             getDateNow.mockImplementation(() => now);
             act(() => {
               jest.runOnlyPendingTimers();
             });
             wrapper.update();
-            expect(wrapper.find(Scale).props()).toEqual({ children: duration });
+            expect(wrapper.find(Duration).props()).toEqual({ children: duration.value });
             expect(wrapper.find(Time).props()).toEqual({ children: now });
             expect(wrapper.find(TimeDifference).props()).toEqual({
-              children: 0 - duration * numberInDuration + duration * i,
+              children: 0 - duration.value * numberInDuration + duration.value * i,
             });
             expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
           }
@@ -273,7 +280,7 @@ describe('useRelativeTime()', () => {
         (_, finalDuration, initialDuration) => {
           let now = Date.now();
           getDateNow.mockImplementation(() => now);
-          const targetTime = now + initialDuration * 2;
+          const targetTime = now + initialDuration.value * 2;
           const TestComponent = generateTestComponent(targetTime);
           const wrapper = mount(
             <TimeProviders globalMinimumAccuracy={ONE_YEAR}>
@@ -281,23 +288,23 @@ describe('useRelativeTime()', () => {
             </TimeProviders>
           );
 
-          expect(wrapper.find(Scale).props()).toEqual({ children: initialDuration });
+          expect(wrapper.find(Duration).props()).toEqual({ children: initialDuration.value });
           expect(wrapper.find(Time).props()).toEqual({ children: now });
           expect(wrapper.find(TimeDifference).props()).toEqual({
-            children: 0 - initialDuration * 2,
+            children: 0 - initialDuration.value * 2,
           });
           expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
 
-          const nextNow = now + initialDuration;
+          const nextNow = now + initialDuration.value;
           getDateNow.mockImplementation(() => nextNow);
           act(() => {
             jest.runOnlyPendingTimers();
           });
           wrapper.update();
-          expect(wrapper.find(Scale).props()).toEqual({ children: finalDuration });
+          expect(wrapper.find(Duration).props()).toEqual({ children: finalDuration.value });
           expect(wrapper.find(Time).props()).toEqual({ children: nextNow });
           expect(wrapper.find(TimeDifference).props()).toEqual({
-            children: 0 - initialDuration,
+            children: 0 - initialDuration.value,
           });
           expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: nextNow });
         }
@@ -330,7 +337,7 @@ describe('useRelativeTime()', () => {
           const now = Date.now();
           getDateNow.mockImplementation(() => now);
           const TestComponent = generateTestComponent(now);
-          const nextNow = now + duration;
+          const nextNow = now + duration.value;
           const NewComponentToRender = generateTestComponent(nextNow);
           const NewRendererTester = generateNewRendererTester(TestComponent, NewComponentToRender);
           const wrapper = mount(<NewRendererTester />);
@@ -351,7 +358,9 @@ describe('useRelativeTime()', () => {
           const newComponentToRender = wrapper.find(NewComponentToRender);
           expect(newComponentToRender).toHaveLength(1);
 
-          expect(newComponentToRender.find(Scale).props()).toEqual({ children: ONE_SECOND });
+          expect(newComponentToRender.find(Duration).props()).toEqual({
+            children: ONE_SECOND.value,
+          });
           expect(newComponentToRender.find(Time).props()).toEqual({ children: nextNow });
           expect(newComponentToRender.find(TimeDifference).props()).toEqual({ children: 0 });
           expect(newComponentToRender.find(TimeWithFormat).props()).toEqual({ children: nextNow });
@@ -365,7 +374,7 @@ describe('useRelativeTime()', () => {
           getDateNow.mockImplementation(() => targetNow);
           const TestComponent = generateTestComponent(targetNow);
           // For these tests, let's add a bit of noise so it's not exactly lined up.
-          const offset = duration + ONE_SECOND;
+          const offset = duration.value + ONE_SECOND.value;
           const now = targetNow + offset;
           const NewComponentToRender = generateTestComponent(now);
           const NewRendererTester = generateNewRendererTester(TestComponent, NewComponentToRender);
@@ -376,9 +385,9 @@ describe('useRelativeTime()', () => {
           getDateNow.mockImplementation(() => now);
 
           act(() => {
-            if (duration >= ONE_MONTH) {
+            if (duration.value >= ONE_MONTH.value) {
               jest.runOnlyPendingTimers();
-              jest.advanceTimersByTime(ONE_SECOND);
+              jest.advanceTimersByTime(ONE_SECOND.value);
             } else {
               jest.advanceTimersByTime(offset);
             }
@@ -393,7 +402,9 @@ describe('useRelativeTime()', () => {
           const newComponentToRender = wrapper.find(NewComponentToRender);
           expect(newComponentToRender).toHaveLength(1);
 
-          expect(newComponentToRender.find(Scale).props()).toEqual({ children: ONE_SECOND });
+          expect(newComponentToRender.find(Duration).props()).toEqual({
+            children: ONE_SECOND.value,
+          });
           expect(newComponentToRender.find(Time).props()).toEqual({ children: now });
           expect(newComponentToRender.find(TimeDifference).props()).toEqual({ children: 0 });
           expect(newComponentToRender.find(TimeWithFormat).props()).toEqual({ children: now });
@@ -407,7 +418,7 @@ describe('useRelativeTime()', () => {
       `when the global minimum accuracy is set to %s`,
       (_, globalMinimumAccuracy) => {
         const durationsEqualToOrGreaterThanTarget = allDurationsInAscendingOrderWithStrings.filter(
-          testCase => globalMinimumAccuracy <= testCase[1]
+          testCase => globalMinimumAccuracy.value <= testCase[1].value
         );
 
         it.each(durationsEqualToOrGreaterThanTarget)(
@@ -422,22 +433,24 @@ describe('useRelativeTime()', () => {
               </TimeProviders>
             );
 
-            expect(wrapper.find(Scale).props()).toEqual({ children: ONE_SECOND });
+            expect(wrapper.find(Duration).props()).toEqual({ children: ONE_SECOND.value });
             expect(wrapper.find(Time).props()).toEqual({ children: now });
             expect(wrapper.find(TimeDifference).props()).toEqual({ children: 0 });
             expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: now });
 
-            const nextNow = now + currentAccuracy;
+            const nextNow = now + currentAccuracy.value;
             getDateNow.mockImplementation(() => nextNow);
 
             act(() => {
               jest.runOnlyPendingTimers();
             });
             wrapper.update();
-            expect(wrapper.find(Scale).props()).toEqual({ children: globalMinimumAccuracy });
+            expect(wrapper.find(Duration).props()).toEqual({
+              children: globalMinimumAccuracy.value,
+            });
             expect(wrapper.find(Time).props()).toEqual({ children: nextNow });
             expect(wrapper.find(TimeDifference).props()).toEqual({
-              children: currentAccuracy,
+              children: currentAccuracy.value,
             });
             expect(wrapper.find(TimeWithFormat).props()).toEqual({ children: nextNow });
           }

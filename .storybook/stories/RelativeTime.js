@@ -34,7 +34,7 @@ import {
   ONE_MONTH,
   ONE_SECOND,
   ONE_YEAR,
-} from '../../src/constants';
+} from '../../src/durations';
 import useRenderCount from '../useRenderCount';
 import useIdGenerator from '../useIdGenerator';
 
@@ -122,9 +122,9 @@ const AddCommentSubmitBar = styled.div`
 
 const dateFnsOptions = { roundingMethod: 'floor' };
 
-const RelativeTime = React.memo(({ globalMaximumTolerance, targetTime }) => {
+const RelativeTime = React.memo(({ targetTime }) => {
   const renderCount = useRenderCount();
-  const { scale, time, timeDifference } = useRelativeTime(targetTime);
+  const { duration, time, timeDifference } = useRelativeTime(targetTime);
 
   const timeDate = new Date(time - timeDifference);
   const nowAsDate = new Date(time);
@@ -133,7 +133,7 @@ const RelativeTime = React.memo(({ globalMaximumTolerance, targetTime }) => {
     <>
       <span>{formatDistanceStrict(timeDate, nowAsDate, dateFnsOptions)} ago</span>
       <span>Render count: {renderCount}</span>
-      <span>Accuracy: {scale}ms</span>
+      <span>Accuracy: {duration}ms</span>
     </>
   );
 });
@@ -167,8 +167,10 @@ const AddComment = React.memo(({ onSubmit }) => {
 
   const handleSubmit = useCallback(() => {
     if (hasOffset && offsetValue) {
-      const { unit } = offsetTimeUnit;
-      const offsetInMs = offsetValue * unit;
+      const {
+        unit: { value: unitValue },
+      } = offsetTimeUnit;
+      const offsetInMs = offsetValue * unitValue;
       onSubmit(text, offsetInMs);
     } else {
       onSubmit(text);
@@ -214,7 +216,7 @@ const AddComment = React.memo(({ onSubmit }) => {
                   </DropdownField>
                   <Menu>
                     {timeUnits.map(timeUnit => (
-                      <Item key={timeUnit.value} value={timeUnit.value}>
+                      <Item key={timeUnit.value} value={timeUnit}>
                         {timeUnit.label}
                       </Item>
                     ))}
@@ -237,21 +239,21 @@ const AddComment = React.memo(({ onSubmit }) => {
 });
 
 const durationToLabel = {
-  [ONE_SECOND]: 'One Second',
-  [ONE_MINUTE]: 'One Minute',
-  [ONE_HOUR]: 'One Hour',
-  [ONE_DAY]: 'One Day',
-  [ONE_MONTH]: 'One Day',
-  [ONE_YEAR]: 'One Year',
+  [ONE_SECOND.key]: 'One Second',
+  [ONE_MINUTE.key]: 'One Minute',
+  [ONE_HOUR.key]: 'One Hour',
+  [ONE_DAY.key]: 'One Day',
+  [ONE_MONTH.key]: 'One Day',
+  [ONE_YEAR.key]: 'One Year',
 };
 
 export const uncontrolledExamples = () => {
   const generateId = useIdGenerator();
   const [globalMinimumAccuracy, setGlobalMinimumAccuracy] = useState(ONE_MINUTE);
   const [comments, setComments] = useState([
-    { id: generateId(), targetTime: Date.now() - ONE_HOUR, text: 'Very nice, very nice.' },
-    { id: generateId(), targetTime: Date.now() - ONE_MINUTE, text: 'Wow, so performant!' },
-    { id: generateId(), targetTime: Date.now() - 50 * ONE_SECOND, text: 'This is so cool!' },
+    { id: generateId(), targetTime: Date.now() - ONE_HOUR.value, text: 'Very nice, very nice.' },
+    { id: generateId(), targetTime: Date.now() - ONE_MINUTE.value, text: 'Wow, so performant!' },
+    { id: generateId(), targetTime: Date.now() - 50 * ONE_SECOND.value, text: 'This is so cool!' },
   ]);
   const [currentIntervalDuration, setCurrentIntervalDuration] = useState(null);
 
@@ -280,6 +282,8 @@ export const uncontrolledExamples = () => {
     setComments(comments => comments.filter(comment => comment.id !== parseInt(id)));
   }, []);
 
+  const downshiftProps = { itemToString: item => item.value };
+
   return (
     <TimeProviders
       globalMinimumAccuracy={globalMinimumAccuracy}
@@ -292,18 +296,19 @@ export const uncontrolledExamples = () => {
             <h1>Relative Time</h1>
             <Field>
               <Dropdown
+                downshiftProps={downshiftProps}
                 onSelect={handleGlobalMinimumAccuracySelect}
                 selectedItem={globalMinimumAccuracy}
               >
                 <DropdownField>
                   <Label>Global Minimum Accuracy</Label>
-                  <Select>{durationToLabel[globalMinimumAccuracy]}</Select>
+                  <Select>{durationToLabel[globalMinimumAccuracy.key]}</Select>
                 </DropdownField>
                 <Menu>
                   {[ONE_SECOND, ONE_MINUTE, ONE_HOUR, ONE_DAY, ONE_MONTH, ONE_YEAR].map(
                     duration => (
-                      <Item key={duration} value={duration}>
-                        {durationToLabel[duration]}
+                      <Item key={duration.key} value={duration}>
+                        {durationToLabel[duration.key]}
                       </Item>
                     )
                   )}
