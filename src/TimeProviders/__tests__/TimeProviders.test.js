@@ -2,20 +2,12 @@ import React, { useContext, useEffect } from 'react';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 
-import TimeProviders from '../';
-import DayContext from '../DayContext';
+import TimeProviders from '..';
 import GlobalMinimumAccuracyContext from '../GlobalMinimumAccuracyContext';
-import HourContext from '../HourContext';
-import MinuteContext from '../MinuteContext';
-import MonthContext from '../MonthContext';
-import SecondContext from '../SecondContext';
-import YearContext from '../YearContext';
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../../durations';
-import { getDateNow } from '../../utilities';
+import getDateNow from '../../utilities/getDateNow';
 
-jest.mock('../../utilities', () => ({
-  getDateNow: jest.fn(() => Date.now()),
-}));
+jest.mock('../../utilities/getDateNow', () => jest.fn(() => Date.now()));
 
 jest.useFakeTimers();
 
@@ -65,12 +57,12 @@ describe('<TimeProviders />', () => {
   const generateProviderTester = () => {
     const ProviderTester = () => {
       const globalMinimumAccuracy = useContext(GlobalMinimumAccuracyContext);
-      const dayContext = useContext(DayContext);
-      const hourContext = useContext(HourContext);
-      const minuteContext = useContext(MinuteContext);
-      const monthContext = useContext(MonthContext);
-      const secondContext = useContext(SecondContext);
-      const yearContext = useContext(YearContext);
+      const dayContext = useContext(ONE_DAY.context);
+      const hourContext = useContext(ONE_HOUR.context);
+      const minuteContext = useContext(ONE_MINUTE.context);
+      const monthContext = useContext(ONE_MONTH.context);
+      const secondContext = useContext(ONE_SECOND.context);
+      const yearContext = useContext(ONE_YEAR.context);
 
       return (
         <>
@@ -205,19 +197,19 @@ describe('<TimeProviders />', () => {
 
     describe('context value changes', () => {
       describe.each([
-        [ONE_SECOND.key, SecondContext, ONE_SECOND.value],
-        [ONE_MINUTE.key, MinuteContext, ONE_MINUTE.value],
-        [ONE_HOUR.key, HourContext, ONE_HOUR.value],
-        [ONE_DAY.key, DayContext, ONE_DAY.value],
-        [ONE_MONTH.key, MonthContext, ONE_MONTH.value],
-        [ONE_YEAR.key, YearContext, ONE_YEAR.value],
-      ])(`when there is a single %s consumer`, (key, context, duration) => {
+        [ONE_SECOND.key, ONE_SECOND],
+        [ONE_MINUTE.key, ONE_MINUTE],
+        [ONE_HOUR.key, ONE_HOUR],
+        [ONE_DAY.key, ONE_DAY],
+        [ONE_MONTH.key, ONE_MONTH],
+        [ONE_YEAR.key, ONE_YEAR],
+      ])(`when there is a single %s consumer`, (key, duration) => {
         afterEach(() => {
           jest.clearAllTimers();
         });
 
         it('should initially call onRegistrationsUpdate with the correct value', () => {
-          const SingleConsumerTester = generateSingleConsumerTester(context);
+          const SingleConsumerTester = generateSingleConsumerTester(duration.context);
           const mockOnRegistrationUpdate = jest.fn();
           mount(
             <TimeProviders onRegistrationsUpdate={mockOnRegistrationUpdate}>
@@ -234,7 +226,7 @@ describe('<TimeProviders />', () => {
         });
 
         it('should call onRegistrationUpdate with the registrations removed when they are unmounted', () => {
-          const SingleConsumerTester = generateSingleConsumerTester(context);
+          const SingleConsumerTester = generateSingleConsumerTester(duration.context);
           const DynamicConsumerWrapper = ({ children, shouldRenderConsumer }) =>
             children({ shouldRenderConsumer });
           const mockOnRegistrationUpdate = jest.fn();
@@ -264,7 +256,7 @@ describe('<TimeProviders />', () => {
         it('correctly updates the passed time when it should', () => {
           const now = Date.now();
           getDateNow.mockImplementation(() => now);
-          const SingleConsumerTester = generateSingleConsumerTester(context);
+          const SingleConsumerTester = generateSingleConsumerTester(duration.context);
           const wrapper = mount(
             <TimeProviders>
               <SingleConsumerTester />

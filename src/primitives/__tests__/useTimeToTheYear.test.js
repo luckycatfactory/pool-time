@@ -1,10 +1,10 @@
 import React from 'react';
 import { mount } from 'enzyme';
 
-import useTimeToTheHour from '../useTimeToTheHour';
-import HourContext from '../TimeProviders/HourContext';
+import useTimeToTheYear from '../useTimeToTheYear';
+import { ONE_YEAR } from '../../durations';
 
-describe('useTimeToTheHour()', () => {
+describe('useTimeToTheYear()', () => {
   const generateTimeContextValue = (overrides = {}) => ({
     registerConsumer: () => {},
     time: Date.now(),
@@ -13,7 +13,7 @@ describe('useTimeToTheHour()', () => {
   });
   const generateTesterComponent = () => {
     const TesterComponent = () => {
-      const time = useTimeToTheHour();
+      const time = useTimeToTheYear();
 
       return String(time);
     };
@@ -26,9 +26,9 @@ describe('useTimeToTheHour()', () => {
     const mockTime = Date.now();
 
     const wrapper = mount(
-      <HourContext.Provider value={generateTimeContextValue({ time: mockTime })}>
+      <ONE_YEAR.context.Provider value={generateTimeContextValue({ time: mockTime })}>
         <TesterComponent />
-      </HourContext.Provider>
+      </ONE_YEAR.context.Provider>
     );
 
     const testerComponent = wrapper.find(TesterComponent);
@@ -41,11 +41,11 @@ describe('useTimeToTheHour()', () => {
     const mockRegisterConsumer = jest.fn();
 
     mount(
-      <HourContext.Provider
+      <ONE_YEAR.context.Provider
         value={generateTimeContextValue({ registerConsumer: mockRegisterConsumer })}
       >
         <TesterComponent />
-      </HourContext.Provider>
+      </ONE_YEAR.context.Provider>
     );
     expect(mockRegisterConsumer).toHaveBeenCalledTimes(1);
   });
@@ -55,11 +55,11 @@ describe('useTimeToTheHour()', () => {
     const mockUnregisterConsumer = jest.fn();
 
     const wrapper = mount(
-      <HourContext.Provider
+      <ONE_YEAR.context.Provider
         value={generateTimeContextValue({ unregisterConsumer: mockUnregisterConsumer })}
       >
         <TesterComponent />
-      </HourContext.Provider>
+      </ONE_YEAR.context.Provider>
     );
     expect(mockUnregisterConsumer).not.toHaveBeenCalled();
     wrapper.unmount();

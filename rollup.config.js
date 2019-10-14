@@ -1,8 +1,12 @@
 import babel from 'rollup-plugin-babel';
 import { eslint } from 'rollup-plugin-eslint';
 import { terser } from 'rollup-plugin-terser';
+import resolve from 'rollup-plugin-node-resolve';
 
 const plugins = [
+  resolve({
+    mainFields: ['module', 'main', 'src'],
+  }),
   eslint(),
   babel({
     exclude: 'node_modules/**',

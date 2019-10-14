@@ -3,14 +3,12 @@ import PropTypes from 'prop-types';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 
-import useRelativeTime from '../';
+import useRelativeTime from '..';
 import TimeProviders from '../../TimeProviders';
 import { getDateNow } from '../../utilities';
 import { ONE_SECOND, ONE_MINUTE, ONE_HOUR, ONE_DAY, ONE_MONTH, ONE_YEAR } from '../../durations';
 
-jest.mock('../../utilities', () => ({
-  getDateNow: jest.fn(() => Date.now()),
-}));
+jest.mock('../../utilities/getDateNow', () => jest.fn(() => Date.now()));
 
 jest.useFakeTimers();
 

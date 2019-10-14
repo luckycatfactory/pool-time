@@ -21,12 +21,6 @@ import '@zendeskgarden/react-dropdowns/dist/styles.css';
 import '@zendeskgarden/react-forms/dist/styles.css';
 
 import { TimeProviders, useRelativeTime } from '../../src/index.js';
-import DayContext from '../../src/TimeProviders/DayContext';
-import HourContext from '../../src/TimeProviders/HourContext';
-import MinuteContext from '../../src/TimeProviders/MinuteContext';
-import MonthContext from '../../src/TimeProviders/MonthContext';
-import SecondContext from '../../src/TimeProviders/SecondContext';
-import YearContext from '../../src/TimeProviders/YearContext';
 import {
   ONE_DAY,
   ONE_HOUR,
