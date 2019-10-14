@@ -241,7 +241,7 @@ const durationToLabel = {
   [ONE_YEAR.key]: 'One Year',
 };
 
-export const uncontrolledExamples = () => {
+export const commentsExample = () => {
   const generateId = useIdGenerator();
   const [globalMinimumAccuracy, setGlobalMinimumAccuracy] = useState(ONE_MINUTE);
   const [comments, setComments] = useState([
@@ -349,7 +349,7 @@ export const uncontrolledExamples = () => {
 };
 
 const storyDetails = {
-  title: 'Relative Time',
+  title: 'useRelativeTime',
   decorators: [withKnobs],
 };
 

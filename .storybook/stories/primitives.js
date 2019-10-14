@@ -7,7 +7,7 @@ import {
   useTimeToTheMonth,
   useTimeToTheSecond,
   useTimeToTheYear,
-} from '../../src/index.js';
+} from '../../src';
 import useRenderCount from '../useRenderCount';
 
 const displayLayoutStyles = { display: 'flex', flexDirection: 'column', height: '100%' };
@@ -149,7 +149,7 @@ const timeItemStyles = {
 
 const TimeItem = React.memo(({ children }) => <div style={timeItemStyles}>{children}</div>);
 
-const Hooks = React.memo(() => (
+const Primitives = React.memo(() => (
   <TimeLayout>
     <TimeItem>
       <YearRenderer />
@@ -172,14 +172,14 @@ const Hooks = React.memo(() => (
   </TimeLayout>
 ));
 
-export const uncontrolledExamples = () => (
+export const clockExample = () => (
   <TimeProviders>
-    <Hooks />
+    <Primitives />
   </TimeProviders>
 );
 
 const storyDetails = {
-  title: 'Primitives',
+  title: 'primitives',
 };
 
 export default storyDetails;
