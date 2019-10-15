@@ -16,10 +16,16 @@ const plugins = [
 const productionConfig = {
   external: ['react'],
   input: 'src/index.js',
-  output: {
-    file: 'dist/bundle.js',
-    format: 'cjs',
-  },
+  output: [
+    {
+      file: 'dist/bundle.cjs.js',
+      format: 'cjs',
+    },
+    {
+      file: 'dist/bundle.esm.js',
+      format: 'esm',
+    },
+  ],
   plugins,
 };
 

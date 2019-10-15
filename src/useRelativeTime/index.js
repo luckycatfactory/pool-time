@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef } from 'react';
-import { GlobalMinimumAccuracyContext } from '../TimeProviders';
-import { ONE_SECOND } from '../durations';
+import { DurationsContext, GlobalMinimumAccuracyContext } from '../TimeProviders';
 import { getDateNow } from '../utilities';
 import getOptimalTimeContext from './getOptimalTimeContext';
 
@@ -13,7 +12,8 @@ const generateRelativeTimeObject = (duration, time, timeDifference, timeWithForm
 
 const useRelativeTime = (targetTime, options = {}) => {
   const { strictnessOptions = {}, timeFormatter = inputTime => inputTime } = options;
-  const TimeContext = useRef(ONE_SECOND.context);
+  const directions = useContext(DurationsContext);
+  const TimeContext = useRef(directions[0]);
   const hasRegisteredConsumer = useRef(false);
   const previousUnregisterConsumer = useRef(null);
   const isInitialRender = useRef(true);
@@ -21,10 +21,12 @@ const useRelativeTime = (targetTime, options = {}) => {
 
   const rawDifference = getDateNow() - targetTime;
   const nextTimeContext = getOptimalTimeContext(
+    directions,
     rawDifference,
     globalMinimumAccuracy,
     strictnessOptions
   );
+  console.log(nextTimeContext, 'next');
 
   const hasContextUpdated = TimeContext.current !== nextTimeContext;
 

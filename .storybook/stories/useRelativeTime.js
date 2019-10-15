@@ -23,6 +23,7 @@ import '@zendeskgarden/react-forms/dist/styles.css';
 import { TimeProviders, useRelativeTime } from '../../src/index.js';
 import {
   ONE_DAY,
+  FIVE_SECONDS,
   ONE_HOUR,
   ONE_MINUTE,
   ONE_MONTH,
@@ -134,6 +135,7 @@ const RelativeTime = React.memo(({ targetTime }) => {
 
 const timeUnits = [
   { label: 'Seconds', unit: ONE_SECOND, value: 'seconds' },
+  { label: 'Seconds', unit: FIVE_SECONDS, value: 'seconds' },
   { label: 'Minutes', unit: ONE_MINUTE, value: 'minutes' },
   { label: 'Hours', unit: ONE_HOUR, value: 'hours' },
   { label: 'Days', unit: ONE_DAY, value: 'days' },
@@ -234,6 +236,7 @@ const AddComment = React.memo(({ onSubmit }) => {
 
 const durationToLabel = {
   [ONE_SECOND.key]: 'One Second',
+  [FIVE_SECONDS.key]: 'Five Seconds',
   [ONE_MINUTE.key]: 'One Minute',
   [ONE_HOUR.key]: 'One Hour',
   [ONE_DAY.key]: 'One Day',
@@ -299,13 +302,19 @@ export const commentsExample = () => {
                   <Select>{durationToLabel[globalMinimumAccuracy.key]}</Select>
                 </DropdownField>
                 <Menu>
-                  {[ONE_SECOND, ONE_MINUTE, ONE_HOUR, ONE_DAY, ONE_MONTH, ONE_YEAR].map(
-                    duration => (
-                      <Item key={duration.key} value={duration}>
-                        {durationToLabel[duration.key]}
-                      </Item>
-                    )
-                  )}
+                  {[
+                    ONE_SECOND,
+                    FIVE_SECONDS,
+                    ONE_MINUTE,
+                    ONE_HOUR,
+                    ONE_DAY,
+                    ONE_MONTH,
+                    ONE_YEAR,
+                  ].map(duration => (
+                    <Item key={duration.key} value={duration}>
+                      {durationToLabel[duration.key]}
+                    </Item>
+                  ))}
                 </Menu>
               </Dropdown>
             </Field>

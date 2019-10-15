@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
+import DurationsContext from './DurationsContext';
 import GlobalMinimumAccuracyContext from './GlobalMinimumAccuracyContext';
 import useInterval from '../utilities/useInterval';
 import { getDateNow, validateDurationObject } from '../utilities';
@@ -179,9 +180,11 @@ const generateTimeProviders = (inputDurations = [], defaultGlobalMinimumAccuracy
       };
 
       return (
-        <GlobalMinimumAccuracyContext.Provider value={validatedGlobalMinimumAccuracy}>
-          {renderProviders()}
-        </GlobalMinimumAccuracyContext.Provider>
+        <DurationsContext.Provider value={durations.current}>
+          <GlobalMinimumAccuracyContext.Provider value={validatedGlobalMinimumAccuracy}>
+            {renderProviders()}
+          </GlobalMinimumAccuracyContext.Provider>
+        </DurationsContext.Provider>
       );
     }
   );
