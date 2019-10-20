@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef } from 'react';
-import { DurationsContext, GlobalMinimumAccuracyContext } from '../TimeProviders';
+import { DurationsContext, GlobalAccuracyContext } from '../TimeProviders';
 import { getDateNow } from '../utilities';
-import getOptimalTimeContext from './getOptimalTimeContext';
+import useOptimalTimeContext from './useOptimalTimeContext';
 
 const generateRelativeTimeObject = (duration, time, timeDifference, timeWithFormat) => ({
   duration,
@@ -10,23 +10,30 @@ const generateRelativeTimeObject = (duration, time, timeDifference, timeWithForm
   timeWithFormat,
 });
 
-const useRelativeTime = (targetTime, options = {}) => {
-  const { strictnessOptions = {}, timeFormatter = inputTime => inputTime } = options;
+const defaultOptions = {};
+const defaultTimeFormatter = inputTime => inputTime;
+
+// const localAccuracy = useLocalAccuracy(() => {
+//   return numberOfComments > 100 ? morePerformantConfiguration : moreAccurateConfiguration;
+// }, [numberOfComments])
+//
+// const { difference } = useRelativeTime(time, { localAccuracy });
+const useRelativeTime = (targetTime, options = defaultOptions) => {
+  const { localAccuracy, timeFormatter = defaultTimeFormatter } = options;
   const directions = useContext(DurationsContext);
   const TimeContext = useRef(directions[0]);
   const hasRegisteredConsumer = useRef(false);
   const previousUnregisterConsumer = useRef(null);
   const isInitialRender = useRef(true);
-  const globalMinimumAccuracy = useContext(GlobalMinimumAccuracyContext);
+  const globalAccuracy = useContext(GlobalAccuracyContext);
 
   const rawDifference = getDateNow() - targetTime;
-  const nextTimeContext = getOptimalTimeContext(
+  const nextTimeContext = useOptimalTimeContext(
     directions,
     rawDifference,
-    globalMinimumAccuracy,
-    strictnessOptions
+    globalAccuracy,
+    localAccuracy
   );
-  console.log(nextTimeContext, 'next');
 
   const hasContextUpdated = TimeContext.current !== nextTimeContext;
 

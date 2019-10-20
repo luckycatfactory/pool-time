@@ -4,7 +4,7 @@ import { act } from 'react-dom/test-utils';
 
 import TimeProviders from '..';
 import GlobalMinimumAccuracyContext from '../GlobalMinimumAccuracyContext';
-import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_MONTH, ONE_SECOND, ONE_YEAR } from '../../durations';
+import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_SECOND } from '../../durations';
 import getDateNow from '../../utilities/getDateNow';
 
 jest.mock('../../utilities/getDateNow', () => jest.fn(() => Date.now()));
@@ -43,16 +43,12 @@ describe('<TimeProviders />', () => {
   const DayRenderer = generateTimeRenderer('Day');
   const HourRenderer = generateTimeRenderer('Hour');
   const MinuteRenderer = generateTimeRenderer('Minute');
-  const MonthRenderer = generateTimeRenderer('Month');
   const SecondRenderer = generateTimeRenderer('Second');
-  const YearRenderer = generateTimeRenderer('Year');
   const allTimeRenderersWithDurations = [
     [DayRenderer, ONE_DAY],
     [HourRenderer, ONE_HOUR],
     [MinuteRenderer, ONE_MINUTE],
-    [MonthRenderer, ONE_MONTH],
     [SecondRenderer, ONE_SECOND],
-    [YearRenderer, ONE_YEAR],
   ];
   const generateProviderTester = () => {
     const ProviderTester = () => {
@@ -60,9 +56,7 @@ describe('<TimeProviders />', () => {
       const dayContext = useContext(ONE_DAY.context);
       const hourContext = useContext(ONE_HOUR.context);
       const minuteContext = useContext(ONE_MINUTE.context);
-      const monthContext = useContext(ONE_MONTH.context);
       const secondContext = useContext(ONE_SECOND.context);
-      const yearContext = useContext(ONE_YEAR.context);
 
       return (
         <>
@@ -72,9 +66,7 @@ describe('<TimeProviders />', () => {
           <DayRenderer {...dayContext} />
           <HourRenderer {...hourContext} />
           <MinuteRenderer {...minuteContext} />
-          <MonthRenderer {...monthContext} />
           <SecondRenderer {...secondContext} />
-          <YearRenderer {...yearContext} />
         </>
       );
     };
@@ -159,9 +151,7 @@ describe('<TimeProviders />', () => {
       oneDay: 0,
       oneHour: 0,
       oneMinute: 0,
-      oneMonth: 0,
       oneSecond: 0,
-      oneYear: 0,
       ...overrides,
     });
 
@@ -201,8 +191,6 @@ describe('<TimeProviders />', () => {
         [ONE_MINUTE.key, ONE_MINUTE],
         [ONE_HOUR.key, ONE_HOUR],
         [ONE_DAY.key, ONE_DAY],
-        [ONE_MONTH.key, ONE_MONTH],
-        [ONE_YEAR.key, ONE_YEAR],
       ])(`when there is a single %s consumer`, (key, duration) => {
         afterEach(() => {
           jest.clearAllTimers();
@@ -268,22 +256,14 @@ describe('<TimeProviders />', () => {
 
           const nextNow = now + duration;
           getDateNow.mockImplementation(() => nextNow);
-          // Unfortunately, advancing time by a year causes so many timers to be created that we
-          // can't perform this check.
-          if (duration < ONE_YEAR.value) {
-            act(() => {
-              jest.advanceTimersByTime(duration - 1);
-            });
-            wrapper.update();
-
-            expect(time.props()).toEqual({ children: now });
-          }
           act(() => {
-            if (duration < ONE_YEAR.value) {
-              jest.advanceTimersByTime(10000);
-            } else {
-              jest.runOnlyPendingTimers();
-            }
+            jest.runOnlyPendingTimers();
+          });
+          wrapper.update();
+
+          expect(time.props()).toEqual({ children: now });
+          act(() => {
+            jest.runOnlyPendingTimers();
           });
           wrapper.update();
 
