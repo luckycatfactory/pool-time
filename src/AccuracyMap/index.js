@@ -1,3 +1,4 @@
+import AccuracyEntry from './AccuracyEntry';
 import DurationList from '../DurationList';
 import { validateAccuracyObject } from '../utilities';
 
@@ -59,25 +60,40 @@ const validateAccuracyListStartsWithSmallestDuration = (durationList, accuracyLi
   }
 };
 
+// At the point that this is called, durationList and accuracyList are both in ascending order.
 const makeAccuracyListIntoObject = (durationList, accuracyList) => {
-  // if the smallest duration is not in the global accuracy list, fail.
   const durations = durationList.get();
-  let currentDurationIndex = 0;
+  let currentAccuracyIndex = 0;
 
-  accuracyList.reduce((accumulator, accuracyObject) => {
-    const currentDuration = durations[currentDurationIndex];
+  const accuracyMap = durations.reduce((accumulator, duration) => {
+    const currentAccuracy = accuracyList[currentAccuracyIndex];
 
-    if (accuracyObject.difference === currentDuration) {
-      // In this case, there is an explicit setting for differences of this duration.
-      accumulator[currentDuration.key] = accuracyObject;
-      currentDurationIndex++;
+    if (currentAccuracy === undefined) {
+      console.log(currentAccuracy, accuracyList, currentAccuracyIndex);
+    }
+
+    if (currentAccuracy.difference === duration) {
+      accumulator[duration.key] = new AccuracyEntry(currentAccuracy);
     } else {
-      accumulator[currentDuration.key] = accuracyObject;
+      accumulator[duration.key] = new AccuracyEntry(currentAccuracy);
+      if (currentAccuracyIndex < accuracyList.length - 1) {
+        currentAccuracyIndex++;
+      }
     }
 
     return accumulator;
   }, {});
+
+  return accuracyMap;
 };
+
+class InvalidAccuracyMapRequestError extends Error {}
+
+const isDurationWithinRange = (duration, lowerBound, upperBound) =>
+  duration.value >= lowerBound.value && duration.value <= upperBound.value;
+
+const greaterDuration = (first, second) => (first.value >= second.value ? first : second);
+const lesserDuration = (first, second) => (first.value <= second.value ? first : second);
 
 class AccuracyMap {
   constructor(durations, accuracyList) {
@@ -87,8 +103,56 @@ class AccuracyMap {
     this.value = makeAccuracyListIntoObject(validatedDurations, validatedAccuracyList);
   }
 
-  get() {
-    return this.value;
+  getOptimalEntry(duration) {
+    const entry = this.value[duration.key];
+
+    if (!entry) {
+      throw new InvalidAccuracyMapRequestError(
+        `Unable to find an appropriate entry for duration with key "${duration.key}".`
+      );
+    }
+
+    const targetAccuracyEntry = this.value[duration.key];
+
+    return targetAccuracyEntry;
+  }
+
+  getOptimalDuration(duration, localAccuracyMap) {
+    const targetEntry = this.getOptimalEntry(duration);
+
+    if (!localAccuracyMap) {
+      return targetEntry.preferredAccuracy;
+    }
+
+    const localEntry = localAccuracyMap.getOptimalEntry(duration);
+
+    const isLocalPreferredAccuracyWithinRange = isDurationWithinRange(
+      localEntry.preferredAccuracy,
+      targetEntry.maximumAccuracy,
+      targetEntry.minimumAccuracy
+    );
+
+    if (isLocalPreferredAccuracyWithinRange) {
+      return localEntry.preferredAccuracy;
+    }
+
+    const isLocalPreferredAccuracyGreaterThanGlobal =
+      localEntry.preferredAccuracy.value > targetEntry.maximumAccuracy.value;
+
+    if (isLocalPreferredAccuracyGreaterThanGlobal) {
+      return greaterDuration(localEntry.maximumAccuracy, targetEntry.minimumAccuracy);
+    }
+
+    const isLocalPreferredAccuracyLessThanGlobal =
+      localEntry.preferredAccuracy.value < targetEntry.minimumAccuracy.value;
+
+    if (isLocalPreferredAccuracyLessThanGlobal) {
+      return lesserDuration(localEntry.minimumAccuracy, targetEntry.maximumAccuracy);
+    }
+  }
+
+  getOptimalContext(duration, localAccuracyMap) {
+    return this.getOptimalDuration(duration, localAccuracyMap).context;
   }
 }
 

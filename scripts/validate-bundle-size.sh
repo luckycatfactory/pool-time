@@ -2,7 +2,7 @@
 
 yarn build
 
-maximum_gzipped_size=2000
+maximum_gzipped_size=3000
 gzipped_size=$(stat -f%z ./dist/bundle.min.js.gz)
 
 if [ $gzipped_size -ge $maximum_gzipped_size ]; then

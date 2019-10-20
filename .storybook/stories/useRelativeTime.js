@@ -20,16 +20,8 @@ import '@zendeskgarden/react-buttons/dist/styles.css';
 import '@zendeskgarden/react-dropdowns/dist/styles.css';
 import '@zendeskgarden/react-forms/dist/styles.css';
 
-import { TimeProviders, useRelativeTime } from '../../src/index.js';
-import {
-  ONE_DAY,
-  FIVE_SECONDS,
-  ONE_HOUR,
-  ONE_MINUTE,
-  ONE_MONTH,
-  ONE_SECOND,
-  ONE_YEAR,
-} from '../../src/durations';
+import { DefaultTimeProviders, useRelativeTime } from '../../src/index.js';
+import { ONE_DAY, FIVE_SECONDS, ONE_HOUR, ONE_MINUTE, ONE_SECOND } from '../../src/durations';
 import useRenderCount from '../useRenderCount';
 import useIdGenerator from '../useIdGenerator';
 
@@ -139,8 +131,6 @@ const timeUnits = [
   { label: 'Minutes', unit: ONE_MINUTE, value: 'minutes' },
   { label: 'Hours', unit: ONE_HOUR, value: 'hours' },
   { label: 'Days', unit: ONE_DAY, value: 'days' },
-  { label: 'Months', unit: ONE_MONTH, value: 'months' },
-  { label: 'Years', unit: ONE_YEAR, value: 'years' },
 ];
 const downshiftProps = { itemToString: item => item && item.label };
 const AddComment = React.memo(({ onSubmit }) => {
@@ -240,8 +230,6 @@ const durationToLabel = {
   [ONE_MINUTE.key]: 'One Minute',
   [ONE_HOUR.key]: 'One Hour',
   [ONE_DAY.key]: 'One Day',
-  [ONE_MONTH.key]: 'One Day',
-  [ONE_YEAR.key]: 'One Year',
 };
 
 export const commentsExample = () => {
@@ -282,7 +270,7 @@ export const commentsExample = () => {
   const downshiftProps = { itemToString: item => item.value };
 
   return (
-    <TimeProviders
+    <DefaultTimeProviders
       globalMinimumAccuracy={globalMinimumAccuracy}
       onIntervalUpdate={handleIntervalUpdate}
       onRegistrationsUpdate={handleRegistrationsUpdate}
@@ -302,15 +290,7 @@ export const commentsExample = () => {
                   <Select>{durationToLabel[globalMinimumAccuracy.key]}</Select>
                 </DropdownField>
                 <Menu>
-                  {[
-                    ONE_SECOND,
-                    FIVE_SECONDS,
-                    ONE_MINUTE,
-                    ONE_HOUR,
-                    ONE_DAY,
-                    ONE_MONTH,
-                    ONE_YEAR,
-                  ].map(duration => (
+                  {[ONE_SECOND, FIVE_SECONDS, ONE_MINUTE, ONE_HOUR, ONE_DAY].map(duration => (
                     <Item key={duration.key} value={duration}>
                       {durationToLabel[duration.key]}
                     </Item>
@@ -353,7 +333,7 @@ export const commentsExample = () => {
           <AddComment onSubmit={handleAddCommentSubmit} />
         </Layout>
       </ThemeProvider>
-    </TimeProviders>
+    </DefaultTimeProviders>
   );
 };
 

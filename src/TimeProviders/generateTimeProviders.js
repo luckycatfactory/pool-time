@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types';
 
 import DurationsContext from './DurationsContext';
-import GlobalAccuracyContext from './GlobalMinimumAccuracyContext';
+import GlobalAccuracyContext from './GlobalAccuracyContext';
 import DurationList from '../DurationList';
 import AccuracyMap from '../AccuracyMap';
 import { getDateNow, useInterval } from '../utilities';

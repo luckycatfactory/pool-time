@@ -1,12 +1,10 @@
 import React from 'react';
 import {
-  TimeProviders,
+  DefaultTimeProviders,
   useTimeToTheDay,
   useTimeToTheHour,
   useTimeToTheMinute,
-  useTimeToTheMonth,
   useTimeToTheSecond,
-  useTimeToTheYear,
 } from '../../src';
 import useRenderCount from '../useRenderCount';
 
@@ -89,21 +87,6 @@ const MinuteRenderer = React.memo(() => {
   );
 });
 
-const monthTimeFormatter = time => new Date(time).getMonth() + 1;
-
-const MonthRenderer = React.memo(() => {
-  const renderCount = useRenderCount();
-  const time = useTimeToTheMonth(monthTimeFormatter);
-
-  return (
-    <DisplayLayout>
-      <TimeDescription>Months</TimeDescription>
-      <TimeDisplay>{time}</TimeDisplay>
-      <RenderCountDisplay>{renderCount}</RenderCountDisplay>
-    </DisplayLayout>
-  );
-});
-
 const secondTimeFormatter = time => new Date(time).getSeconds();
 
 const SecondRenderer = React.memo(() => {
@@ -113,21 +96,6 @@ const SecondRenderer = React.memo(() => {
   return (
     <DisplayLayout>
       <TimeDescription>Seconds</TimeDescription>
-      <TimeDisplay>{time}</TimeDisplay>
-      <RenderCountDisplay>{renderCount}</RenderCountDisplay>
-    </DisplayLayout>
-  );
-});
-
-const yearTimeFormatter = time => new Date(time).getFullYear();
-
-const YearRenderer = React.memo(() => {
-  const renderCount = useRenderCount();
-  const time = useTimeToTheYear(yearTimeFormatter);
-
-  return (
-    <DisplayLayout>
-      <TimeDescription>Years</TimeDescription>
       <TimeDisplay>{time}</TimeDisplay>
       <RenderCountDisplay>{renderCount}</RenderCountDisplay>
     </DisplayLayout>
@@ -152,12 +120,6 @@ const TimeItem = React.memo(({ children }) => <div style={timeItemStyles}>{child
 const Primitives = React.memo(() => (
   <TimeLayout>
     <TimeItem>
-      <YearRenderer />
-    </TimeItem>
-    <TimeItem>
-      <MonthRenderer />
-    </TimeItem>
-    <TimeItem>
       <DayRenderer />
     </TimeItem>
     <TimeItem>
@@ -173,9 +135,9 @@ const Primitives = React.memo(() => (
 ));
 
 export const clockExample = () => (
-  <TimeProviders>
+  <DefaultTimeProviders>
     <Primitives />
-  </TimeProviders>
+  </DefaultTimeProviders>
 );
 
 const storyDetails = {

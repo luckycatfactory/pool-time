@@ -2,6 +2,7 @@ import babel from 'rollup-plugin-babel';
 import { eslint } from 'rollup-plugin-eslint';
 import { terser } from 'rollup-plugin-terser';
 import resolve from 'rollup-plugin-node-resolve';
+import cleanup from 'rollup-plugin-cleanup';
 
 const plugins = [
   resolve({
@@ -11,6 +12,7 @@ const plugins = [
   babel({
     exclude: 'node_modules/**',
   }),
+  cleanup(),
 ];
 
 const productionConfig = {
