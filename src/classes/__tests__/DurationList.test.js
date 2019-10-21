@@ -1,4 +1,4 @@
-import DurationList from '../';
+import DurationList from '../DurationList';
 import { ONE_SECOND, ONE_MINUTE } from '../../durations';
 
 describe('DurationList', () => {
@@ -12,7 +12,7 @@ describe('DurationList', () => {
     it('properly fails if any of the durations are not proper durations', () => {
       expect(() => {
         new DurationList([{ not: 'A DURATION' }]);
-      }).toThrow('Expected duration object to have a key, but it did not.');
+      }).toThrow('Expected all durations to be duration instances, but they were not.');
     });
 
     it('properly fails if any of the durations are not in ascending order', () => {

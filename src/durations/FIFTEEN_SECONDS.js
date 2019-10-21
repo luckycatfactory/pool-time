@@ -1,5 +1,5 @@
-import { generateDurationObject } from '../utilities';
+import { Duration } from '../classes';
 
-const FIFTEEN_SECONDS = generateDurationObject('fifteenSeconds', 15000);
+const FIFTEEN_SECONDS = new Duration({ key: 'fifteenSeconds', value: 15000 });
 
 export default FIFTEEN_SECONDS;

@@ -20,8 +20,9 @@ const defaultTimeFormatter = inputTime => inputTime;
 // const { difference } = useRelativeTime(time, { localAccuracy });
 const useRelativeTime = (targetTime, options = defaultOptions) => {
   const { localAccuracy, timeFormatter = defaultTimeFormatter } = options;
-  const directions = useContext(DurationsContext);
-  const TimeContext = useRef(directions[0]);
+  const durations = useContext(DurationsContext);
+  const durationsAsArray = durations.get();
+  const TimeContext = useRef(durationsAsArray[0]);
   const hasRegisteredConsumer = useRef(false);
   const previousUnregisterConsumer = useRef(null);
   const isInitialRender = useRef(true);
@@ -29,7 +30,7 @@ const useRelativeTime = (targetTime, options = defaultOptions) => {
 
   const rawDifference = getDateNow() - targetTime;
   const nextTimeContext = useOptimalTimeContext(
-    directions,
+    durationsAsArray,
     rawDifference,
     globalAccuracy,
     localAccuracy

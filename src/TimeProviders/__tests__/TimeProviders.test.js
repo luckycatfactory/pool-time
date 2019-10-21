@@ -3,7 +3,7 @@ import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 
 import TimeProviders from '..';
-import GlobalMinimumAccuracyContext from '../GlobalMinimumAccuracyContext';
+import GlobalAccuracyContext from '../GlobalAccuracyContext';
 import { ONE_DAY, ONE_HOUR, ONE_MINUTE, ONE_SECOND } from '../../durations';
 import getDateNow from '../../utilities/getDateNow';
 
@@ -52,7 +52,7 @@ describe('<TimeProviders />', () => {
   ];
   const generateProviderTester = () => {
     const ProviderTester = () => {
-      const globalMinimumAccuracy = useContext(GlobalMinimumAccuracyContext);
+      const globalMinimumAccuracy = useContext(GlobalAccuracyContext);
       const dayContext = useContext(ONE_DAY.context);
       const hourContext = useContext(ONE_HOUR.context);
       const minuteContext = useContext(ONE_MINUTE.context);

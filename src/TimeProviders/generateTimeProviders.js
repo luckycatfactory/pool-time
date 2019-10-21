@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 
 import DurationsContext from './DurationsContext';
 import GlobalAccuracyContext from './GlobalAccuracyContext';
-import DurationList from '../DurationList';
-import AccuracyMap from '../AccuracyMap';
+import DurationList from '../classes/DurationList';
+import AccuracyMap from '../classes/AccuracyMap';
 import { getDateNow, useInterval } from '../utilities';
 
 const getIntervalToUseOrMinimalAcceptable = (targetDuration, globalMinimumAccuracy) =>
@@ -51,23 +51,23 @@ const getIntervalToUse = (durations, consumerRegistrations, validatedGlobalMinim
 };
 
 const generateTimeProviders = (inputDurations, globalAccuracy) => {
-  const durationList = new DurationList(inputDurations);
-  const durations = durationList.get();
-  const globalAccuracyMap = new AccuracyMap(durationList, globalAccuracy);
+  const durations = new DurationList(inputDurations);
+  const durationsAsArray = durations.get();
+  const globalAccuracyMap = new AccuracyMap(durations, globalAccuracy);
 
   const TimeProviders = React.memo(({ children, onIntervalUpdate, onRegistrationsUpdate }) => {
     // For consistency, we prefer to always ensure that all "now" references are the same in a single
     // render.
     const nowOnInitialRendering = useRef(getDateNow());
     const [currentTimes, setCurrentTimes] = useState(
-      createInitialStateObject(durations, nowOnInitialRendering.current)
+      createInitialStateObject(durationsAsArray, nowOnInitialRendering.current)
     );
     const [consumerRegistrations, setConsumerRegistrations] = useState(
-      createInitialStateObject(durations, 0)
+      createInitialStateObject(durationsAsArray, 0)
     );
 
     const intervalToUse = useMemo(
-      () => getIntervalToUse(durations, consumerRegistrations, globalAccuracy),
+      () => getIntervalToUse(durationsAsArray, consumerRegistrations, globalAccuracy),
       [consumerRegistrations]
     );
 
@@ -86,7 +86,7 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
       let keepGoing = true;
 
       while (keepGoing) {
-        const currentDuration = durations[durationIndex];
+        const currentDuration = durationsAsArray[durationIndex];
         const previousValueAtScale = Math.floor(
           currentTimes[currentDuration.key] / currentDuration.value
         );
@@ -108,7 +108,7 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
       }
     }, intervalToUse);
 
-    const materializedValues = durations.reduce((acc, duration) => {
+    const materializedValues = durationsAsArray.reduce((acc, duration) => {
       const [registerConsumer, unregisterConsumer] = generateRegistrationFunctions(
         setConsumerRegistrations,
         duration.key
@@ -128,8 +128,8 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
     const renderProviders = () => {
       let rendering = children;
 
-      for (let i = 0; i < durations.length; i++) {
-        const duration = durations[i];
+      for (let i = 0; i < durationsAsArray.length; i++) {
+        const duration = durationsAsArray[i];
 
         const nextRendering = (
           <duration.context.Provider value={materializedValues[duration.key]}>

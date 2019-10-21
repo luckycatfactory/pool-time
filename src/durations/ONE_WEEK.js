@@ -1,5 +1,5 @@
-import { generateDurationObject } from '../utilities';
+import { Duration } from '../classes';
 
-const ONE_WEEK = generateDurationObject('oneWeek', 86400000 * 7);
+const ONE_WEEK = new Duration({ key: 'oneWeek', value: 86400000 * 7 });
 
 export default ONE_WEEK;
