@@ -1,4 +1,4 @@
-import { validateDurationObject } from '../utilities';
+import Duration from './Duration';
 
 class InvalidAccuracyEntryInputError extends Error {}
 
@@ -13,9 +13,7 @@ const validateSpecification = specification => {
   });
 
   Object.keys(specification).forEach(key => {
-    try {
-      validateDurationObject(specification[key]);
-    } catch (e) {
+    if (!(specification[key] instanceof Duration)) {
       throw new InvalidAccuracyEntryInputError(
         `Expected ${key} to be a duration object, but it was not.`
       );
@@ -24,19 +22,19 @@ const validateSpecification = specification => {
 
   if (maximumAccuracy && minimumAccuracy && maximumAccuracy.value > minimumAccuracy.value) {
     throw new InvalidAccuracyEntryInputError(
-      `Expected the minimum accuracy duration to be greater than or equal to that of the maximum accuracy, but it was not.`
+      'Expected the minimum accuracy duration to be greater than or equal to that of the maximum accuracy, but it was not.'
     );
   }
 
   if (maximumAccuracy && maximumAccuracy.value > preferredAccuracy.value) {
     throw new InvalidAccuracyEntryInputError(
-      `Expected the maximum accuracy duration to be less than or equal to that of the preferred accuracy, but it was not.`
+      'Expected the maximum accuracy duration to be less than or equal to that of the preferred accuracy, but it was not.'
     );
   }
 
   if (minimumAccuracy && minimumAccuracy.value < preferredAccuracy.value) {
     throw new InvalidAccuracyEntryInputError(
-      `Expected the minimum accuracy duration to be greater than or equal to that of the preferred accuracy, but it was not.`
+      'Expected the minimum accuracy duration to be greater than or equal to that of the preferred accuracy, but it was not.'
     );
   }
 

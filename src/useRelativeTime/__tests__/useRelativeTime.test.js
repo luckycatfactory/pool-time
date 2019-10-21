@@ -69,10 +69,10 @@ describe('useRelativeTime()', () => {
       return UnmountableTestComponent;
     };
 
-    const allDurations = allDurationsInAscendingOrderWithStrings.map(el => el[1]);
+    const allDurations = allDurationsInAscendingOrderWithStrings.map(el => [el[1]]);
 
     describe.each([allDurations[0]])('when updating the registration for %s', (key, duration) => {
-      it('calls onRegistrationsUpdate with the correct registration state when mounting', () => {
+      fit('calls onRegistrationsUpdate with the correct registration state when mounting', () => {
         const now = Date.now() - duration.value;
         const TestComponent = generateTestComponent(now);
         const handleRegistrationsUpdate = jest.fn();
@@ -127,7 +127,7 @@ describe('useRelativeTime()', () => {
     });
 
     describe('when the target times are in the past', () => {
-      fit.each([
+      it.each([
         ['one second', ONE_SECOND, 60],
         // ['one minute', ONE_MINUTE, 60],
         // ['one hour', ONE_HOUR, 24],
