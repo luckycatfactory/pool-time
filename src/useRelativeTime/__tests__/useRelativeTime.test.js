@@ -5,7 +5,6 @@ import { act } from 'react-dom/test-utils';
 
 import useRelativeTime from '..';
 import TimeProviders from '../../TimeProviders';
-import { DEFAULT_DURATIONS } from '../../TimeProviders/DefaultTimeProviders';
 import { getDateNow } from '../../utilities';
 import { ONE_SECOND, ONE_MINUTE, ONE_HOUR, ONE_DAY } from '../../durations';
 
@@ -70,7 +69,7 @@ describe('useRelativeTime()', () => {
       return UnmountableTestComponent;
     };
 
-    const allDurations = DEFAULT_DURATIONS.map(duration => [duration.key, duration]);
+    const allDurations = allDurationsInAscendingOrderWithStrings.map(el => el[1]);
 
     describe.each([allDurations[0]])('when updating the registration for %s', (key, duration) => {
       it('calls onRegistrationsUpdate with the correct registration state when mounting', () => {
