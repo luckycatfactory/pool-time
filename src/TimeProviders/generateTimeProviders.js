@@ -8,8 +8,8 @@ import AccuracyMap from '../classes/AccuracyMap';
 import AccuracyList from '../classes/AccuracyList';
 import { getDateNow, useInterval } from '../utilities';
 
-const getIntervalToUseOrMinimalAcceptable = (targetDuration, globalMinimumAccuracy) =>
-  Math.min(targetDuration.value, globalMinimumAccuracy.value);
+const getIntervalToUseOrMinimalAcceptable = (targetDuration, globalAccuracy) =>
+  Math.min(targetDuration.value, globalAccuracy.value);
 
 const generateConsumerRegistrationIncrementer = (setConsumerRegistrations, key) => () =>
   setConsumerRegistrations(previousRegistrations => ({
@@ -40,11 +40,18 @@ const generateValueObject = (duration, registerConsumer, time, unregisterConsume
 const createInitialStateObject = (durations, seedValue) =>
   durations.reduce((acc, duration) => Object.assign(acc, { [duration.key]: seedValue }), {});
 
-const getIntervalToUse = (durations, consumerRegistrations, validatedGlobalMinimumAccuracy) => {
+const getIntervalToUse = (durations, consumerRegistrations, globalAccuracy) => {
+  let mostRecentGlobalAccuracySetting = globalAccuracy[0];
   for (let i = 0; i < durations.length; i++) {
     const duration = durations[i];
+    if (globalAccuracy[i] && globalAccuracy[i].difference === duration) {
+      mostRecentGlobalAccuracySetting = globalAccuracy[i];
+    }
     if (consumerRegistrations[duration.key]) {
-      return getIntervalToUseOrMinimalAcceptable(duration, validatedGlobalMinimumAccuracy);
+      return getIntervalToUseOrMinimalAcceptable(
+        duration,
+        mostRecentGlobalAccuracySetting.preferredAccuracy
+      );
     }
   }
 
@@ -101,7 +108,7 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
           }));
           durationIndex = durationIndex + 1;
 
-          if (durationIndex >= durations.length) {
+          if (!(durationIndex < durationsAsArray.length)) {
             keepGoing = false;
           }
         } else {
@@ -110,7 +117,7 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
       }
     }, intervalToUse);
 
-    const materializedValues = durationsAsArray.reduce((acc, duration) => {
+    const materializedValues = durationsAsArray.reduce((accumulator, duration) => {
       const [registerConsumer, unregisterConsumer] = generateRegistrationFunctions(
         setConsumerRegistrations,
         duration.key
@@ -122,9 +129,9 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
         unregisterConsumer
       );
 
-      acc[duration.key] = value;
+      accumulator[duration.key] = value;
 
-      return acc;
+      return accumulator;
     }, {});
 
     const renderProviders = () => {
