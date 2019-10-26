@@ -5,6 +5,7 @@ import DurationsContext from './DurationsContext';
 import GlobalAccuracyContext from './GlobalAccuracyContext';
 import DurationList from '../classes/DurationList';
 import AccuracyMap from '../classes/AccuracyMap';
+import AccuracyList from '../classes/AccuracyList';
 import { getDateNow, useInterval } from '../utilities';
 
 const getIntervalToUseOrMinimalAcceptable = (targetDuration, globalMinimumAccuracy) =>
@@ -53,7 +54,8 @@ const getIntervalToUse = (durations, consumerRegistrations, validatedGlobalMinim
 const generateTimeProviders = (inputDurations, globalAccuracy) => {
   const durations = new DurationList(inputDurations);
   const durationsAsArray = durations.get();
-  const globalAccuracyMap = new AccuracyMap(durations, globalAccuracy);
+  const accuracies = new AccuracyList(globalAccuracy);
+  const globalAccuracyMap = new AccuracyMap(durations, accuracies);
 
   const TimeProviders = React.memo(({ children, onIntervalUpdate, onRegistrationsUpdate }) => {
     // For consistency, we prefer to always ensure that all "now" references are the same in a single
