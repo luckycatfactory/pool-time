@@ -1,19 +1,21 @@
-// import React from 'react';
-// import PropTypes from 'prop-types';
-// import { mount } from 'enzyme';
-// import { act } from 'react-dom/test-utils';
-//
-// import useRelativeTime from '..';
-// import { getDateNow } from '../../utilities';
-// import { ONE_SECOND, ONE_MINUTE, ONE_HOUR, ONE_DAY } from '../../durations';
-//
-// jest.mock('../../utilities/getDateNow', () => jest.fn(() => Date.now()));
-//
-// jest.useFakeTimers();
-//
-// describe('useRelativeTime()', () => {
-//   // const generateTestTimeProviders =
-// });
+import React from 'react';
+import PropTypes from 'prop-types';
+import { mount } from 'enzyme';
+import { act } from 'react-dom/test-utils';
+
+import useRelativeTime from '..';
+import { getDateNow } from '../../utilities';
+import { ONE_SECOND, ONE_MINUTE, ONE_HOUR } from '../../durations';
+
+jest.mock('../../utilities/getDateNow', () => jest.fn(() => Date.now()));
+
+jest.useFakeTimers();
+
+describe('useRelativeTime()', () => {
+  it('does something', () => {
+    expect(1).toBe(1);
+  });
+});
 //
 // // // What follows is essentially integration tests between useRelativeTime and TimeProviders and all
 // // // dependencies.

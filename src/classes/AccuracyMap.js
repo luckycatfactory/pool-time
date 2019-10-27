@@ -31,6 +31,20 @@ const validateAccuracyListStartsWithSmallestDuration = (durationList, accuracyLi
   }
 };
 
+const validateAllAccuraciesAreInDurations = accuracyMap => {
+  Object.values(accuracyMap).forEach(accuracyEntry => {
+    Object.values(accuracyEntry).forEach(accuracySpecification => {
+      if (!accuracyMap[accuracySpecification.key]) {
+        throw new Error(
+          `Invalid accuracy of ${accuracySpecification.key} passed for differences of ${accuracyEntry.difference.key}. All accuracy specifications must have corresponding durations passed to the TimeProviders.`
+        );
+      }
+    });
+  });
+
+  return accuracyMap;
+};
+
 // At the point that this is called, durationList and accuracyList are both in ascending order.
 const makeAccuracyListIntoObject = (durationList, accuracyList) => {
   const durations = durationList.get();
@@ -39,7 +53,7 @@ const makeAccuracyListIntoObject = (durationList, accuracyList) => {
 
   const accuracyMap = durations.reduce((accumulator, duration) => {
     const currentAccuracy = accuracies[currentAccuracyIndex];
-    accumulator[duration.key] = new AccuracyEntry(currentAccuracy);
+    accumulator[duration.key] = new AccuracyEntry({ ...currentAccuracy, difference: duration });
 
     if (currentAccuracy.difference !== duration && currentAccuracyIndex < accuracies.length - 1) {
       currentAccuracyIndex++;
@@ -48,7 +62,7 @@ const makeAccuracyListIntoObject = (durationList, accuracyList) => {
     return accumulator;
   }, {});
 
-  return accuracyMap;
+  return validateAllAccuraciesAreInDurations(accuracyMap);
 };
 
 class InvalidAccuracyMapRequestError extends Error {}
