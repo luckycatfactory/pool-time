@@ -20,7 +20,7 @@ import '@zendeskgarden/react-buttons/dist/styles.css';
 import '@zendeskgarden/react-dropdowns/dist/styles.css';
 import '@zendeskgarden/react-forms/dist/styles.css';
 
-import { DefaultTimeProviders, useRelativeTime } from '../../src/index.js';
+import { generateTimeProviders, useRelativeTime } from '../../src/index.js';
 import { ONE_DAY, FIVE_SECONDS, ONE_HOUR, ONE_MINUTE, ONE_SECOND } from '../../src/durations';
 import useRenderCount from '../useRenderCount';
 import useIdGenerator from '../useIdGenerator';
@@ -115,6 +115,7 @@ const RelativeTime = React.memo(({ targetTime }) => {
 
   const timeDate = new Date(time - timeDifference);
   const nowAsDate = new Date(time);
+  console.log(time, timeDifference);
 
   return (
     <>
@@ -232,13 +233,31 @@ const durationToLabel = {
   [ONE_DAY.key]: 'One Day',
 };
 
+const TimeProviders = generateTimeProviders(
+  [ONE_SECOND, FIVE_SECONDS, ONE_MINUTE],
+  [
+    {
+      difference: ONE_SECOND,
+      maximumAccuracy: ONE_SECOND,
+      minimumAccuracy: ONE_SECOND,
+      preferredAccuracy: ONE_SECOND,
+    },
+    {
+      difference: ONE_MINUTE,
+      maximumAccuracy: FIVE_SECONDS,
+      minimumAccuracy: FIVE_SECONDS,
+      preferredAccuracy: FIVE_SECONDS,
+    },
+  ]
+);
+
 export const commentsExample = () => {
   const generateId = useIdGenerator();
   const [globalMinimumAccuracy, setGlobalMinimumAccuracy] = useState(ONE_MINUTE);
   const [comments, setComments] = useState([
     { id: generateId(), targetTime: Date.now() - ONE_HOUR.value, text: 'Very nice, very nice.' },
     { id: generateId(), targetTime: Date.now() - ONE_MINUTE.value, text: 'Wow, so performant!' },
-    { id: generateId(), targetTime: Date.now() - 50 * ONE_SECOND.value, text: 'This is so cool!' },
+    { id: generateId(), targetTime: Date.now() - 58 * ONE_SECOND.value, text: 'This is so cool!' },
   ]);
   const [currentIntervalDuration, setCurrentIntervalDuration] = useState(null);
 
@@ -247,6 +266,7 @@ export const commentsExample = () => {
   }, []);
 
   const handleIntervalUpdate = useCallback(interval => {
+    console.log('interval?', interval);
     setCurrentIntervalDuration(interval);
   }, []);
   const [currentRegistrations, setCurrentRegistrations] = useState({});
@@ -270,8 +290,7 @@ export const commentsExample = () => {
   const downshiftProps = { itemToString: item => item.value };
 
   return (
-    <DefaultTimeProviders
-      globalMinimumAccuracy={globalMinimumAccuracy}
+    <TimeProviders
       onIntervalUpdate={handleIntervalUpdate}
       onRegistrationsUpdate={handleRegistrationsUpdate}
     >
@@ -333,7 +352,7 @@ export const commentsExample = () => {
           <AddComment onSubmit={handleAddCommentSubmit} />
         </Layout>
       </ThemeProvider>
-    </DefaultTimeProviders>
+    </TimeProviders>
   );
 };
 

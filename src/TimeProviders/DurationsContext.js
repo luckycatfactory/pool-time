@@ -1,6 +1,6 @@
 import React from 'react';
 
-const defaultValue = [];
+const defaultValue = null;
 
 const DurationsContext = React.createContext(defaultValue);
 

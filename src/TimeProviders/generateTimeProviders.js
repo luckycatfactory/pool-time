@@ -8,8 +8,9 @@ import AccuracyMap from '../classes/AccuracyMap';
 import AccuracyList from '../classes/AccuracyList';
 import { getDateNow, useInterval } from '../utilities';
 
+// TODO: Should this always be max?
 const getIntervalToUseOrMinimalAcceptable = (targetDuration, globalAccuracy) =>
-  Math.min(targetDuration.value, globalAccuracy.value);
+  Math.max(targetDuration.value, globalAccuracy.value);
 
 const generateConsumerRegistrationIncrementer = (setConsumerRegistrations, key) => () =>
   setConsumerRegistrations(previousRegistrations => ({
@@ -48,6 +49,7 @@ const getIntervalToUse = (durations, consumerRegistrations, globalAccuracy) => {
       mostRecentGlobalAccuracySetting = globalAccuracy[i];
     }
     if (consumerRegistrations[duration.key]) {
+      console.log('hit this for some reason', consumerRegistrations, duration);
       return getIntervalToUseOrMinimalAcceptable(
         duration,
         mostRecentGlobalAccuracySetting.preferredAccuracy
@@ -81,6 +83,7 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
     );
 
     useEffect(() => {
+      console.log('updated!!!', intervalToUse);
       onIntervalUpdate(intervalToUse);
     }, [intervalToUse, onIntervalUpdate]);
 
@@ -89,6 +92,7 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
     }, [consumerRegistrations, onRegistrationsUpdate]);
 
     useInterval(() => {
+      console.log(consumerRegistrations);
       const now = getDateNow();
 
       let durationIndex = 0;
