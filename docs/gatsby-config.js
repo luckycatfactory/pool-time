@@ -1,7 +1,7 @@
 module.exports = {
   plugins: [
     `gatsby-plugin-react-helmet`,
-    "gatsby-plugin-styled-components",
+    'gatsby-plugin-styled-components',
     {
       options: {
         name: `images`,
@@ -11,28 +11,35 @@ module.exports = {
     },
     {
       options: {
-        name: "api",
+        name: 'api',
         path: `${__dirname}/src/pages/api`,
       },
       resolve: `gatsby-source-filesystem`,
     },
     {
       options: {
-        name: "guides",
+        name: 'guides',
         path: `${__dirname}/src/pages/guides`,
+      },
+      resolve: `gatsby-source-filesystem`,
+    },
+    {
+      options: {
+        name: 'examples',
+        path: `${__dirname}/src/pages/examples`,
       },
       resolve: `gatsby-source-filesystem`,
     },
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
-    "gatsby-plugin-layout",
+    'gatsby-plugin-layout',
     {
       options: {
         background_color: `#663399`,
         display: `minimal-ui`,
-        icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
-        name: `gatsby-starter-default`,
-        short_name: `starter`,
+        // icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
+        name: `React Pool Time`,
+        short_name: `React Pool Time`,
         start_url: `/`,
         theme_color: `#663399`,
       },
@@ -47,4 +54,4 @@ module.exports = {
     description: `The website for react-pool-time.`,
     title: `React Pool Time`,
   },
-}
+};

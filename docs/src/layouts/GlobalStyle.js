@@ -1,8 +1,8 @@
-import { createGlobalStyle } from "styled-components"
+import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
   body {
-    color: #616161;
+    color: #353535;
     font-family: Helvetica, Aria, sans-serif;
   }
 
@@ -17,14 +17,13 @@ const GlobalStyle = createGlobalStyle`
   }
 
   code {
-    background-color: #eaeaea;
-    color: #de697e;
+    color: #cc445c;
     font-family: monospace;
   }
 
   a.active {
     box-shadow:inset 0px -4px 0px 0px #5d85e0;
   }
-`
+`;
 
-export default GlobalStyle
+export default GlobalStyle;
