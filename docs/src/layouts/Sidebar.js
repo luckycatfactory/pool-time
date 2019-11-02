@@ -9,7 +9,7 @@ const Container = styled.div`
   flex-direction: column;
   padding: 12px 12px;
   font-size: 14px;
-  width: 200px;
+  width: 186px;
 `;
 
 const NavigationSection = styled.section`
@@ -17,7 +17,7 @@ const NavigationSection = styled.section`
 `;
 
 const NavigationLink = styled(Link)`
-  color: inherit;
+  color: #cc445c !important;
   display: block;
   padding: 8px;
   text-decoration: none;
@@ -86,10 +86,10 @@ const Sidebar = React.memo(({ title }) => {
 
   return (
     <Container>
-      <h1>{title}</h1>
+      <h1>{title.toUpperCase()}</h1>
       <nav>
         <NavigationSection>
-          <h2>Guides</h2>
+          <h2>guides</h2>
           {guideRoutes.map(route => (
             <NavigationLink activeClassName="active" key={route.name} to={`/guides/${route.name}`}>
               {route.displayName}
@@ -97,7 +97,7 @@ const Sidebar = React.memo(({ title }) => {
           ))}
         </NavigationSection>
         <NavigationSection>
-          <h2>Examples</h2>
+          <h2>examples</h2>
           {exampleRoutes.map(route => (
             <NavigationLink
               activeClassName="active"
@@ -109,7 +109,7 @@ const Sidebar = React.memo(({ title }) => {
           ))}
         </NavigationSection>
         <NavigationSection>
-          <h2>Api</h2>
+          <h2>api</h2>
           {apiRoutes.map(route => (
             <NavigationLink activeClassName="active" key={route.name} to={`/api/${route.name}`}>
               <code>{route.name}</code>

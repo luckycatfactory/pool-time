@@ -17,8 +17,8 @@ const GlobalStyle = createGlobalStyle`
   }
 
   code {
-    color: #cc445c;
-    font-family: monospace;
+    font-family: "Courier New", Courier, monospace;
+    font-weight: 700;
   }
 
   a.active {
