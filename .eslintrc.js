@@ -9,6 +9,8 @@ const config = {
   plugins: ['prettier', 'react-hooks', 'jest'],
   rules: {
     'no-plusplus': 'off',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'error',
     'sort-keys': ['error', 'asc', { natural: true }],
     strict: 'error',
   },

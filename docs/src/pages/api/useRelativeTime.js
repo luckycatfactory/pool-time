@@ -1,9 +1,13 @@
-import React from "react"
+import React from 'react';
 
 const UseRelativeTime = React.memo(() => {
-  return <h1>useRelativeTime</h1>
-})
+  return (
+    <h1>
+      <code>useRelativeTime</code>
+    </h1>
+  );
+});
 
-UseRelativeTime.displayName = "UseRelativeTime"
+UseRelativeTime.displayName = 'UseRelativeTime';
 
-export default UseRelativeTime
+export default UseRelativeTime;

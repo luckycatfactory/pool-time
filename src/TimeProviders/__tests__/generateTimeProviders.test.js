@@ -101,7 +101,7 @@ describe('generateTimeProviders()', () => {
           return () => {
             targetContext.unregisterConsumer();
           };
-        }, []);
+        }, [targetContext]);
 
         ConsumerTester.displayName = 'ConsumerTester';
 

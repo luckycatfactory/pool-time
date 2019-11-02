@@ -8,6 +8,7 @@ const useLocalAccuracy = (getLocalAccuracyConfiguration, deps = []) => {
   // The duration list really should never be re-computed since durations should
   // only ever be passed in at initial script evaluation.
   const durationList = useMemo(() => new DurationList(durations), [durations]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const accuracyList = useMemo(() => new AccuracyList(getLocalAccuracyConfiguration()), deps);
 
   const localAccuracyMap = useMemo(() => new AccuracyMap(durationList, accuracyList), [

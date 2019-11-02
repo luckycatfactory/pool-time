@@ -1,7 +1,7 @@
-import React, { useMemo } from "react"
-import PropTypes from "prop-types"
-import { graphql, Link, useStaticQuery } from "gatsby"
-import styled from "styled-components"
+import React, { useMemo } from 'react';
+import PropTypes from 'prop-types';
+import { graphql, Link, useStaticQuery } from 'gatsby';
+import styled from 'styled-components';
 
 const Container = styled.div`
   border-right: 1px solid grey;
@@ -10,7 +10,7 @@ const Container = styled.div`
   padding: 12px 12px;
   font-size: 14px;
   width: 200px;
-`
+`;
 
 const apiEntriesQuery = graphql`
   {
@@ -31,7 +31,7 @@ const apiEntriesQuery = graphql`
       }
     }
   }
-`
+`;
 
 const NavigationLink = styled(Link)`
   display: block;
@@ -40,59 +40,37 @@ const NavigationLink = styled(Link)`
   :visited {
     color: inherit;
   }
-`
-// code {
-//   color: ${({ to }) =>
-//   console.log(
-//     window.location.pathname,
-//     to,
-//     window.location.pathname === to
-//   ) || window.location.pathname === to
-//   ? "red"
-//   : "inherit"};
-// }
+`;
 
 const Sidebar = React.memo(({ title }) => {
-  const { apiEntries, guideEntries } = useStaticQuery(apiEntriesQuery)
+  const { apiEntries, guideEntries } = useStaticQuery(apiEntriesQuery);
 
-  const apiRoutes = useMemo(() => apiEntries.edges.map(edge => edge.node), [
-    apiEntries,
-  ])
-  const guideRoutes = useMemo(() => guideEntries.edges.map(edge => edge.node), [
-    guideEntries,
-  ])
+  const apiRoutes = useMemo(() => apiEntries.edges.map(edge => edge.node), [apiEntries.edges]);
+  const guideRoutes = useMemo(() => guideEntries.edges.map(edge => edge.node), [guideEntries.edges]);
 
   return (
     <Container>
       <h1>{title}</h1>
       <h2>Guides</h2>
       {guideRoutes.map(route => (
-        <NavigationLink
-          activeClassName="active"
-          key={route.name}
-          to={`/guides/${route.name}`}
-        >
+        <NavigationLink activeClassName="active" key={route.name} to={`/guides/${route.name}`}>
           {route.name}
         </NavigationLink>
       ))}
       <h2>Api</h2>
       {apiRoutes.map(route => (
-        <NavigationLink
-          activeClassName="active"
-          key={route.name}
-          to={`/api/${route.name}`}
-        >
+        <NavigationLink activeClassName="active" key={route.name} to={`/api/${route.name}`}>
           <code>{route.name}</code>
         </NavigationLink>
       ))}
     </Container>
-  )
-})
+  );
+});
 
 Sidebar.propTypes = {
   title: PropTypes.string.isRequired,
-}
+};
 
-Sidebar.displayName = "Sidebar"
+Sidebar.displayName = 'Sidebar';
 
-export default Sidebar
+export default Sidebar;

@@ -1,5 +1,4 @@
 import AccuracyList from '../AccuracyList';
-import AccuracyEntry from '../AccuracyEntry';
 import { ONE_SECOND, ONE_MINUTE } from '../../durations';
 
 describe('AccuracyList', () => {

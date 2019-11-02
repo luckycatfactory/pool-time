@@ -7,7 +7,7 @@ const generateTimeContextConsumptionHook = TimeContext => timeFormatter => {
     registerConsumer();
 
     return unregisterConsumer;
-  }, []);
+  }, [registerConsumer, unregisterConsumer]);
 
   if (timeFormatter) {
     return timeFormatter(time);

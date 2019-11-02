@@ -1,9 +1,13 @@
-import React from "react"
+import React from 'react';
 
 const GenerateTimeProviders = React.memo(() => {
-  return <h1>generateTimeProviders</h1>
-})
+  return (
+    <h1>
+      <code>generateTimeProviders</code>
+    </h1>
+  );
+});
 
-GenerateTimeProviders.displayName = "GenerateTimeProviders"
+GenerateTimeProviders.displayName = 'GenerateTimeProviders';
 
-export default GenerateTimeProviders
+export default GenerateTimeProviders;

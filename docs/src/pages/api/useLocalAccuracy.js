@@ -1,9 +1,13 @@
-import React from "react"
+import React from 'react';
 
 const UseLocalAccuracy = React.memo(() => {
-  return <h1>useLocalAccuracy</h1>
-})
+  return (
+    <h1>
+      <code>useLocalAccuracy</code>
+    </h1>
+  );
+});
 
-UseLocalAccuracy.displayName = "UseLocalAccuracy"
+UseLocalAccuracy.displayName = 'UseLocalAccuracy';
 
-export default UseLocalAccuracy
+export default UseLocalAccuracy;

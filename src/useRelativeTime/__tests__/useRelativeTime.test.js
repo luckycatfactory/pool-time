@@ -1,11 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { mount } from 'enzyme';
-import { act } from 'react-dom/test-utils';
 
 import useRelativeTime from '..';
 import { getDateNow } from '../../utilities';
-import { ONE_SECOND, ONE_MINUTE, ONE_HOUR } from '../../durations';
+import { ONE_SECOND } from '../../durations';
 import GlobalAccuracyContext from '../../TimeProviders/GlobalAccuracyContext';
 import DurationsContext from '../../TimeProviders/DurationsContext';
 import { AccuracyList, AccuracyMap, DurationList } from '../../classes';

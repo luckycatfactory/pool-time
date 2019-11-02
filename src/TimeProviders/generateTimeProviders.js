@@ -23,11 +23,14 @@ const generateConsumerRegistrationDecrementer = (setConsumerRegistrations, key) 
     [key]: previousRegistrations[key] - 1,
   }));
 const generateRegistrationFunctions = (setConsumerRegistrations, key) => [
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useCallback(generateConsumerRegistrationIncrementer(setConsumerRegistrations, key), []),
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useCallback(generateConsumerRegistrationDecrementer(setConsumerRegistrations, key), []),
 ];
 
 const generateValueObject = (duration, registerConsumer, time, unregisterConsumer) =>
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useMemo(
     () => ({
       duration,
@@ -35,7 +38,7 @@ const generateValueObject = (duration, registerConsumer, time, unregisterConsume
       time,
       unregisterConsumer,
     }),
-    [time]
+    [duration, registerConsumer, time, unregisterConsumer]
   );
 
 const createInitialStateObject = (durations, seedValue) =>

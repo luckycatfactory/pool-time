@@ -1,4 +1,4 @@
-import React from "react"
+import React from 'react';
 
 const GettingStarted = React.memo(() => (
   <>
@@ -7,8 +7,8 @@ const GettingStarted = React.memo(() => (
       <code>hi</code>
     </div>
   </>
-))
+));
 
-GettingStarted.displayName = "GettingStarted"
+GettingStarted.displayName = 'GettingStarted';
 
-export default GettingStarted
+export default GettingStarted;

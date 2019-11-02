@@ -40,6 +40,7 @@
   },
   "scripts": {
     "build": "NODE_ENV=production rollup -c && gzip -c ./dist/bundle.min.js > ./dist/bundle.min.js.gz",
+    "eslint": "eslint .",
     "storybook": "start-storybook",
     "test": "jest --watch",
     "test:coverage": "jest --coverage --silent && open coverage/lcov-report/index.html",

@@ -1,6 +1,6 @@
-import React from "react"
-import { useStaticQuery, graphql } from "gatsby"
-import Img from "gatsby-image"
+import React from 'react';
+import { useStaticQuery, graphql } from 'gatsby';
+import Img from 'gatsby-image';
 
 /*
  * This component is built using `gatsby-image` to automatically serve optimized
@@ -22,14 +22,14 @@ const query = graphql`
       }
     }
   }
-`
+`;
 
 const Image = React.memo(() => {
-  const data = useStaticQuery(query)
+  const data = useStaticQuery(query);
 
-  return <Img fluid={data.placeholderImage.childImageSharp.fluid} />
-})
+  return <Img fluid={data.placeholderImage.childImageSharp.fluid} />;
+});
 
-Image.displayName = "Image"
+Image.displayName = 'Image';
 
-export default Image
+export default Image;

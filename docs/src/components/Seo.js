@@ -5,10 +5,10 @@
  * See: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-import React, { useMemo } from "react"
-import PropTypes from "prop-types"
-import Helmet from "react-helmet"
-import { useStaticQuery, graphql } from "gatsby"
+import React, { useMemo } from 'react';
+import PropTypes from 'prop-types';
+import Helmet from 'react-helmet';
+import { useStaticQuery, graphql } from 'gatsby';
 
 const query = graphql`
   query {
@@ -20,14 +20,14 @@ const query = graphql`
       }
     }
   }
-`
+`;
 
 const SEO = React.memo(({ description, lang, meta, title }) => {
-  const { site } = useStaticQuery(query)
-  const metaDescription = useMemo(
-    () => description || site.siteMetadata.description,
-    [description, site]
-  )
+  const { site } = useStaticQuery(query);
+  const metaDescription = useMemo(() => description || site.siteMetadata.description, [
+    description,
+    site,
+  ]);
   const computedMeta = useMemo(
     () =>
       [
@@ -65,15 +65,15 @@ const SEO = React.memo(({ description, lang, meta, title }) => {
         },
       ].concat(meta),
     [meta, site, metaDescription, title]
-  )
+  );
 
-  const titleTemplate = useMemo(() => `%s | ${site.siteMetadata.title}`, [site])
+  const titleTemplate = useMemo(() => `%s | ${site.siteMetadata.title}`, [site]);
   const htmlAttributes = useMemo(
     () => ({
       lang,
     }),
     [lang]
-  )
+  );
 
   return (
     <Helmet
@@ -82,22 +82,22 @@ const SEO = React.memo(({ description, lang, meta, title }) => {
       titleTemplate={titleTemplate}
       meta={computedMeta}
     />
-  )
-})
+  );
+});
 
-SEO.displayName = "SEO"
+SEO.displayName = 'SEO';
 
 SEO.defaultProps = {
   description: ``,
   lang: `en`,
   meta: [],
-}
+};
 
 SEO.propTypes = {
   description: PropTypes.string,
   lang: PropTypes.string,
   meta: PropTypes.arrayOf(PropTypes.object),
   title: PropTypes.string.isRequired,
-}
+};
 
-export default SEO
+export default SEO;
