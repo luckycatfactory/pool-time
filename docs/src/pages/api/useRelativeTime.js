@@ -3,7 +3,7 @@ import React from 'react';
 const UseRelativeTime = React.memo(() => {
   return (
     <h2>
-      <code>useRelativeTime</code>
+      <code>useRelativeTime(targetTime[, options])</code>
     </h2>
   );
 });

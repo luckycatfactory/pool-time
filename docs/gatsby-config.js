@@ -26,6 +26,14 @@ module.exports = {
     },
     {
       options: {
+        ignore: ['**/index.js', '**/__tests__/**'],
+        name: 'durations',
+        path: `${__dirname}/../src/durations`,
+      },
+      resolve: `gatsby-source-filesystem`,
+    },
+    {
+      options: {
         name: 'examples',
         path: `${__dirname}/src/pages/examples`,
       },

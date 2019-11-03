@@ -3,7 +3,7 @@ import React from 'react';
 const UseLocalAccuracy = React.memo(() => {
   return (
     <h2>
-      <code>useLocalAccuracy</code>
+      <code>useLocalAccuracy(getLocalAccuracyConfiguration[, deps])</code>
     </h2>
   );
 });
