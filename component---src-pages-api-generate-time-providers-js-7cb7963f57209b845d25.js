@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[4],{"+s+8":function(e,n,a){"use strict";a.r(n);var r=a("q1tI"),t=a.n(r),i=t.a.memo((function(){return t.a.createElement("h2",null,t.a.createElement("code",null,"generateTimeProviders(inputDurations, globalAccuracy)"))}));i.displayName="GenerateTimeProviders",n.default=i}}]);
+//# sourceMappingURL=component---src-pages-api-generate-time-providers-js-7cb7963f57209b845d25.js.map
