@@ -1,2 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[5],{U5oi:function(e,n,o){"use strict";o.r(n);var a=o("q1tI"),t=o.n(a),i=t.a.memo((function(){return t.a.createElement("h1",null,t.a.createElement("code",null,"generateTimeToTheHook"))}));i.displayName="GenerateTimeToTheHook",n.default=i}}]);
-//# sourceMappingURL=component---src-pages-api-generate-time-to-the-hook-js-9049b2ac38260915018f.js.map
