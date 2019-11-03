@@ -7,8 +7,9 @@ const Container = styled.div`
   border-right: 1px solid grey;
   display: flex;
   flex-direction: column;
-  padding: 12px 12px;
   font-size: 14px;
+  overflow-y: scroll;
+  padding: 12px 12px;
   width: 186px;
 `;
 
@@ -86,8 +87,13 @@ const Sidebar = React.memo(({ title }) => {
 
   return (
     <Container>
-      <h1>{title.toUpperCase()}</h1>
+      <h1>{title}</h1>
       <nav>
+        <NavigationSection>
+          <NavigationLink activeClassName="active" key="home" to={`/`}>
+            Getting Started
+          </NavigationLink>
+        </NavigationSection>
         <NavigationSection>
           <h2>guides</h2>
           {guideRoutes.map(route => (

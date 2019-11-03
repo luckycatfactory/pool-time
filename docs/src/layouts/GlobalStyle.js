@@ -25,6 +25,11 @@ const GlobalStyle = createGlobalStyle`
   a.active {
     box-shadow:inset 0px -4px 0px 0px #5d85e0;
   }
+
+  p {
+    font-size: 18px;
+    margin: 24px 0;
+  }
 `;
 
 export default GlobalStyle;

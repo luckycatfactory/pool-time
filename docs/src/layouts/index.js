@@ -32,6 +32,7 @@ const Container = styled.div`
 
 const Main = styled.main`
   flex: 1;
+  overflow-y: scroll;
   padding: 24px;
 `;
 
