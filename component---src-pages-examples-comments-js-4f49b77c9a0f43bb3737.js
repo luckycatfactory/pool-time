@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[8],{"5FJh":function(e,n,t){"use strict";t.r(n);var a=t("q1tI"),m=t.n(a),o=m.a.memo((function(){return m.a.createElement("h2",null,"Comments Example")}));o.displayName="Comments",n.default=o}}]);
+//# sourceMappingURL=component---src-pages-examples-comments-js-4f49b77c9a0f43bb3737.js.map

@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[3],{iyvM:function(e,n,a){"use strict";a.r(n);var t=a("q1tI"),r=a.n(t),o=r.a.memo((function(){return r.a.createElement("h1",null,r.a.createElement("code",null,"generateDuration"))}));o.displayName="GenerateDuration",n.default=o}}]);
+//# sourceMappingURL=component---src-pages-api-generate-duration-js-f1444c22c7c025612a9c.js.map

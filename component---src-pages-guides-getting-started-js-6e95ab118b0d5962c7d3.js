@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[8],{GIVQ:function(e,t,n){"use strict";n.r(t);var a=n("q1tI"),l=n.n(a),r=l.a.memo((function(){return l.a.createElement(l.a.Fragment,null,l.a.createElement("h1",null,"Getting Started"),l.a.createElement("div",null,l.a.createElement("code",null,"hi")))}));r.displayName="GettingStarted",t.default=r}}]);
+//# sourceMappingURL=component---src-pages-guides-getting-started-js-6e95ab118b0d5962c7d3.js.map

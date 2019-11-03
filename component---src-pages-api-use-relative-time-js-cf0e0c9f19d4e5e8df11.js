@@ -1,0 +1,2 @@
+(window.webpackJsonp=window.webpackJsonp||[]).push([[7],{CYuE:function(e,n,a){"use strict";a.r(n);var t=a("q1tI"),i=a.n(t),l=i.a.memo((function(){return i.a.createElement("h2",null,i.a.createElement("code",null,"useRelativeTime"))}));l.displayName="UseRelativeTime",n.default=l}}]);
+//# sourceMappingURL=component---src-pages-api-use-relative-time-js-cf0e0c9f19d4e5e8df11.js.map
