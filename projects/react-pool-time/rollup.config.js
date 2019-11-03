@@ -3,6 +3,7 @@ import { eslint } from 'rollup-plugin-eslint';
 import { terser } from 'rollup-plugin-terser';
 import resolve from 'rollup-plugin-node-resolve';
 import cleanup from 'rollup-plugin-cleanup';
+import autoExternal from 'rollup-plugin-auto-external';
 
 const plugins = [
   resolve({
@@ -38,6 +39,7 @@ const productionConfigWithMinification = {
     format: 'cjs',
   },
   plugins: [
+    autoExternal(),
     ...plugins,
     terser({
       mangle: {

@@ -8,6 +8,7 @@
     "babel-plugin-styled-components": "^1.10.6",
     "gatsby": "^2.17.6",
     "gatsby-image": "^2.2.30",
+    "gatsby-plugin-alias-imports": "^1.0.5",
     "gatsby-plugin-layout": "^1.1.13",
     "gatsby-plugin-manifest": "^2.2.25",
     "gatsby-plugin-offline": "^3.0.17",
@@ -21,6 +22,7 @@
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
     "react-helmet": "^5.2.1",
+    "react-pool-time": "1.0.0",
     "react-syntax-highlighter": "^11.0.2",
     "styled-components": "^4.4.1",
     "styled-reset": "^4.0.3"

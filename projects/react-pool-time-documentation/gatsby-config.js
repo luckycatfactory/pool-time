@@ -28,7 +28,7 @@ module.exports = {
       options: {
         ignore: ['**/index.js', '**/__tests__/**'],
         name: 'durations',
-        path: `${__dirname}/../src/durations`,
+        path: `${__dirname}/../react-pool-time/src/durations`,
       },
       resolve: `gatsby-source-filesystem`,
     },
@@ -38,6 +38,13 @@ module.exports = {
         path: `${__dirname}/src/pages/examples`,
       },
       resolve: `gatsby-source-filesystem`,
+    },
+    {
+      options: {
+        alias: {},
+        extensions: [],
+      },
+      resolve: `gatsby-plugin-alias-imports`,
     },
     `gatsby-transformer-sharp`,
     `gatsby-plugin-sharp`,
