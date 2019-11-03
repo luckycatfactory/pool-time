@@ -2,9 +2,9 @@ import React from 'react';
 
 const GenerateDuration = React.memo(() => {
   return (
-    <h1>
+    <h2>
       <code>generateDuration</code>
-    </h1>
+    </h2>
   );
 });
 

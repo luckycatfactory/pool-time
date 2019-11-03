@@ -2,9 +2,9 @@ import React from 'react';
 
 const UseLocalAccuracy = React.memo(() => {
   return (
-    <h1>
+    <h2>
       <code>useLocalAccuracy</code>
-    </h1>
+    </h2>
   );
 });
 

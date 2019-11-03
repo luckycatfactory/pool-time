@@ -1,4 +1,5 @@
 module.exports = {
+  pathPrefix: '/react-pool-time',
   plugins: [
     `gatsby-plugin-react-helmet`,
     'gatsby-plugin-styled-components',

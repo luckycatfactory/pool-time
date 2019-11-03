@@ -2,9 +2,9 @@ import React from 'react';
 
 const GenerateTimeToTheHook = React.memo(() => {
   return (
-    <h1>
+    <h2>
       <code>generateTimeToTheHook</code>
-    </h1>
+    </h2>
   );
 });
 

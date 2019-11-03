@@ -9,6 +9,7 @@ const GlobalStyle = createGlobalStyle`
   h1 {
     font-size: 36px;
     font-weight: 700;
+    text-transform: uppercase;
   }
 
   h2 {

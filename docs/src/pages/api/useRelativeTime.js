@@ -2,9 +2,9 @@ import React from 'react';
 
 const UseRelativeTime = React.memo(() => {
   return (
-    <h1>
+    <h2>
       <code>useRelativeTime</code>
-    </h1>
+    </h2>
   );
 });
 
