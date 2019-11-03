@@ -91,7 +91,7 @@ const Sidebar = React.memo(({ title }) => {
         <NavigationSection>
           <h2>guides</h2>
           {guideRoutes.map(route => (
-            <NavigationLink activeClassName="active" key={route.name} to={`/guides/${route.name}`}>
+            <NavigationLink activeClassName="active" key={route.name} to={`/guides/${route.name}/`}>
               {route.displayName}
             </NavigationLink>
           ))}
@@ -102,7 +102,7 @@ const Sidebar = React.memo(({ title }) => {
             <NavigationLink
               activeClassName="active"
               key={route.name}
-              to={`/examples/${route.name}`}
+              to={`/examples/${route.name}/`}
             >
               {route.displayName}
             </NavigationLink>
@@ -111,7 +111,7 @@ const Sidebar = React.memo(({ title }) => {
         <NavigationSection>
           <h2>api</h2>
           {apiRoutes.map(route => (
-            <NavigationLink activeClassName="active" key={route.name} to={`/api/${route.name}`}>
+            <NavigationLink activeClassName="active" key={route.name} to={`/api/${route.name}/`}>
               <code>{route.name}</code>
             </NavigationLink>
           ))}

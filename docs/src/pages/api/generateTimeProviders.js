@@ -3,7 +3,7 @@ import React from 'react';
 const GenerateTimeProviders = React.memo(() => {
   return (
     <h2>
-      <code>generateTimeProviders(inputDurations, globalAccuracySpecification)</code>
+      <code>generateTimeProviders(inputDurations, globalAccuracy)</code>
     </h2>
   );
 });
