@@ -10,7 +10,7 @@ import { getDateNow, useInterval } from '../utilities';
 
 // TODO: Should this always be max?
 const getIntervalToUseOrMinimalAcceptable = (targetDuration, globalAccuracy) =>
-  Math.max(targetDuration.value, globalAccuracy.value);
+  Math.min(targetDuration.value, globalAccuracy.value);
 
 const generateConsumerRegistrationIncrementer = (setConsumerRegistrations, key) => () =>
   setConsumerRegistrations(previousRegistrations => ({
@@ -44,19 +44,12 @@ const generateValueObject = (duration, registerConsumer, time, unregisterConsume
 const createInitialStateObject = (durations, seedValue) =>
   durations.reduce((acc, duration) => Object.assign(acc, { [duration.key]: seedValue }), {});
 
-const getIntervalToUse = (durations, consumerRegistrations, globalAccuracy) => {
-  let mostRecentGlobalAccuracySetting = globalAccuracy[0];
+const getIntervalToUse = (durations, consumerRegistrations) => {
   for (let i = 0; i < durations.length; i++) {
     const duration = durations[i];
-    if (globalAccuracy[i] && globalAccuracy[i].difference === duration) {
-      mostRecentGlobalAccuracySetting = globalAccuracy[i];
-    }
+
     if (consumerRegistrations[duration.key]) {
-      console.log('hit this for some reason', consumerRegistrations, duration);
-      return getIntervalToUseOrMinimalAcceptable(
-        duration,
-        mostRecentGlobalAccuracySetting.preferredAccuracy
-      );
+      return duration.value;
     }
   }
 
@@ -80,13 +73,11 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
       createInitialStateObject(durationsAsArray, 0)
     );
 
-    const intervalToUse = useMemo(
-      () => getIntervalToUse(durationsAsArray, consumerRegistrations, globalAccuracy),
-      [consumerRegistrations]
-    );
+    const intervalToUse = useMemo(() => getIntervalToUse(durationsAsArray, consumerRegistrations), [
+      consumerRegistrations,
+    ]);
 
     useEffect(() => {
-      console.log('updated!!!', intervalToUse);
       onIntervalUpdate(intervalToUse);
     }, [intervalToUse, onIntervalUpdate]);
 
@@ -95,7 +86,6 @@ const generateTimeProviders = (inputDurations, globalAccuracy) => {
     }, [consumerRegistrations, onRegistrationsUpdate]);
 
     useInterval(() => {
-      console.log(consumerRegistrations);
       const now = getDateNow();
 
       let durationIndex = 0;

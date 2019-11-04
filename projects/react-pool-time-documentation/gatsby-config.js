@@ -34,6 +34,7 @@ module.exports = {
     },
     {
       options: {
+        ignore: ['**/snippets/**'],
         name: 'examples',
         path: `${__dirname}/src/pages/examples`,
       },

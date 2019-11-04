@@ -1,26 +1,18 @@
 import React from 'react';
-import { generateTimeProviders, ONE_SECOND, FIVE_SECONDS, ONE_MINUTE } from 'react-pool-time';
+import Comments from './snippets/comments';
 
-const TimeProviders = generateTimeProviders(
-  [ONE_SECOND, FIVE_SECONDS, ONE_MINUTE],
-  [
-    {
-      difference: ONE_SECOND,
-      maximumAccuracy: ONE_SECOND,
-      minimumAccuracy: ONE_SECOND,
-      preferredAccuracy: ONE_SECOND,
-    },
-  ]
-);
-
-const Comments = React.memo(() => {
+const CommentsExample = React.memo(() => {
   return (
-    <TimeProviders>
+    <>
       <h2>Comments Example</h2>
-    </TimeProviders>
+      <p>
+        What follows is an example that demonstrates the <code>useRelativeTime</code> hook.
+      </p>
+      <Comments />
+    </>
   );
 });
 
-Comments.displayName = 'Comments';
+CommentsExample.displayName = 'CommentsExample';
 
-export default Comments;
+export default CommentsExample;

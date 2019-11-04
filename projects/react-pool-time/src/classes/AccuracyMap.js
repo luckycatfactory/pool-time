@@ -1,6 +1,7 @@
 import AccuracyEntry from './AccuracyEntry';
 import AccuracyList from './AccuracyList';
 import DurationList from './DurationList';
+import { ONE_SECOND } from '../durations';
 
 class InvalidAccuracyMapInputError extends Error {}
 
@@ -75,10 +76,10 @@ const lesserDuration = (first, second) => (first.value <= second.value ? first :
 
 class AccuracyMap {
   constructor(durations, accuracyList) {
-    const validatedDurations = validateDurationList(durations);
-    const validatedAccuracyList = validateAccuracyList(accuracyList);
-    validateAccuracyListStartsWithSmallestDuration(validatedDurations, validatedAccuracyList);
-    this.value = makeAccuracyListIntoObject(validatedDurations, validatedAccuracyList);
+    this.durationList = validateDurationList(durations);
+    this.accuracyList = validateAccuracyList(accuracyList);
+    validateAccuracyListStartsWithSmallestDuration(this.durationList, this.accuracyList);
+    this.value = makeAccuracyListIntoObject(this.durationList, this.accuracyList);
   }
 
   getOptimalEntry(duration) {
@@ -129,7 +130,56 @@ class AccuracyMap {
     }
   }
 
-  getOptimalContext(duration, localAccuracyMap) {
+  getOptimalContext(difference, localAccuracyMap) {
+    const absoluteDifference = Math.abs(difference);
+    const accuracyListArray = this.accuracyList.get();
+
+    let targetDuration = accuracyListArray[0].difference;
+    let nextDuration = accuracyListArray[1].difference;
+
+    let i = 0;
+
+    while (
+      absoluteDifference >= targetDuration.value &&
+      nextDuration &&
+      absoluteDifference < nextDuration.value &&
+      i < accuracyListArray.length - 1
+    ) {
+      targetDuration = accuracyListArray[i].difference;
+      i++;
+      nextDuration = accuracyListArray[i].difference;
+    }
+
+    // console.log(targetDuration);
+    // while (absoluteDifference >= targetDuration.value && i < accuracyListArray.length - 1) {
+    //   targetDuration = accuracyListArray[i].difference;
+    // }
+
+    // console.log(targetDuration);
+
+    // if (absoluteDifference < accuracyListArray[0].difference.value) {
+    //   targetDuration = accuracyListArray[0].preferredAccuracy;
+    // } else if (
+    //   absoluteDifference > accuracyListArray[accuracyListArray.length - 1].difference.value
+    // ) {
+    //   targetDuration = accuracyListArray[accuracyListArray.length - 1].preferredAccuracy;
+    // } else {
+    //   let i = 0;
+    //   targetDuration = accuracyListArray[i].difference;
+    //   while (absoluteDifference < targetDuration.value && i < accuracyListArray.length) {
+    //     console.log('inside', absoluteDifference, targetDuration.value);
+    //     targetDuration = accuracyListArray[i].difference;
+    //     i++;
+    //   }
+    // }
+
+    console.log(targetDuration, absoluteDifference);
+    // const accuracies = this.accuracyList.get();
+
+    // console.log(accuracies);
+
+    const duration = ONE_SECOND;
+
     return this.getOptimalDuration(duration, localAccuracyMap).context;
   }
 }
