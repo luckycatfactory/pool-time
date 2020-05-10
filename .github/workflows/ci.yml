@@ -1,5 +1,3 @@
-name: Continuous Integration
-on: [push]
 jobs:
   build:
     steps:
@@ -12,4 +10,7 @@ jobs:
         with:
           node-version: "${{ steps.nvm.outputs.NVMRC }}"
       - name: Yarn install
-        run: yarn --offline
+        run: yarn --offline --frozen-lockfile
+    runs-on: ubuntu-latest
+on: [push]
+name: Continuous Integration
