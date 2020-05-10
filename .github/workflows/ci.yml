@@ -1,0 +1,15 @@
+name: Continuous Integration
+on: [push]
+jobs:
+  build:
+    steps:
+      - uses: actions/checkout@v2
+      - id: nvm
+        name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+      - name: Use Node.js (.nvmrc)
+        uses: actions/setup-node@v1
+        with:
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+      - name: Yarn install
+        run: yarn --offline

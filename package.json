@@ -2,6 +2,7 @@
   "name": "react-pool-time-packages",
   "private": true,
   "scripts": {
+    "clean:dependencies": "rm -rf node_modules && rm -rf projects/react-pool-time/node_modules && rm -rf projects/react-pool-time-documentation/node_modules",
     "eslint": "yarn eslint:fix",
     "eslint:base": "eslint . --ext .js,.jsx,.ts,.tsx",
     "eslint:check": "yarn eslint:base",
