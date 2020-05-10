@@ -1,53 +1,27 @@
-import babel from 'rollup-plugin-babel';
-import { eslint } from 'rollup-plugin-eslint';
-import { terser } from 'rollup-plugin-terser';
-import resolve from 'rollup-plugin-node-resolve';
-import cleanup from 'rollup-plugin-cleanup';
-import autoExternal from 'rollup-plugin-auto-external';
+import typescript from '@rollup/plugin-typescript';
 
-const plugins = [
-  resolve({
-    mainFields: ['module', 'main', 'src'],
-  }),
-  eslint(),
-  babel({
-    exclude: 'node_modules/**',
-  }),
-  cleanup(),
-];
-
-const productionConfig = {
-  external: ['react'],
-  input: 'src/index.js',
-  output: [
-    {
-      file: 'dist/bundle.cjs.js',
-      format: 'cjs',
-    },
-    {
-      file: 'dist/bundle.esm.js',
-      format: 'esm',
-    },
-  ],
-  plugins,
-};
-
-const productionConfigWithMinification = {
-  ...productionConfig,
-  output: {
-    file: 'dist/bundle.min.js',
-    format: 'cjs',
-  },
-  plugins: [
-    autoExternal(),
-    ...plugins,
-    terser({
-      mangle: {
-        properties: true,
-        toplevel: true,
+export default [
+  {
+    input: 'src/index.ts',
+    output: [
+      {
+        dir: 'dist',
+        format: 'cjs',
+        sourcemap: true,
       },
-    }),
-  ],
-};
-
-export default [productionConfig, productionConfigWithMinification];
+    ],
+    plugins: [
+      typescript({
+        declaration: true,
+        declarationDir: 'dist/types',
+        sourceMap: true,
+        rootDir: 'src',
+      }),
+    ],
+  },
+  {
+    input: 'src/index.ts',
+    output: { file: 'dist/es/react-pool-time.js', format: 'es' },
+    plugins: [typescript()],
+  },
+];
