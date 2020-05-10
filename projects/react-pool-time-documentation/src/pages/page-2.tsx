@@ -1,14 +1,13 @@
-// Gatsby supports TypeScript natively!
-import React from "react"
-import { PageProps, Link } from "gatsby"
+import React from 'react';
 
-import Layout from "../components/Layout"
-import SEO from "../components/Seo"
+import SEO from '../components/Seo';
 
-const SecondPage = React.memo((props: PageProps) => (
+const SecondPage = React.memo(() => (
   <>
     <SEO title="Page two" />
   </>
-))
+));
 
-export default SecondPage
+SecondPage.displayName = 'SecondPage';
+
+export default SecondPage;

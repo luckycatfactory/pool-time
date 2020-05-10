@@ -1,7 +1,6 @@
 {
-  "name": "gatsby-starter-default",
-  "private": true,
-  "description": "A simple starter to get up and developing quickly with Gatsby",
+  "name": "react-pool-time-documentation",
+  "description": "The documentation website for the react-pool-time package.",
   "version": "0.1.0",
   "author": "Kyle Mathews <mathews.kyle@gmail.com>",
   "dependencies": {
@@ -24,7 +23,17 @@
     "styled-components": "^5.1.0"
   },
   "devDependencies": {
-    "prettier": "^2.0.5"
+    "@types/prettier": "^2.0.0",
+    "@types/prop-types": "^15.7.3",
+    "@types/react": "^16.9.34",
+    "@types/react-dom": "^16.9.7",
+    "@types/react-helmet": "^5.0.15",
+    "@types/styled-components": "^5.1.0",
+    "@typescript-eslint/eslint-plugin": "^2.31.0",
+    "@typescript-eslint/parser": "^2.31.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react-hooks": "^4.0.0"
   },
   "keywords": [
     "gatsby"

@@ -1,9 +1,22 @@
 {
   "name": "react-pool-time-packages",
   "private": true,
+  "scripts": {
+    "eslint": "yarn eslint:fix",
+    "eslint:base": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "eslint:check": "yarn eslint:base",
+    "eslint:fix": "yarn eslint:base --fix",
+    "prettier": "yarn prettier:fix",
+    "prettier:base": "prettier 'projects/**/*.{js,ts,tsx}' --check",
+    "prettier:check": "yarn prettier:base --check",
+    "prettier:fix": "yarn prettier:base --write"
+  },
   "workspaces": {
     "packages": [
       "projects/*"
     ]
+  },
+  "devDependencies": {
+    "prettier": "^2.0.5"
   }
 }

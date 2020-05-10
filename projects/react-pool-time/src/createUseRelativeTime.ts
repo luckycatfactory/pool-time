@@ -1,3 +1,3 @@
-const createUseRelativeTime = () => () => Date.now();
+const createUseRelativeTime = () => (): number => Date.now();
 
 export default createUseRelativeTime;
