@@ -1,5 +1,3 @@
-import Layout from './src/components/Layout';
-
 const configuration = {
   siteMetadata: {
     title: 'react-pool-time',
@@ -8,12 +6,7 @@ const configuration = {
   },
   plugins: [
     'gatsby-plugin-typescript',
-    {
-      resolve: `gatsby-plugin-layout`,
-      options: {
-        component: Layout,
-      },
-    },
+    // `gatsby-plugin-layout`,
     {
       resolve: `gatsby-plugin-styled-components`,
     },
@@ -45,4 +38,4 @@ const configuration = {
   ],
 };
 
-export default configuration;
+module.exports = configuration;
