@@ -1,35 +1,62 @@
 import { Link } from 'gatsby';
 import React from 'react';
+import styled from 'styled-components';
 
-type HeaderProps = { siteTitle: string };
+interface HeaderProps {
+  readonly contentMaxWidth: number;
+  readonly siteTitle: string;
+}
 
-const Header = React.memo(({ siteTitle }: HeaderProps) => (
-  <header
-    style={{
-      background: `rebeccapurple`,
-      marginBottom: `1.45rem`,
-    }}
-  >
-    <div
-      style={{
-        margin: `0 auto`,
-        maxWidth: 960,
-        padding: `1.45rem 1.0875rem`,
-      }}
-    >
-      <h1 style={{ margin: 0 }}>
-        <Link
-          to="/"
-          style={{
-            color: `white`,
-            textDecoration: `none`,
-          }}
-        >
-          {siteTitle}
-        </Link>
-      </h1>
-    </div>
-  </header>
+const HeaderElement = styled.header`
+  box-shadow: 0 3px 8px 0 rgba(116, 129, 141, 0.08);
+  border-bottom: 1px solid #d4dadf;
+`;
+
+const CenteredContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  margin: 0 auto;
+  max-width: ${({ maxWidth }): string => `${maxWidth}px`};
+  padding: 1.45rem 1.0875rem;
+`;
+
+const TitleArea = styled.div`
+  align-items: center;
+  border-right: 1px solid #d4dadf;
+  display: flex;
+  justify-content: flex-start;
+  width: 240px;
+`;
+
+const NavigationArea = styled.nav`
+  flex: 1;
+`;
+
+const StyledLink = styled(Link)`
+  color: black;
+  font-weight: 900;
+  text-decoration: none;
+`;
+
+const HeaderNavigationLink = styled(Link)`
+  color: #3884ff;
+  font-size: 18px;
+  margin-left: 48px;
+  text-decoration: none;
+`;
+
+const Header = React.memo(({ contentMaxWidth, siteTitle }: HeaderProps) => (
+  <HeaderElement>
+    <CenteredContainer maxWidth={contentMaxWidth}>
+      <TitleArea>
+        <StyledLink to="/">{siteTitle}</StyledLink>
+      </TitleArea>
+      <NavigationArea>
+        <HeaderNavigationLink to="/">About</HeaderNavigationLink>
+        <HeaderNavigationLink to="/">GitHub</HeaderNavigationLink>
+      </NavigationArea>
+    </CenteredContainer>
+  </HeaderElement>
 ));
 
 Header.displayName = 'Header';

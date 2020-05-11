@@ -6,7 +6,6 @@ const configuration = {
   },
   plugins: [
     'gatsby-plugin-typescript',
-    // `gatsby-plugin-layout`,
     {
       resolve: `gatsby-plugin-styled-components`,
     },
@@ -23,8 +22,8 @@ const configuration = {
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
-        name: `gatsby-starter-default`,
-        short_name: `starter`, //eslint-disable-line @typescript-eslint/camelcase
+        name: `react-pool-time`,
+        short_name: `react-pool-time`, //eslint-disable-line @typescript-eslint/camelcase
         start_url: `/`, //eslint-disable-line @typescript-eslint/camelcase
         background_color: `#663399`, //eslint-disable-line @typescript-eslint/camelcase
         theme_color: `#663399`, //eslint-disable-line @typescript-eslint/camelcase
