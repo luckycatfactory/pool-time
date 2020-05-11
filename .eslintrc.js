@@ -1,28 +1,24 @@
-const config = {
+module.exports = {
+  env: {
+    node: true,
+  },
   extends: [
     'eslint:recommended',
-
-    // A side effect of this: No more incorrect 'unused' errors for variables used in JSX
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended',
+    'prettier/@typescript-eslint',
     'plugin:react/recommended',
   ],
-  parser: 'babel-eslint',
-  plugins: ['prettier', 'react-hooks', 'jest'],
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint', 'react-hooks'],
+  root: true,
   rules: {
-    'no-plusplus': 'off',
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'error',
-    'sort-keys': ['error', 'asc', { natural: true }],
-    strict: 'error',
-  },
-  env: {
-    browser: true,
-    es6: true,
-    node: true,
-    'jest/globals': true,
   },
   settings: {
-    react: { version: 'detect' },
+    react: {
+      version: 'detect',
+    },
   },
 };
-
-module.exports = config;

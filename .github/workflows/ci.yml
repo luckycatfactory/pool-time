@@ -1,0 +1,39 @@
+jobs:
+  build:
+    steps:
+      - uses: actions/checkout@v2
+      - id: nvm
+        name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+      - name: Use Node.js (.nvmrc)
+        uses: actions/setup-node@v1
+        with:
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+      - name: Install dependencies
+        run: yarn --offline --frozen-lockfile
+      - name: Build react-pool-time
+        run: yarn build
+        working-directory: ./projects/react-pool-time
+      - name: Build react-pool-time-documentation
+        run: yarn build
+        working-directory: ./projects/react-pool-time-documentation
+    runs-on: ubuntu-latest
+  format:
+    steps:
+      - uses: actions/checkout@v2
+      - id: nvm
+        name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+      - name: Use Node.js (.nvmrc)
+        uses: actions/setup-node@v1
+        with:
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+      - name: Install dependencies
+        run: yarn --offline --frozen-lockfile
+      - name: ESLint
+        run: yarn eslint:check
+      - name: Prettier
+        run: yarn prettier:check
+    runs-on: ubuntu-latest
+on: [push]
+name: Continuous Integration

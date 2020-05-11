@@ -1,50 +1,22 @@
 {
   "name": "react-pool-time",
-  "version": "1.0.0",
-  "main": "src/index.js",
+  "version": "0.0.1",
+  "main": "index.js",
   "license": "MIT",
-  "peerDependencies": {
-    "react": "^16.11.0",
-    "react-dom": "^16.11.0"
-  },
   "devDependencies": {
-    "@babel/core": "^7.6.2",
-    "@babel/preset-env": "^7.6.2",
-    "@babel/preset-react": "^7.0.0",
-    "@zendeskgarden/react-avatars": "^6.7.0",
-    "@zendeskgarden/react-buttons": "^6.7.1",
-    "@zendeskgarden/react-dropdowns": "^6.7.1",
-    "@zendeskgarden/react-forms": "^6.7.1",
-    "@zendeskgarden/react-theming": "^6.5.0",
-    "babel-eslint": "^10.0.3",
-    "babel-jest": "^24.9.0",
-    "babel-loader": "^8.0.6",
-    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
-    "date-fns": "^2.3.0",
-    "enzyme": "^3.10.0",
-    "enzyme-adapter-react-16": "^1.14.0",
-    "eslint": "^6.4.0",
-    "eslint-plugin-jest": "^22.17.0",
-    "eslint-plugin-prettier": "^3.1.1",
-    "eslint-plugin-react": "^7.14.3",
-    "eslint-plugin-react-hooks": "^2.0.1",
-    "jest": "^24.9.0",
-    "prettier": "^1.18.2",
-    "rollup": "^1.21.4",
-    "rollup-plugin-auto-external": "^2.0.0",
-    "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-cleanup": "^3.1.1",
-    "rollup-plugin-eslint": "^7.0.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^5.1.2",
-    "styled-components": "^4.4.0"
+    "@rollup/plugin-typescript": "^4.1.1",
+    "@types/prettier": "^2.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.31.0",
+    "@typescript-eslint/parser": "^2.31.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "rollup": "^2.9.0",
+    "tslib": "^1.11.2",
+    "typescript": "^3.8.3"
   },
   "scripts": {
-    "build": "NODE_ENV=production rollup -c && gzip -c ./dist/bundle.min.js > ./dist/bundle.min.js.gz",
-    "eslint": "eslint .",
-    "storybook": "start-storybook",
-    "test": "jest --watch",
-    "test:coverage": "jest --coverage --silent && open coverage/lcov-report/index.html",
-    "validate-bundle-size": "./scripts/validate-bundle-size.sh"
-  }
+    "build": "rollup -c"
+  },
+  "types": "dist/types/index.d.ts"
 }
