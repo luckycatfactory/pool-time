@@ -18,7 +18,6 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
     border: 0;
     font-size: 100%;
-    font-family: Helvetica Neue,Helvetica,Arial,sans-serif; ;
     vertical-align: baseline;
   }
   /* HTML5 display-role reset for older browsers */
@@ -27,6 +26,7 @@ const GlobalStyle = createGlobalStyle`
     display: block;
   }
   body {
+    font-family: Helvetica Neue,Helvetica,Arial,sans-serif; ;
     line-height: 1;
   }
   ol, ul {

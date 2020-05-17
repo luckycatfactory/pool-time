@@ -4,8 +4,7 @@ import styled from 'styled-components';
 import Sidebar from './Sidebar';
 
 interface MainProps {
-  children: React.ReactNode;
-  contentMaxWidth: number;
+  readonly children: React.ReactNode;
 }
 
 const MainElement = styled.main`
@@ -18,10 +17,11 @@ const MainElement = styled.main`
 const MainContent = styled.div`
   background-color: white;
   flex: 1;
+  padding: 24px;
 `;
 
-const Main = React.memo(({ children, contentMaxWidth }: MainProps) => (
-  <MainElement maxWidth={contentMaxWidth}>
+const Main = React.memo(({ children }: MainProps) => (
+  <MainElement>
     <Sidebar />
     <MainContent>{children}</MainContent>
   </MainElement>
