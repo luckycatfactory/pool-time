@@ -1,6 +1,3 @@
-/* eslint @typescript-eslint/no-var-requires: "off" */
-const path = require('path');
-
 const configuration = {
   siteMetadata: {
     title: 'react-pool-time',
@@ -32,18 +29,6 @@ const configuration = {
         theme_color: '#663399', //eslint-disable-line @typescript-eslint/camelcase
         display: 'minimal-ui',
         icon: 'src/images/gatsby-icon.png', // This path is relative to the root of the site.
-      },
-    },
-    {
-      resolve: 'gatsby-plugin-alias-imports',
-      options: {
-        alias: {
-          '@react-pool-time/react-pool-time': path.resolve(
-            __dirname,
-            '../react-pool-time/src'
-          ),
-        },
-        extensions: ['ts'],
       },
     },
     // this (optional) plugin enables Progressive Web App + Offline functionality

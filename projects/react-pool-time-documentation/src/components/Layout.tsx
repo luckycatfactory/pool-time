@@ -38,7 +38,7 @@ const Layout = React.memo(({ children }: LayoutProps) => {
           contentMaxWidth={CONTENT_MAX_WIDTH}
           siteTitle={data.site.siteMetadata.title}
         />
-        <Main contentMaxWidth={CONTENT_MAX_WIDTH}>{children}</Main>
+        <Main>{children}</Main>
       </GlobalLayoutContainer>
     </ThemeProvider>
   );

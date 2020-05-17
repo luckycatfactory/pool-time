@@ -6,7 +6,10 @@ import React, {
   useState,
 } from 'react';
 
-import { TimeObject } from './utilities/generateTimeObject';
+import {
+  TimeObject,
+  TimeObjectContextValue,
+} from './utilities/generateTimeObject';
 import ConfigurationContext from './contexts/ConfigurationContext';
 import RegistrationContext from './contexts/RegistrationContext';
 
@@ -32,6 +35,10 @@ interface TimesState {
   [withinKey: string]: number;
 }
 
+type TimeObjectContextValueWithContext = TimeObjectContextValue & {
+  context: React.Context<TimeObjectContextValue>;
+};
+
 const createPoolTimeProvider = (configuration: Configuration): React.FC => {
   const PoolTimeProvider = React.memo(
     ({ children, onIntervalChange }: PoolTimeProviderProps) => {
@@ -45,14 +52,14 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
         )
       );
       const [times, setTimes] = useState(() =>
-        configuration.accuracies.reduce<TimesState>(
-          (acc, { within: { key } }) => {
-            acc[key] = Date.now();
-            return acc;
-          },
-          {}
-        )
+        configuration.accuracies.reduce<{
+          [timeKey: string]: TimeObjectContextValueWithContext;
+        }>((acc, { within: { context, key, value } }) => {
+          acc[key] = { context, time: Date.now(), value };
+          return acc;
+        }, {})
       );
+      const [slowestTime, setSlowestTime] = useState(undefined);
 
       const handleRegistration = useCallback((timeKey) => {
         setRegistrations((previousRegistrations) => ({
@@ -77,10 +84,13 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
       }, [onIntervalChange]);
 
       useLayoutEffect(() => {
-        const slowestTime = configuration.accuracies.find((el) =>
-          Boolean(registrations[el.within.key])
+        const slowestTime = configuration.accuracies.find((accuracyEntry) =>
+          Boolean(registrations[accuracyEntry.within.key])
         );
+        setSlowestTime(slowestTime);
+      }, [registrations]);
 
+      useLayoutEffect(() => {
         if (slowestTime) {
           onIntervalChangeRef.current && onIntervalChangeRef.current();
 
@@ -89,29 +99,23 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
               (previousTimes) =>
                 configuration.accuracies.reduce<{
                   hasShortCircuited: boolean;
-                  nextTimes: TimesState;
+                  nextTimes: {
+                    [timeKey: string]: TimeObjectContextValueWithContext;
+                  };
                 }>(
-                  (acc, { within: { key, value } }) => {
+                  (acc, { within: { context, key, value } }) => {
                     if (acc.hasShortCircuited) {
                       acc.nextTimes[key] = previousTimes[key];
                       return acc;
                     }
                     const previousTimeRoundedToValue =
-                      Math.round(previousTimes[key] / value) * value;
+                      Math.round(previousTimes[key].value / value) * value;
                     const nowRoundedToValue =
                       Math.round(Date.now() / value) * value;
                     const timeSinceLastUpdate =
                       nowRoundedToValue - previousTimeRoundedToValue;
-                    if (key === 'ONE_SECOND') {
-                      console.log(
-                        'time since last update',
-                        key,
-                        timeSinceLastUpdate,
-                        registrations
-                      );
-                    }
                     if (timeSinceLastUpdate * value >= value) {
-                      acc.nextTimes[key] = Date.now();
+                      acc.nextTimes[key] = { context, time: Date.now(), value };
                     } else {
                       acc.nextTimes[key] = previousTimes[key];
                       acc.hasShortCircuited = true;
@@ -127,20 +131,22 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
             clearInterval(id);
           };
         }
-      }, [onIntervalChange, registrations]);
+        // If registrations changes, that will churn the slowestTimeRef in the
+        // event that the slowest time changes. Therefore, we can rely on that
+        // ref's .current value to re-trigger this effect.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [slowestTime]);
 
       return (
         <ConfigurationContext.Provider value={configuration}>
           <RegistrationContext.Provider value={handleRegistration}>
-            {configuration.accuracies.reduce((acc, timeObject) => {
-              const timeValue = times[timeObject.within.key];
+            {Object.keys(times).reduce((acc, timeKey) => {
+              const timeObject = times[timeKey];
 
               return (
-                <timeObject.within.context.Provider
-                  value={{ time: timeValue, value: timeValue }}
-                >
+                <timeObject.context.Provider value={timeObject}>
                   {acc}
-                </timeObject.within.context.Provider>
+                </timeObject.context.Provider>
               );
             }, children)}
           </RegistrationContext.Provider>

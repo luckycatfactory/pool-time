@@ -1,4 +1,4 @@
-import { useContext, useLayoutEffect, useRef } from 'react';
+import { useContext, useLayoutEffect, useMemo } from 'react';
 
 import ConfigurationContext from './contexts/ConfigurationContext';
 import RegistrationContext from './contexts/RegistrationContext';
@@ -6,6 +6,7 @@ import { AccuracyEntry } from './createPoolTimeProvider';
 import { TimeObjectContextValue } from './utilities/generateTimeObject';
 
 export interface UseRelativeTimeResponse {
+  readonly difference: number;
   readonly time: number;
 }
 
@@ -52,11 +53,17 @@ const useRelativeTime = (targetTime: number): UseRelativeTimeResponse => {
 
   const { time } = useContext(optimalContext);
 
-  const timeRef = useRef(time);
+  const difference = useMemo(() => time - targetTime, [targetTime, time]);
 
-  return useRef({
-    time: timeRef.current,
-  }).current;
+  const response = useMemo(
+    () => ({
+      difference,
+      time,
+    }),
+    [difference, time]
+  );
+
+  return response;
 };
 
 export default useRelativeTime;
