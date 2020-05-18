@@ -1,9 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { Field, Label, Textarea } from '@zendeskgarden/react-forms';
-import { MD } from '@zendeskgarden/react-typography';
+import { Paragraph, SM, MD } from '@zendeskgarden/react-typography';
 import { Button } from '@zendeskgarden/react-buttons';
 import faker from 'faker';
+import formatDistanceStrict from 'date-fns/formatDistanceStrict';
 
 import {
   createPoolTimeProvider,
@@ -12,6 +13,7 @@ import {
   useRelativeTime,
 } from '../../../react-pool-time/src';
 import getNextId from '../utilities/getNextId';
+import RenderCount from './RenderCount';
 
 interface CommentEditorProps {
   readonly onAddComment: (text: string) => void;
@@ -102,29 +104,69 @@ const CommentImage = styled.img`
   width: 64px;
 `;
 
+const CommentContainer = styled.div`
+  border-top: 1px dotted grey;
+  display: flex;
+  padding: 4px 0;
+`;
+
+const CommentShelf = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 120px;
+`;
+
+const CommentMain = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+`;
+
+const CommentText = styled.div`
+  flex: 1;
+  padding: 8px 0;
+`;
+
+const CommentTimeAgo = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+`;
+
 const Comment = React.memo(
   ({ author, avatar, createdAt, text }: CommentProps) => {
-    const { difference } = useRelativeTime(createdAt);
+    const { time } = useRelativeTime(createdAt);
 
     const timeAgo = useMemo(
-      () => `about ${Math.round(difference / 1000)} seconds ago`,
-      [difference]
+      () => formatDistanceStrict(createdAt, time, { addSuffix: true }),
+      [createdAt, time]
     );
 
     return (
-      <div>
-        <CommentImage alt={`Avatar image for ${author}`} src={avatar} />
-        <div>{author}</div>
-        <div>{text}</div>
-        <div>{timeAgo}</div>
-      </div>
+      <CommentContainer>
+        <CommentShelf>
+          <CommentImage alt={`Avatar image for ${author}`} src={avatar} />
+          <SM isBold>{author}</SM>
+        </CommentShelf>
+        <CommentMain>
+          <CommentText>
+            <Paragraph>{text}</Paragraph>
+          </CommentText>
+          <CommentTimeAgo>
+            <RenderCount />
+            <MD>{timeAgo}</MD>
+          </CommentTimeAgo>
+        </CommentMain>
+      </CommentContainer>
     );
   }
 );
 
 Comment.displayName = 'Comment';
 
-const currentUserAuthor = 'react-pool-time';
+const currentUserAuthor = '@react-pool-time';
 const currentUserAvatar = faker.internet.avatar();
 
 const createComment = (text?: string): Comment => {
@@ -181,11 +223,18 @@ const Comments = React.memo(() => {
     [addComment]
   );
 
+  const commentsText = useMemo(() => {
+    const numberOfComments = comments.allIds.length;
+    const suffix = numberOfComments === 1 ? 'comment' : 'comments';
+
+    return `${numberOfComments} ${suffix}`;
+  }, [comments.allIds.length]);
+
   return (
     <PoolTimeProvider>
       <Container>
         <CommentEditor onAddComment={handleEditorAddComment} />
-        <MD>{comments.allIds.length} comments</MD>
+        <MD isBold>{commentsText}</MD>
         {comments.allIds.map((commentId) => {
           const comment = comments.byId[commentId];
           return (
