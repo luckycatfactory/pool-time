@@ -79,7 +79,7 @@ const groups = [
       { label: 'createPoolTimeProvider', to: '/createpooltimeprovider' },
       {
         label: 'useRelativeTime',
-        to: '/useRelativeTime',
+        to: '/userelativetime',
       },
     ],
   },
