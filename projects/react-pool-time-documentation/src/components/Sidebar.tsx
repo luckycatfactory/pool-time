@@ -70,8 +70,18 @@ const groups = [
     ],
   },
   {
+    name: 'Examples',
+    items: [{ label: 'Comments', to: '/comments' }],
+  },
+  {
     name: 'API',
-    items: [{ label: 'Some Label', to: '/something' }],
+    items: [
+      { label: 'createPoolTimeProvider', to: '/createpooltimeprovider' },
+      {
+        label: 'useRelativeTime',
+        to: '/useRelativeTime',
+      },
+    ],
   },
   {
     name: 'Support',

@@ -1,7 +1,9 @@
+import filesize from 'rollup-plugin-filesize';
 import typescript from '@rollup/plugin-typescript';
 
 export default [
   {
+    external: ['react'],
     input: 'src/index.ts',
     output: [
       {
@@ -11,6 +13,7 @@ export default [
       },
     ],
     plugins: [
+      filesize(),
       typescript({
         declaration: true,
         declarationDir: 'dist/types',
@@ -20,8 +23,9 @@ export default [
     ],
   },
   {
+    external: ['react'],
     input: 'src/index.ts',
     output: { file: 'dist/es/react-pool-time.js', format: 'es' },
-    plugins: [typescript()],
+    plugins: [filesize(), typescript()],
   },
 ];

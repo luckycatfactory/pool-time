@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStaticQuery, graphql } from 'gatsby';
 import styled from 'styled-components';
+import { ThemeProvider } from '@zendeskgarden/react-theming';
 
 import GlobalStyle from './GlobalStyle';
 import Header from './Header';
@@ -30,14 +31,16 @@ const Layout = React.memo(({ children }: LayoutProps) => {
   `);
 
   return (
-    <GlobalLayoutContainer>
-      <GlobalStyle />
-      <Header
-        contentMaxWidth={CONTENT_MAX_WIDTH}
-        siteTitle={data.site.siteMetadata.title}
-      />
-      <Main contentMaxWidth={CONTENT_MAX_WIDTH}>{children}</Main>
-    </GlobalLayoutContainer>
+    <ThemeProvider>
+      <GlobalLayoutContainer>
+        <GlobalStyle />
+        <Header
+          contentMaxWidth={CONTENT_MAX_WIDTH}
+          siteTitle={data.site.siteMetadata.title}
+        />
+        <Main>{children}</Main>
+      </GlobalLayoutContainer>
+    </ThemeProvider>
   );
 });
 
