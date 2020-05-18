@@ -2,9 +2,11 @@ import React from 'react';
 import { Paragraph, LG, XL, XXL } from '@zendeskgarden/react-typography';
 
 import Section from '../components/Section';
+import SEO from '../components/Seo';
 
 const Motivation = React.memo(() => (
   <>
+    <SEO title="Motivation" />
     <XXL>Motivation</XXL>
     <Section>
       <XL>Accuracy</XL>

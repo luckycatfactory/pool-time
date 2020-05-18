@@ -10,6 +10,7 @@ import {
 
 import CodeBlock from '../components/CodeBlock';
 import Section from '../components/Section';
+import SEO from '../components/Seo';
 
 const initializeCodeString = `
 import {
@@ -62,6 +63,7 @@ export default App;
 
 const Installation = React.memo(() => (
   <>
+    <SEO title="Installation" />
     <XXL>Installation</XXL>
     <Section>
       <XL>Install the Package</XL>
