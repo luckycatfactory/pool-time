@@ -9,8 +9,8 @@ const RenderCountElement = styled.div`
   color: white;
   font-size: 12px;
   font-weight: 700;
+  margin: 0 4px;
   padding: 2px 8px;
-  margin-right: 4px;
 `;
 
 const RenderCount: React.FC = () => {

@@ -78,8 +78,8 @@ const groups = [
     items: [
       { label: 'createPoolTimeProvider', to: '/createpooltimeprovider' },
       {
-        label: 'createUseRelativeTime',
-        to: '/createuserelativetime',
+        label: 'useRelativeTime',
+        to: '/useRelativeTime',
       },
     ],
   },

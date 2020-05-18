@@ -1,14 +1,17 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
+import { Button } from '@zendeskgarden/react-buttons';
 import { Field, Label, Textarea } from '@zendeskgarden/react-forms';
 import { Paragraph, SM, MD } from '@zendeskgarden/react-typography';
-import { Button } from '@zendeskgarden/react-buttons';
 import faker from 'faker';
 import formatDistanceStrict from 'date-fns/formatDistanceStrict';
 
 import {
   createPoolTimeProvider,
   ONE_SECOND,
+  FIVE_SECONDS,
+  TEN_SECONDS,
+  THIRTY_SECONDS,
   ONE_MINUTE,
   useRelativeTime,
 } from '../../../react-pool-time/src';
@@ -23,17 +26,26 @@ interface Comment {
   readonly author: string;
   readonly avatar: string;
   readonly createdAt: number;
+  readonly isByCurrentUser: boolean;
   readonly id: string;
   readonly text: string;
 }
 
-type CommentProps = Comment;
+type CommentProps = Comment & { onRemoveComment: (id: string) => void };
 
 const PoolTimeProvider = createPoolTimeProvider({
   accuracies: [
     {
-      upTo: ONE_MINUTE,
+      upTo: FIVE_SECONDS,
       within: ONE_SECOND,
+    },
+    {
+      upTo: THIRTY_SECONDS,
+      within: FIVE_SECONDS,
+    },
+    {
+      upTo: ONE_MINUTE,
+      within: TEN_SECONDS,
     },
   ],
 });
@@ -136,13 +148,29 @@ const CommentTimeAgo = styled.div`
 `;
 
 const Comment = React.memo(
-  ({ author, avatar, createdAt, text }: CommentProps) => {
+  ({
+    author,
+    avatar,
+    createdAt,
+    isByCurrentUser,
+    id,
+    onRemoveComment,
+    text,
+  }: CommentProps) => {
     const { time } = useRelativeTime(createdAt);
 
     const timeAgo = useMemo(
-      () => formatDistanceStrict(createdAt, time, { addSuffix: true }),
+      () =>
+        formatDistanceStrict(createdAt, time, {
+          addSuffix: true,
+          roundingMethod: 'floor',
+        }),
       [createdAt, time]
     );
+
+    const handleDeleteClick = useCallback(() => {
+      onRemoveComment(id);
+    }, [id, onRemoveComment]);
 
     return (
       <CommentContainer>
@@ -155,6 +183,11 @@ const Comment = React.memo(
             <Paragraph>{text}</Paragraph>
           </CommentText>
           <CommentTimeAgo>
+            {isByCurrentUser && (
+              <Button isDanger isLink onClick={handleDeleteClick} size="small">
+                Delete
+              </Button>
+            )}
             <RenderCount />
             <MD>{timeAgo}</MD>
           </CommentTimeAgo>
@@ -186,6 +219,7 @@ const createComment = (text?: string): Comment => {
     avatar: avatarToUse,
     createdAt: now,
     id: getNextId(),
+    isByCurrentUser: isCurrentUser,
     text: textToUse,
   };
 };
@@ -216,6 +250,25 @@ const Comments = React.memo(() => {
     });
   }, []);
 
+  const removeComment = useCallback((id: string) => {
+    setComments((previousComments) => {
+      const nextById = Object.keys(previousComments.byId).reduce(
+        (accumulator, commentId) => {
+          if (commentId !== id) {
+            accumulator[commentId] = previousComments.byId[commentId];
+          }
+          return accumulator;
+        },
+        {}
+      );
+
+      return {
+        allIds: previousComments.allIds.filter((commentId) => commentId !== id),
+        byId: nextById,
+      };
+    });
+  }, []);
+
   const handleEditorAddComment = useCallback(
     (text: string) => {
       addComment(text);
@@ -242,8 +295,10 @@ const Comments = React.memo(() => {
               author={comment.author}
               avatar={comment.avatar}
               createdAt={comment.createdAt}
+              isByCurrentUser={comment.isByCurrentUser}
               id={comment.id}
               key={comment.id}
+              onRemoveComment={removeComment}
               text={comment.text}
             />
           );
