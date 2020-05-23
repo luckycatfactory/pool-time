@@ -10,11 +10,12 @@ module.exports = {
     'plugin:react/recommended',
   ],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'react-hooks'],
+  plugins: ['@typescript-eslint', 'react-hooks', 'jest'],
   root: true,
   rules: {
-    'react-hooks/rules-of-hooks': 'error',
+    'no-console': 'error',
     'react-hooks/exhaustive-deps': 'error',
+    'react-hooks/rules-of-hooks': 'error',
   },
   settings: {
     react: {

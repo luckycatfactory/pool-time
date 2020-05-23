@@ -115,7 +115,6 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
                     const timeSinceLastUpdate =
                       nowRoundedToValue - previousTimeRoundedToValue;
 
-                    // console.log('fuck', key, timeSinceLastUpdate);
                     if (timeSinceLastUpdate >= value) {
                       acc.nextTimes[key] = { context, time: Date.now(), value };
                     } else {
