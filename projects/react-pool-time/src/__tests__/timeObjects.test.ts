@@ -135,6 +135,11 @@ describe('Exposed time objects', () => {
         key: 'SIX_HOURS',
         value: _ONE_HOUR * 6,
       },
+      // META
+      ETERNITY: {
+        key: 'ETERNITY',
+        value: Number.POSITIVE_INFINITY,
+      },
     });
   });
 });

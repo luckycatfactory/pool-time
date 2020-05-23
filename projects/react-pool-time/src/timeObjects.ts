@@ -33,3 +33,9 @@ export const THREE_HOURS = generateTimeObject('THREE_HOURS', 10800000);
 export const FOUR_HOURS = generateTimeObject('FOUR_HOURS', 14400000);
 export const FIVE_HOURS = generateTimeObject('FIVE_HOURS', 18000000);
 export const SIX_HOURS = generateTimeObject('SIX_HOURS', 21600000);
+
+// META
+export const ETERNITY = generateTimeObject(
+  'ETERNITY',
+  Number.POSITIVE_INFINITY
+);

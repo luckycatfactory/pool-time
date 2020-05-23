@@ -13,9 +13,11 @@ import {
 import ConfigurationContext from './contexts/ConfigurationContext';
 import RegistrationContext from './contexts/RegistrationContext';
 
-interface PoolTimeProviderProps {
+export interface PoolTimeProviderProps {
   readonly children: React.ReactNode;
-  readonly onIntervalChange?: () => undefined;
+  readonly onIntervalChange?: (currentInterval: number) => void;
+  readonly onRegister?: (timeKey: string) => void;
+  readonly onUnregister?: (timeKey: string) => void;
 }
 
 export interface AccuracyEntry {
@@ -41,7 +43,12 @@ type TimeObjectContextValueWithContext = TimeObjectContextValue & {
 
 const createPoolTimeProvider = (configuration: Configuration): React.FC => {
   const PoolTimeProvider = React.memo(
-    ({ children, onIntervalChange }: PoolTimeProviderProps) => {
+    ({
+      children,
+      onIntervalChange,
+      onRegister,
+      onUnregister,
+    }: PoolTimeProviderProps) => {
       const [registrations, setRegistrations] = useState(() =>
         configuration.accuracies.reduce<RegistrationState>(
           (acc, { within: { key } }) => {
@@ -61,11 +68,24 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
       );
       const [slowestTime, setSlowestTime] = useState(undefined);
 
+      const onRegisterRef = useRef<(timeKey: string) => void>(onRegister);
+      const onUnregisterRef = useRef<(timeKey: string) => void>(onUnregister);
+
+      useLayoutEffect(() => {
+        onRegisterRef.current = onRegister;
+      }, [onRegister]);
+
+      useLayoutEffect(() => {
+        onUnregisterRef.current = onUnregister;
+      }, [onUnregister]);
+
       const handleRegistration = useCallback((timeKey) => {
         setRegistrations((previousRegistrations) => ({
           ...previousRegistrations,
           [timeKey]: previousRegistrations[timeKey] + 1,
         }));
+
+        onRegisterRef.current && onRegisterRef.current(timeKey);
 
         return {
           unregister: (): void => {
@@ -73,13 +93,15 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
               ...previousRegistrations,
               [timeKey]: previousRegistrations[timeKey] - 1,
             }));
+
+            onUnregisterRef.current && onUnregisterRef.current(timeKey);
           },
         };
       }, []);
 
-      const onIntervalChangeRef = useRef<() => void>();
+      const onIntervalChangeRef = useRef<(currentInterval: number) => void>();
 
-      useEffect(() => {
+      useLayoutEffect(() => {
         onIntervalChangeRef.current = onIntervalChange;
       }, [onIntervalChange]);
 
@@ -92,8 +114,6 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
 
       useLayoutEffect(() => {
         if (slowestTime) {
-          onIntervalChangeRef.current && onIntervalChangeRef.current();
-
           const id = setInterval(() => {
             setTimes(
               (previousTimes) =>
@@ -127,6 +147,9 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
                 ).nextTimes
             );
           }, slowestTime.within.value);
+
+          onIntervalChangeRef.current &&
+            onIntervalChangeRef.current(slowestTime.within.value);
 
           return (): void => {
             clearInterval(id);
