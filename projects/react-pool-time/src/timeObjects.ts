@@ -8,7 +8,7 @@ export const FOUR_SECONDS = generateTimeObject('FOUR_SECONDS', 4000);
 export const FIVE_SECONDS = generateTimeObject('FIVE_SECONDS', 5000);
 export const TEN_SECONDS = generateTimeObject('TEN_SECONDS', 10000);
 export const FIFTEEN_SECONDS = generateTimeObject('FIFTEEN_SECONDS', 15000);
-export const TWENTY_SECONDS = generateTimeObject('FIFTEEN_SECONDS', 20000);
+export const TWENTY_SECONDS = generateTimeObject('TWENTY_SECONDS', 20000);
 export const THIRTY_SECONDS = generateTimeObject('THIRTY_SECONDS', 30000);
 
 // MINUTES
