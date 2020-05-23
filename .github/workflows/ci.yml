@@ -50,6 +50,8 @@ jobs:
       - name: Test react-pool-time
         run: yarn test:ci
         working-directory: ./projects/react-pool-time
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
     runs-on: ubuntu-latest
 on: [push]
 name: Continuous Integration
