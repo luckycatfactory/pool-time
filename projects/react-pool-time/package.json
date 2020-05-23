@@ -22,7 +22,9 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "test": "jest --watch"
+    "test": "yarn test:base --watch",
+    "test:base": "jest",
+    "test:ci": "yarn test:base"
   },
   "types": "dist/types/index.d.ts",
   "peerDependencies": {

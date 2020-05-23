@@ -35,5 +35,21 @@ jobs:
       - name: Prettier
         run: yarn prettier:check
     runs-on: ubuntu-latest
+  test:
+    steps:
+      - uses: actions/checkout@v2
+      - id: nvm
+        name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+      - name: Use Node.js (.nvmrc)
+        uses: actions/setup-node@v1
+        with:
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+      - name: Install dependencies
+        run: yarn --offline --frozen-lockfile
+      - name: Test react-pool-time
+        run: yarn test:ci
+        working-directory: ./projects/react-pool-time
+    runs-on: ubuntu-latest
 on: [push]
 name: Continuous Integration

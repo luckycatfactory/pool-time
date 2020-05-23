@@ -22,8 +22,6 @@ const generateTimeObject = (key: string, value: number): TimeObject => {
         'Invalid value provided to generateTimeObject. The value must be less than 2^31 - 1 = 2,147,483,647 since JavaScript intervals treat delays as signed 32-bit integers.'
       );
     } else if (value % 1000 !== 0) {
-      console.log('value?', value);
-
       throw new Error(
         'Invalid value provided to generateTimeObject. The value must be evenly divisible by 1000.'
       );
