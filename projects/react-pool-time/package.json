@@ -24,7 +24,7 @@
     "build": "rollup -c",
     "test": "yarn test:base --watch",
     "test:base": "jest",
-    "test:ci": "yarn test:base"
+    "test:ci": "yarn test:base --coverage"
   },
   "types": "dist/types/index.d.ts",
   "peerDependencies": {
