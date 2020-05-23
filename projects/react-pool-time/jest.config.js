@@ -1,9 +1,5 @@
 module.exports = {
-  collectCoverageFrom: [
-    '**/*.{js,ts,tsx}',
-    '!**/node_modules/**',
-    '!**/vendor/**',
-  ],
+  collectCoverageFrom: ['src/**/*.{js,ts,tsx}', '!**/*.d.ts'],
   coverageDirectory: 'coverage',
   verbose: true,
 };
