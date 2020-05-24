@@ -3,7 +3,7 @@ import { useContext, useLayoutEffect, useMemo } from 'react';
 import ConfigurationContext from './contexts/ConfigurationContext';
 import RegistrationContext from './contexts/RegistrationContext';
 import { AccuracyEntry } from './createPoolTimeProvider';
-import { TimeObjectContextValue } from './utilities/generateTimeObject';
+import { TimeContextValue } from './utilities/generateTimeObject';
 
 export interface UseRelativeTimeResponse {
   readonly difference: number;
@@ -28,7 +28,7 @@ const findAccuracy = (
 
 const useOptimalContext = (
   targetTime: number
-): React.Context<TimeObjectContextValue> => {
+): React.Context<TimeContextValue> => {
   const configuration = useContext(ConfigurationContext);
 
   const {

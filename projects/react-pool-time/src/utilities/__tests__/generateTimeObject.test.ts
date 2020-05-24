@@ -1,5 +1,16 @@
 import React from 'react';
-import generateTimeObject from '../generateTimeObject';
+import generateTimeObject, {
+  TimeObject,
+  TimeObjectWithContext,
+} from '../generateTimeObject';
+
+const isTimeObjectWithContext = (
+  timeObject: TimeObject
+): timeObject is TimeObjectWithContext =>
+  Object.prototype.hasOwnProperty.call(
+    timeObject as TimeObjectWithContext,
+    'context'
+  );
 
 jest.mock('react', () => ({
   createContext: jest.fn(() => ({})),
@@ -15,6 +26,8 @@ describe('generateTimeObject()', () => {
     const mockValue = 6000;
     const timeObject = generateTimeObject(mockKey, mockValue);
 
+    expect(isTimeObjectWithContext(timeObject)).toBe(true);
+
     expect(timeObject).toEqual({
       context: expect.any(Object),
       key: mockKey,
@@ -25,7 +38,9 @@ describe('generateTimeObject()', () => {
     const lastCreatedContext = (React.createContext as jest.Mock).mock
       .results[0].value;
 
-    expect(timeObject.context).toBe(lastCreatedContext);
+    if (isTimeObjectWithContext(timeObject)) {
+      expect(timeObject.context).toBe(lastCreatedContext);
+    }
   });
 
   describe('validation', () => {
