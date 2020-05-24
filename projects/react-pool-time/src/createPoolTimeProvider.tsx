@@ -35,10 +35,6 @@ interface TimeState {
   value: number;
 }
 
-type TimeContextValueWithContext = TimeContextValue & {
-  context: React.Context<TimeContextValue>;
-};
-
 const createPoolTimeProvider = (configuration: Configuration): React.FC => {
   if (process.env.NODE_ENV !== 'production') {
     if (!configuration.accuracies) {
@@ -101,6 +97,89 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
       .find(isInvalidTimeObject);
     if (invalidWithinTimeObject)
       throwInvalidTimeObjectError(invalidWithinTimeObject);
+
+    const upToValues = new Set();
+    const duplicateUpToValue = configuration.accuracies.find(({ upTo }) => {
+      if (upToValues.has(upTo.key)) return true;
+
+      upToValues.add(upTo.key);
+
+      return false;
+    });
+
+    if (duplicateUpToValue) {
+      throw new Error(
+        `Invalid configuration object passed to createPoolTimeProvider. Expected all accuracy entries to have unique upTo time values, but found duplicate entry on ${duplicateUpToValue.upTo.key}.`
+      );
+    }
+
+    const withinValues = new Set();
+    const duplicateWithinValue = configuration.accuracies.find(({ within }) => {
+      if (withinValues.has(within.key)) return true;
+
+      withinValues.add(within.key);
+
+      return false;
+    });
+
+    if (duplicateWithinValue) {
+      throw new Error(
+        `Invalid configuration object passed to createPoolTimeProvider. Expected all accuracy entries to have unique within time values, but found duplicate entry on ${duplicateWithinValue.within.key}.`
+      );
+    }
+
+    const unsortedUpToValueIndex = configuration.accuracies
+      .slice(1)
+      .findIndex(
+        ({ upTo }, index) =>
+          configuration.accuracies[index].upTo.value >= upTo.value
+      );
+
+    if (unsortedUpToValueIndex !== -1) {
+      throw new Error(
+        `Invalid configuration object passed to createPoolTimeProvider. Accuracies must be sorted such that every upTo is greater than the upTo of the previous entry. Found ${
+          configuration.accuracies[unsortedUpToValueIndex].upTo.key
+        } placed before ${
+          configuration.accuracies[unsortedUpToValueIndex + 1].upTo.key
+        }.`
+      );
+    }
+
+    const unsortedWithinValueIndex = configuration.accuracies
+      .slice(1)
+      .findIndex(
+        ({ within }, index) =>
+          configuration.accuracies[index].within.value >= within.value
+      );
+
+    if (unsortedWithinValueIndex !== -1) {
+      throw new Error(
+        `Invalid configuration object passed to createPoolTimeProvider. Accuracies must be sorted such that every within is greater than the within of the previous entry. Found ${
+          configuration.accuracies[unsortedWithinValueIndex].within.key
+        } placed before ${
+          configuration.accuracies[unsortedWithinValueIndex + 1].within.key
+        }.`
+      );
+    }
+
+    const nonsenseAccuracyEntry = configuration.accuracies.find(
+      ({ upTo, within }) => upTo.value < within.value
+    );
+
+    if (nonsenseAccuracyEntry) {
+      throw new Error(
+        `Invalid configuration object passed to createPoolTimeProvider. Accuracy entries must always have within values that are less than or equal to their own upTo values. Found an entry with an upTo of ${nonsenseAccuracyEntry.upTo.key} that had a within of ${nonsenseAccuracyEntry.within.key}.`
+      );
+    }
+
+    if (
+      configuration.accuracies[configuration.accuracies.length - 1].upTo !==
+      ETERNITY
+    ) {
+      throw new Error(
+        'Invalid configuration object passed to createPoolTimeProvider. Accuracy lists must terminate with an entry with an upTo of ETERNITY.'
+      );
+    }
   }
 
   const PoolTimeProvider = React.memo(

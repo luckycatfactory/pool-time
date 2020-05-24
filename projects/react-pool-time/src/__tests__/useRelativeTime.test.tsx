@@ -15,8 +15,8 @@ import {
   ONE_SECOND,
   ETERNITY,
   TEN_SECONDS,
-  THIRTY_SECONDS,
   FIVE_SECONDS,
+  ONE_MINUTE,
 } from '../timeObjects';
 
 jest.useFakeTimers();
@@ -189,6 +189,110 @@ describe('useRelativeTime()', () => {
           'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"context":"[object Object]","key":"BAD_TIME_OBJECT_MISSING_A_VALUE"}.',
         title:
           'when provided an accuracy entry that does not have exactly the correct keys',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: ETERNITY,
+              within: ONE_SECOND,
+            },
+            {
+              upTo: ETERNITY,
+              within: ONE_MINUTE,
+            },
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Expected all accuracy entries to have unique upTo time values, but found duplicate entry on ETERNITY.',
+        title:
+          'when provided an accuracy list that contains duplicate upTo values',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: ONE_MINUTE,
+              within: ONE_SECOND,
+            },
+            {
+              upTo: ETERNITY,
+              within: ONE_SECOND,
+            },
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Expected all accuracy entries to have unique within time values, but found duplicate entry on ONE_SECOND.',
+        title:
+          'when provided an accuracy list that contains duplicate within values',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: ETERNITY,
+              within: ONE_SECOND,
+            },
+            {
+              upTo: ONE_MINUTE,
+              within: ONE_MINUTE,
+            },
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Accuracies must be sorted such that every upTo is greater than the upTo of the previous entry. Found ETERNITY placed before ONE_MINUTE.',
+        title:
+          'when provided an accuracy list that is not in ascending order by upTo',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: ONE_MINUTE,
+              within: FIVE_SECONDS,
+            },
+            {
+              upTo: ETERNITY,
+              within: ONE_SECOND,
+            },
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Accuracies must be sorted such that every within is greater than the within of the previous entry. Found FIVE_SECONDS placed before ONE_SECOND.',
+        title:
+          'when provided an accuracy list that is not in ascending order by within',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: FIVE_SECONDS,
+              within: TEN_SECONDS,
+            },
+            {
+              upTo: ETERNITY,
+              within: ONE_MINUTE,
+            },
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Accuracy entries must always have within values that are less than or equal to their own upTo values. Found an entry with an upTo of FIVE_SECONDS that had a within of TEN_SECONDS.',
+        title:
+          'when provided an accuracy entry that has a greater within than its own upTo',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: ONE_MINUTE,
+              within: ONE_SECOND,
+            },
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Accuracy lists must terminate with an entry with an upTo of ETERNITY.',
+        title:
+          'when provided an accuracy list that does not terminate with an upTo of ETERNITY',
       },
     ];
 
@@ -401,7 +505,7 @@ describe('useRelativeTime()', () => {
             within: ONE_SECOND,
           },
           {
-            upTo: THIRTY_SECONDS,
+            upTo: ETERNITY,
             within: FIVE_SECONDS,
           },
         ],
