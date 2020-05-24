@@ -7,6 +7,7 @@ import {
 } from './utilities/generateTimeObject';
 import ConfigurationContext from './contexts/ConfigurationContext';
 import RegistrationContext from './contexts/RegistrationContext';
+import { ETERNITY } from './timeObjects';
 
 export interface PoolTimeProviderProps {
   readonly children: React.ReactNode;
@@ -39,6 +40,69 @@ type TimeContextValueWithContext = TimeContextValue & {
 };
 
 const createPoolTimeProvider = (configuration: Configuration): React.FC => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (!configuration.accuracies) {
+      throw new Error(
+        'Invalid configuration object passed to createPoolTimeProvider. Expected "accuracies" property to be a non-empty array, but it was not present.'
+      );
+    }
+    if (!Array.isArray(configuration.accuracies)) {
+      throw new Error(
+        'Invalid configuration object passed to createPoolTimeProvider. Expected "accuracies" property to be a non-empty array, but it was not an array.'
+      );
+    }
+    if (configuration.accuracies.length === 0) {
+      throw new Error(
+        'Invalid configuration object passed to createPoolTimeProvider. Expected "accuracies" property to be a non-empty array, but it was an empty array.'
+      );
+    }
+    const requiredAccuracyEntryKeys = new Set(['upTo', 'within']);
+    const invalidAccuracyEntry = configuration.accuracies.find(
+      (accuracyEntry) => {
+        const keys = Object.keys(accuracyEntry);
+        if (
+          keys.length !== requiredAccuracyEntryKeys.size ||
+          keys.some((key) => !requiredAccuracyEntryKeys.has(key))
+        ) {
+          return true;
+        }
+      }
+    );
+    const stringify = (object: object): string =>
+      JSON.stringify(object, (key, value) =>
+        key && value && typeof value !== 'number' ? '' + value : value
+      );
+    if (invalidAccuracyEntry) {
+      throw new Error(
+        `Invalid configuration object passed to createPoolTimeProvider. Expected accuracy entry to have keys for "upTo" and "within" with time objects as values, but instead received: ${stringify(
+          invalidAccuracyEntry
+        )}.`
+      );
+    }
+    const isInvalidTimeObject = (timeObject: TimeObjectWithContext): boolean =>
+      timeObject !== ETERNITY &&
+      (!timeObject.context || !timeObject.key || !timeObject.value);
+    const invalidUpToTimeObject = configuration.accuracies
+      .map(({ upTo }) => upTo)
+      .find(isInvalidTimeObject);
+    const throwInvalidTimeObjectError = (
+      invalidTimeObject: TimeObject
+    ): void => {
+      throw new Error(
+        `Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: ${stringify(
+          invalidTimeObject
+        )}.`
+      );
+    };
+    if (invalidUpToTimeObject)
+      throwInvalidTimeObjectError(invalidUpToTimeObject);
+    const invalidWithinTimeObject = configuration.accuracies
+      .map(({ within }) => within)
+      .find(isInvalidTimeObject);
+    if (invalidWithinTimeObject)
+      throwInvalidTimeObjectError(invalidWithinTimeObject);
+  }
+
   const PoolTimeProvider = React.memo(
     ({
       children,
