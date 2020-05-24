@@ -5,7 +5,7 @@ import useRelativeTime from '../useRelativeTime';
 import createPoolTimeProvider, {
   PoolTimeProviderProps,
 } from '../createPoolTimeProvider';
-import { ONE_SECOND, ONE_MINUTE } from '../timeObjects';
+import { ONE_SECOND, ETERNITY } from '../timeObjects';
 
 jest.useFakeTimers();
 
@@ -57,7 +57,7 @@ describe('useRelativeTime()', () => {
         'returns the correct initial result when the target time is in the %s',
         (testKey, difference) => {
           const PoolTimeProvider = createPoolTimeProvider({
-            accuracies: [{ upTo: ONE_MINUTE, within: ONE_SECOND }],
+            accuracies: [{ upTo: ETERNITY, within: ONE_SECOND }],
           });
 
           const { result } = renderHook(
@@ -76,7 +76,7 @@ describe('useRelativeTime()', () => {
 
       it('returns the correct result after one tick', () => {
         const PoolTimeProvider = createPoolTimeProvider({
-          accuracies: [{ upTo: ONE_MINUTE, within: ONE_SECOND }],
+          accuracies: [{ upTo: ETERNITY, within: ONE_SECOND }],
         });
 
         const { result } = renderHook(() => useRelativeTime(startTime), {
@@ -93,7 +93,7 @@ describe('useRelativeTime()', () => {
 
       it('invokes onIntervalChange with the correct value', () => {
         const PoolTimeProvider = createPoolTimeProvider({
-          accuracies: [{ upTo: ONE_MINUTE, within: ONE_SECOND }],
+          accuracies: [{ upTo: ETERNITY, within: ONE_SECOND }],
         });
 
         const handleIntervalChange = jest.fn();
@@ -110,7 +110,7 @@ describe('useRelativeTime()', () => {
 
       it('invokes onRegister with the correct value', () => {
         const PoolTimeProvider = createPoolTimeProvider({
-          accuracies: [{ upTo: ONE_MINUTE, within: ONE_SECOND }],
+          accuracies: [{ upTo: ETERNITY, within: ONE_SECOND }],
         });
 
         const handleRegister = jest.fn();
@@ -127,7 +127,7 @@ describe('useRelativeTime()', () => {
 
       it('invokes onRegister with the correct value', () => {
         const PoolTimeProvider = createPoolTimeProvider({
-          accuracies: [{ upTo: ONE_MINUTE, within: ONE_SECOND }],
+          accuracies: [{ upTo: ETERNITY, within: ONE_SECOND }],
         });
 
         const handleUnregister = jest.fn();

@@ -1,14 +1,9 @@
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 
 import {
+  TimeContextValue,
   TimeObject,
-  TimeObjectContextValue,
+  TimeObjectWithContext,
 } from './utilities/generateTimeObject';
 import ConfigurationContext from './contexts/ConfigurationContext';
 import RegistrationContext from './contexts/RegistrationContext';
@@ -22,7 +17,7 @@ export interface PoolTimeProviderProps {
 
 export interface AccuracyEntry {
   readonly upTo: TimeObject;
-  readonly within: TimeObject;
+  readonly within: TimeObjectWithContext;
 }
 
 export interface Configuration {
@@ -33,12 +28,14 @@ interface RegistrationState {
   [withinKey: string]: number;
 }
 
-interface TimesState {
-  [withinKey: string]: number;
+interface TimeState {
+  context: React.Context<TimeContextValue>;
+  time: number;
+  value: number;
 }
 
-type TimeObjectContextValueWithContext = TimeObjectContextValue & {
-  context: React.Context<TimeObjectContextValue>;
+type TimeContextValueWithContext = TimeContextValue & {
+  context: React.Context<TimeContextValue>;
 };
 
 const createPoolTimeProvider = (configuration: Configuration): React.FC => {
@@ -60,9 +57,13 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
       );
       const [times, setTimes] = useState(() =>
         configuration.accuracies.reduce<{
-          [timeKey: string]: TimeObjectContextValueWithContext;
-        }>((acc, { within: { context, key, value } }) => {
-          acc[key] = { context, time: Date.now(), value };
+          [timeKey: string]: TimeState;
+        }>((acc, { within }) => {
+          acc[within.key] = {
+            context: within.context,
+            time: Date.now(),
+            value: within.value,
+          };
           return acc;
         }, {})
       );
@@ -120,7 +121,7 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
                 configuration.accuracies.reduce<{
                   hasShortCircuited: boolean;
                   nextTimes: {
-                    [timeKey: string]: TimeObjectContextValueWithContext;
+                    [timeKey: string]: TimeState;
                   };
                 }>(
                   (acc, { within: { context, key, value } }) => {

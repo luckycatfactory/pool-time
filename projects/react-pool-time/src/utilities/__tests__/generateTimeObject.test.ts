@@ -4,10 +4,6 @@ import generateTimeObject, {
   TimeObjectWithContext,
 } from '../generateTimeObject';
 
-jest.mock('react', () => ({
-  createContext: jest.fn(() => ({})),
-}));
-
 const isTimeObjectWithContext = (
   timeObject: TimeObject
 ): timeObject is TimeObjectWithContext =>
@@ -15,6 +11,10 @@ const isTimeObjectWithContext = (
     timeObject as TimeObjectWithContext,
     'context'
   );
+
+jest.mock('react', () => ({
+  createContext: jest.fn(() => ({})),
+}));
 
 describe('generateTimeObject()', () => {
   afterEach(() => {
@@ -41,19 +41,6 @@ describe('generateTimeObject()', () => {
     if (isTimeObjectWithContext(timeObject)) {
       expect(timeObject.context).toBe(lastCreatedContext);
     }
-  });
-
-  it('generates an object of the correct shape when given POSITIVE_INFINITY', () => {
-    const mockKey = 'HELL_FREEZES_OVER';
-    const mockValue = Number.POSITIVE_INFINITY;
-    const timeObject = generateTimeObject(mockKey, mockValue);
-
-    expect(isTimeObjectWithContext(timeObject)).toBe(false);
-
-    expect(timeObject).toEqual({
-      key: mockKey,
-      value: mockValue,
-    });
   });
 
   describe('validation', () => {
@@ -86,12 +73,6 @@ describe('generateTimeObject()', () => {
         }).toThrow(
           'Invalid value provided to generateTimeObject. The value must be less than 2^31 - 1 = 2,147,483,647 since JavaScript intervals treat delays as signed 32-bit integers.'
         );
-      });
-
-      it('does not throw an error when given POSITIVE_INFINITY', () => {
-        expect(() => {
-          generateTimeObject('HELL_FREEZES_OVER', Number.POSITIVE_INFINITY);
-        }).not.toThrow();
       });
     });
 
