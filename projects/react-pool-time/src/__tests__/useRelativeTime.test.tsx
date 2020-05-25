@@ -508,7 +508,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toBe(initialResult);
 
-        incrementTime(998);
+        incrementTime(498);
         rerender({ skip: false });
 
         expect(result.current).toEqual({
@@ -756,7 +756,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toBe(initialResult);
 
-        incrementTime(998);
+        incrementTime(498);
         rerender({ skip: false });
 
         expect(result.current).toEqual({
@@ -1142,5 +1142,473 @@ describe('useRelativeTime()', () => {
         },
       });
     });
+
+    describe('when adding hooks when there is already an interval in place', () => {
+      describe('when the newly added hook requires the same accuracy', () => {
+        it('returns the correct results', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const { result, rerender } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime - TEN_SECONDS.value, {}],
+                  [startTime - TEN_SECONDS.value, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+
+          expect(result.current).toEqual({
+            0: {
+              difference: TEN_SECONDS.value,
+              time: startTime,
+            },
+            1: {
+              difference: 0,
+              time: startTime,
+            },
+          });
+
+          incrementTime(FIVE_SECONDS);
+
+          rerender({
+            inputs: [
+              [startTime - TEN_SECONDS.value, {}],
+              [startTime - TEN_SECONDS.value, {}],
+            ],
+          });
+
+          expect(result.current).toEqual({
+            0: {
+              difference: TEN_SECONDS.value + FIVE_SECONDS.value,
+              time: startTime + FIVE_SECONDS.value,
+            },
+            1: {
+              difference: TEN_SECONDS.value + FIVE_SECONDS.value,
+              time: startTime + FIVE_SECONDS.value,
+            },
+          });
+        });
+
+        it('does not change the interval', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleIntervalChange = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime - TEN_SECONDS.value, {}],
+                  [startTime - TEN_SECONDS.value, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onIntervalChange: handleIntervalChange,
+              }),
+            }
+          );
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(
+            FIVE_SECONDS.value
+          );
+
+          incrementTime(FIVE_SECONDS);
+
+          rerender({
+            inputs: [
+              [startTime - TEN_SECONDS.value, {}],
+              [startTime - TEN_SECONDS.value, {}],
+            ],
+          });
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+        });
+
+        it('properly registers the new hook', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleRegister = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime - TEN_SECONDS.value, {}],
+                  [startTime - TEN_SECONDS.value, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onRegister: handleRegister,
+              }),
+            }
+          );
+
+          expect(handleRegister).toHaveBeenCalledTimes(1);
+          expect(handleRegister).toHaveBeenLastCalledWith(FIVE_SECONDS.key);
+
+          incrementTime(FIVE_SECONDS);
+
+          rerender({
+            inputs: [
+              [startTime - TEN_SECONDS.value, {}],
+              [startTime - TEN_SECONDS.value, {}],
+            ],
+          });
+
+          expect(handleRegister).toHaveBeenCalledTimes(2);
+          expect(handleRegister).toHaveBeenLastCalledWith(FIVE_SECONDS.key);
+        });
+      });
+
+      describe('when the newly added hook requires more accuracy', () => {
+        it('returns the correct results', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const { rerender, result } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime - TEN_SECONDS.value, {}],
+                  [startTime, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+
+          expect(result.current).toEqual({
+            0: {
+              difference: TEN_SECONDS.value,
+              time: startTime,
+            },
+            1: {
+              difference: 0,
+              time: startTime,
+            },
+          });
+
+          rerender({
+            inputs: [
+              [startTime - TEN_SECONDS.value, {}],
+              [startTime, {}],
+            ],
+          });
+
+          expect(result.current).toEqual({
+            0: {
+              difference: TEN_SECONDS.value,
+              time: startTime,
+            },
+            1: {
+              difference: 0,
+              time: startTime,
+            },
+          });
+        });
+
+        it('properly updates the interval to the more accurate interval', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleIntervalChange = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime - TEN_SECONDS.value, {}],
+                  [startTime, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onIntervalChange: handleIntervalChange,
+              }),
+            }
+          );
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(
+            FIVE_SECONDS.value
+          );
+
+          rerender({
+            inputs: [
+              [startTime - TEN_SECONDS.value, {}],
+              [startTime, {}],
+            ],
+          });
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(2);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(
+            ONE_SECOND.value
+          );
+        });
+
+        it('properly updates previous state if it is stale', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const { rerender, result } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime - TEN_SECONDS.value, {}],
+                  [startTime, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+
+          incrementTime(ONE_SECOND);
+
+          rerender({
+            inputs: [
+              [startTime - TEN_SECONDS.value, {}],
+              [startTime, {}],
+            ],
+          });
+
+          expect(result.current).toEqual({
+            0: {
+              difference: TEN_SECONDS.value,
+              time: startTime,
+            },
+            1: {
+              difference: ONE_SECOND.value,
+              time: startTime + ONE_SECOND.value,
+            },
+          });
+        });
+
+        it('properly registers the new hook', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleRegister = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime - TEN_SECONDS.value, {}],
+                  [startTime, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onRegister: handleRegister,
+              }),
+            }
+          );
+
+          expect(handleRegister).toHaveBeenCalledTimes(1);
+          expect(handleRegister).toHaveBeenLastCalledWith(FIVE_SECONDS.key);
+
+          incrementTime(FIVE_SECONDS);
+
+          rerender({
+            inputs: [
+              [startTime - TEN_SECONDS.value, {}],
+              [startTime, {}],
+            ],
+          });
+
+          expect(handleRegister).toHaveBeenCalledTimes(2);
+          expect(handleRegister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+        });
+      });
+
+      describe('when the newly added hook requires less accuracy', () => {
+        it('returns the correct results', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const { rerender, result } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime, {}],
+                  [startTime - TEN_SECONDS.value, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+
+          expect(result.current).toEqual({
+            0: {
+              difference: 0,
+              time: startTime,
+            },
+            1: {
+              difference: 0,
+              time: startTime,
+            },
+          });
+
+          rerender({
+            inputs: [
+              [startTime, {}],
+              [startTime - TEN_SECONDS.value, {}],
+            ],
+          });
+
+          expect(result.current).toEqual({
+            0: {
+              difference: 0,
+              time: startTime,
+            },
+            1: {
+              difference: TEN_SECONDS.value,
+              time: startTime,
+            },
+          });
+        });
+
+        it('does not update the interval', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleIntervalChange = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime, {}],
+                  [startTime - TEN_SECONDS.value, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onIntervalChange: handleIntervalChange,
+              }),
+            }
+          );
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(
+            ONE_SECOND.value
+          );
+
+          rerender({
+            inputs: [
+              [startTime, {}],
+              [startTime - TEN_SECONDS.value, {}],
+            ],
+          });
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+        });
+
+        it('properly registers the new hook', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleRegister = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime, {}],
+                  [startTime - TEN_SECONDS.value, { skip: true }],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onRegister: handleRegister,
+              }),
+            }
+          );
+
+          expect(handleRegister).toHaveBeenCalledTimes(1);
+          expect(handleRegister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+
+          rerender({
+            inputs: [
+              [startTime, {}],
+              [startTime - TEN_SECONDS.value, {}],
+            ],
+          });
+
+          expect(handleRegister).toHaveBeenCalledTimes(2);
+          expect(handleRegister).toHaveBeenLastCalledWith(FIVE_SECONDS.key);
+        });
+
+        it('does not perform superfluous updates to less accurate time states', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const { result } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime, {}],
+                  [startTime - TEN_SECONDS.value, {}],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+
+          expect(result.current).toEqual({
+            0: {
+              difference: 0,
+              time: startTime,
+            },
+            1: {
+              difference: TEN_SECONDS.value,
+              time: startTime,
+            },
+          });
+          const initialSecondHookValue = result.current[1];
+
+          incrementTime(ONE_SECOND);
+
+          expect(result.current).toEqual({
+            0: {
+              difference: ONE_SECOND.value,
+              time: startTime + ONE_SECOND.value,
+            },
+            1: {
+              difference: TEN_SECONDS.value,
+              time: startTime,
+            },
+          });
+          expect(result.current[1]).toBe(initialSecondHookValue);
+        });
+      });
+    });
+
+    // describe('when removing hooks', () => {});
   });
 });
