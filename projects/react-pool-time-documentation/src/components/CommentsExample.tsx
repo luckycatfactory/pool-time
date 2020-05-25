@@ -12,7 +12,7 @@ import {
   FIVE_SECONDS,
   TEN_SECONDS,
   THIRTY_SECONDS,
-  ONE_MINUTE,
+  ETERNITY,
   useRelativeTime,
 } from '../../../react-pool-time/src';
 import getNextId from '../utilities/getNextId';
@@ -44,7 +44,7 @@ const PoolTimeProvider = createPoolTimeProvider({
       within: FIVE_SECONDS,
     },
     {
-      upTo: ONE_MINUTE,
+      upTo: ETERNITY,
       within: TEN_SECONDS,
     },
   ],

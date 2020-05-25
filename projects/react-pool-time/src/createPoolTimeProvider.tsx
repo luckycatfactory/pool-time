@@ -256,6 +256,8 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
         setSlowestTime(slowestTime);
       }, [registrations]);
 
+      const hasPerformedInitialSlowestTimeSet = useRef(false);
+
       useLayoutEffect(() => {
         if (slowestTime) {
           const id = setInterval(() => {
@@ -298,11 +300,11 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
           return (): void => {
             clearInterval(id);
           };
+        } else if (!hasPerformedInitialSlowestTimeSet.current) {
+          hasPerformedInitialSlowestTimeSet.current = true;
+        } else {
+          onIntervalChangeRef.current && onIntervalChangeRef.current(null);
         }
-        // If registrations changes, that will churn the slowestTimeRef in the
-        // event that the slowest time changes. Therefore, we can rely on that
-        // ref's .current value to re-trigger this effect.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [slowestTime]);
 
       return (

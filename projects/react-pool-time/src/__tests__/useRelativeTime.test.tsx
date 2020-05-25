@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { renderHook, act } from '@testing-library/react-hooks';
 
-import useRelativeTime from '../useRelativeTime';
+import useRelativeTime, { UseRelativeTimeResponse } from '../useRelativeTime';
 import createPoolTimeProvider, {
   Configuration,
   PoolTimeProviderProps,
@@ -17,13 +17,14 @@ import {
   TEN_SECONDS,
   FIVE_SECONDS,
   ONE_MINUTE,
+  SIX_HOURS,
 } from '../timeObjects';
 
 jest.useFakeTimers();
 
 describe('useRelativeTime()', () => {
   const realDateNow = Date.now;
-  const startTime = 1000;
+  const startTime = SIX_HOURS.value;
 
   beforeEach(() => {
     Date.now = jest.fn(() => startTime);
@@ -82,6 +83,28 @@ describe('useRelativeTime()', () => {
     TestProviderWrapper.displayName = 'TestProviderWrapper';
 
     return TestProviderWrapper;
+  };
+
+  const simpleConfiguration = {
+    accuracies: [
+      {
+        upTo: ETERNITY,
+        within: ONE_SECOND,
+      },
+    ],
+  };
+
+  const standardConfiguration = {
+    accuracies: [
+      {
+        upTo: TEN_SECONDS,
+        within: ONE_SECOND,
+      },
+      {
+        upTo: ETERNITY,
+        within: FIVE_SECONDS,
+      },
+    ],
   };
 
   describe('configuration validation', () => {
@@ -363,15 +386,6 @@ describe('useRelativeTime()', () => {
 
   describe('when there is a single hook rendered', () => {
     describe('when given the simplest possible configuration', () => {
-      const simpleConfiguration = {
-        accuracies: [
-          {
-            upTo: ETERNITY,
-            within: ONE_SECOND,
-          },
-        ],
-      };
-
       it.each([
         ['past', -1],
         ['present', 0],
@@ -443,6 +457,66 @@ describe('useRelativeTime()', () => {
         });
       });
 
+      it('returns the correct result when moving from the future to the present to the past', () => {
+        const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+
+        const { result } = renderHook(
+          () => useRelativeTime(startTime + ONE_SECOND.value),
+          {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider),
+          }
+        );
+
+        expect(result.current).toEqual({
+          difference: 0 - ONE_SECOND.value,
+          time: startTime,
+        });
+
+        const secondTime = incrementTime(ONE_SECOND);
+
+        expect(result.current).toEqual({
+          difference: 0,
+          time: secondTime,
+        });
+
+        const thirdTime = incrementTime(ONE_SECOND);
+
+        expect(result.current).toEqual({
+          difference: ONE_SECOND.value,
+          time: thirdTime,
+        });
+      });
+
+      it('returns the correct value when the hook is skipped, then time moves forward but not to the next tick, then the hook is no longer skipped', () => {
+        const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+
+        const { result, rerender } = renderHook(
+          ({ skip }) => useRelativeTime(startTime - ONE_SECOND.value, { skip }),
+          {
+            initialProps: { skip: true },
+            wrapper: generateProviderTestWrapper(PoolTimeProvider),
+          }
+        );
+
+        const initialResult = result.current;
+        expect(initialResult).toEqual({
+          difference: 0,
+          time: startTime,
+        });
+
+        incrementTime(1);
+
+        expect(result.current).toBe(initialResult);
+
+        incrementTime(998);
+        rerender({ skip: false });
+
+        expect(result.current).toEqual({
+          difference: ONE_SECOND.value,
+          time: startTime,
+        });
+      });
+
       describe('event handlers', () => {
         it('invokes onIntervalChange with the correct value', () => {
           const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
@@ -461,7 +535,7 @@ describe('useRelativeTime()', () => {
           );
         });
 
-        it('invokes onRegister with the correct value', () => {
+        it('invokes onRegister with the correct value on initialization', () => {
           const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
 
           const handleRegister = jest.fn();
@@ -476,7 +550,7 @@ describe('useRelativeTime()', () => {
           expect(handleRegister).toHaveBeenLastCalledWith(ONE_SECOND.key);
         });
 
-        it('invokes onUnregister with the correct value', () => {
+        it('invokes onUnregister with the correct value on unmount', () => {
           const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
 
           const handleUnregister = jest.fn();
@@ -494,23 +568,85 @@ describe('useRelativeTime()', () => {
           expect(handleUnregister).toHaveBeenCalledTimes(1);
           expect(handleUnregister).toHaveBeenLastCalledWith(ONE_SECOND.key);
         });
+
+        it('does not invoke onRegister or onIntervalChange when the hook is called with skip set to true', () => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+
+          const handleIntervalChange = jest.fn();
+          const handleRegister = jest.fn();
+
+          renderHook(() => useRelativeTime(startTime, { skip: true }), {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+              onIntervalChange: handleIntervalChange,
+              onRegister: handleRegister,
+            }),
+          });
+
+          expect(handleIntervalChange).not.toHaveBeenCalled();
+          expect(handleRegister).not.toHaveBeenCalled();
+        });
+
+        it('invokes onRegister and onIntervalChange when the hook is initially called with skip set to true but then is called with skip set to false', () => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+
+          const handleIntervalChange = jest.fn();
+          const handleRegister = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ skip }) => useRelativeTime(startTime, { skip }),
+            {
+              initialProps: { skip: true },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onIntervalChange: handleIntervalChange,
+                onRegister: handleRegister,
+              }),
+            }
+          );
+
+          expect(handleIntervalChange).not.toHaveBeenCalled();
+          expect(handleRegister).not.toHaveBeenCalled();
+
+          rerender({ skip: false });
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(
+            ONE_SECOND.value
+          );
+          expect(handleRegister).toHaveBeenCalledTimes(1);
+          expect(handleRegister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+        });
+
+        it('invokes onUnregister and onIntervalChange when the hook is initially called with skip set to false but then is called with skip set to true', () => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+
+          const handleIntervalChange = jest.fn();
+          const handleUnregister = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ skip }) => useRelativeTime(startTime, { skip }),
+            {
+              initialProps: { skip: false },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onIntervalChange: handleIntervalChange,
+                onUnregister: handleUnregister,
+              }),
+            }
+          );
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+          expect(handleUnregister).not.toHaveBeenCalled();
+
+          rerender({ skip: true });
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(2);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(null);
+          expect(handleUnregister).toHaveBeenCalledTimes(1);
+          expect(handleUnregister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+        });
       });
     });
 
     describe('when given a standard configuration', () => {
-      const standardConfiguration = {
-        accuracies: [
-          {
-            upTo: TEN_SECONDS,
-            within: ONE_SECOND,
-          },
-          {
-            upTo: ETERNITY,
-            within: FIVE_SECONDS,
-          },
-        ],
-      };
-
       it.each([
         ['past', -1],
         ['present', 0],
@@ -569,6 +705,66 @@ describe('useRelativeTime()', () => {
         });
       });
 
+      it('returns the correct result when moving from the future to the present to the past', () => {
+        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+
+        const { result } = renderHook(
+          () => useRelativeTime(startTime + ONE_SECOND.value),
+          {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider),
+          }
+        );
+
+        expect(result.current).toEqual({
+          difference: 0 - ONE_SECOND.value,
+          time: startTime,
+        });
+
+        const secondTime = incrementTime(ONE_SECOND);
+
+        expect(result.current).toEqual({
+          difference: 0,
+          time: secondTime,
+        });
+
+        const thirdTime = incrementTime(ONE_SECOND);
+
+        expect(result.current).toEqual({
+          difference: ONE_SECOND.value,
+          time: thirdTime,
+        });
+      });
+
+      it('returns the correct value when the hook is skipped, then time moves forward but not to the next tick, then the hook is no longer skipped', () => {
+        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+
+        const { result, rerender } = renderHook(
+          ({ skip }) => useRelativeTime(startTime - ONE_SECOND.value, { skip }),
+          {
+            initialProps: { skip: true },
+            wrapper: generateProviderTestWrapper(PoolTimeProvider),
+          }
+        );
+
+        const initialResult = result.current;
+        expect(initialResult).toEqual({
+          difference: 0,
+          time: startTime,
+        });
+
+        incrementTime(1);
+
+        expect(result.current).toBe(initialResult);
+
+        incrementTime(998);
+        rerender({ skip: false });
+
+        expect(result.current).toEqual({
+          difference: ONE_SECOND.value,
+          time: startTime,
+        });
+      });
+
       it('does not move up to the next accuracy while still within scope of the current accuracy', () => {
         const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
 
@@ -596,29 +792,354 @@ describe('useRelativeTime()', () => {
         expect(handleIntervalChange).toHaveBeenCalledTimes(1);
       });
 
-      it('moves the interval up to the next accuracy when it should', () => {
-        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+      describe('event handlers', () => {
+        it('invokes onIntervalChange with the correct value', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
 
-        const handleIntervalChange = jest.fn();
-        const { result } = renderHook(() => useRelativeTime(startTime), {
-          wrapper: generateProviderTestWrapper(PoolTimeProvider, {
-            onIntervalChange: handleIntervalChange,
-          }),
+          const handleIntervalChange = jest.fn();
+
+          renderHook(() => useRelativeTime(startTime), {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+              onIntervalChange: handleIntervalChange,
+            }),
+          });
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(
+            ONE_SECOND.value
+          );
         });
 
-        expect(handleIntervalChange).toHaveBeenCalledTimes(1);
-        expect(handleIntervalChange).toHaveBeenLastCalledWith(ONE_SECOND.value);
+        it('moves the interval up to the next accuracy when it should', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
 
-        incrementTime(Array(10).fill(ONE_SECOND));
+          const handleIntervalChange = jest.fn();
+          const { result } = renderHook(() => useRelativeTime(startTime), {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+              onIntervalChange: handleIntervalChange,
+            }),
+          });
 
-        expect(result.current).toEqual({
-          difference: TEN_SECONDS.value,
-          time: startTime + TEN_SECONDS.value,
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(
+            ONE_SECOND.value
+          );
+
+          incrementTime(Array(10).fill(ONE_SECOND));
+
+          expect(result.current).toEqual({
+            difference: TEN_SECONDS.value,
+            time: startTime + TEN_SECONDS.value,
+          });
+          expect(handleIntervalChange).toHaveBeenCalledTimes(2);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(
+            FIVE_SECONDS.value
+          );
         });
-        expect(handleIntervalChange).toHaveBeenCalledTimes(2);
-        expect(handleIntervalChange).toHaveBeenLastCalledWith(
-          FIVE_SECONDS.value
+
+        it('invokes onRegister with the correct value on initialization', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleRegister = jest.fn();
+
+          renderHook(() => useRelativeTime(startTime), {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+              onRegister: handleRegister,
+            }),
+          });
+
+          expect(handleRegister).toHaveBeenCalledTimes(1);
+          expect(handleRegister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+        });
+
+        it('invokes onUnregister with the correct value on unmount', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleUnregister = jest.fn();
+
+          const { unmount } = renderHook(() => useRelativeTime(startTime), {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+              onUnregister: handleUnregister,
+            }),
+          });
+
+          expect(handleUnregister).not.toHaveBeenCalled();
+
+          unmount();
+
+          expect(handleUnregister).toHaveBeenCalledTimes(1);
+          expect(handleUnregister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+        });
+
+        it('invokes onUnregister with the correct value and then onRegister with the correct value when moving to the next interval up', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleRegister = jest.fn();
+          const handleUnregister = jest.fn();
+
+          renderHook(() => useRelativeTime(startTime), {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+              onRegister: handleRegister,
+              onUnregister: handleUnregister,
+            }),
+          });
+
+          expect(handleRegister).toHaveBeenCalledTimes(1);
+          expect(handleRegister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+          expect(handleUnregister).not.toHaveBeenCalled();
+
+          incrementTime(Array(10).fill(ONE_SECOND));
+
+          expect(handleUnregister).toHaveBeenCalledTimes(1);
+          expect(handleUnregister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+          expect(handleRegister).toHaveBeenCalledTimes(2);
+          expect(handleRegister).toHaveBeenLastCalledWith(FIVE_SECONDS.key);
+        });
+
+        it('invokes onUnregister after having moved up to the next interval and then unmounting', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleRegister = jest.fn();
+          const handleUnregister = jest.fn();
+
+          renderHook(() => useRelativeTime(startTime), {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+              onRegister: handleRegister,
+              onUnregister: handleUnregister,
+            }),
+          });
+
+          expect(handleRegister).toHaveBeenCalledTimes(1);
+          expect(handleRegister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+          expect(handleUnregister).not.toHaveBeenCalled();
+
+          incrementTime(Array(10).fill(ONE_SECOND));
+
+          expect(handleUnregister).toHaveBeenCalledTimes(1);
+          expect(handleUnregister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+          expect(handleRegister).toHaveBeenCalledTimes(2);
+          expect(handleRegister).toHaveBeenLastCalledWith(FIVE_SECONDS.key);
+        });
+
+        it('does not invoke onRegister or onIntervalChange when the hook is called with skip set to true', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleIntervalChange = jest.fn();
+          const handleRegister = jest.fn();
+
+          renderHook(() => useRelativeTime(startTime, { skip: true }), {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+              onIntervalChange: handleIntervalChange,
+              onRegister: handleRegister,
+            }),
+          });
+
+          expect(handleIntervalChange).not.toHaveBeenCalled();
+          expect(handleRegister).not.toHaveBeenCalled();
+        });
+
+        it('invokes onRegister and onIntervalChange when the hook is initially called with skip set to true but then is called with skip set to false', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleIntervalChange = jest.fn();
+          const handleRegister = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ skip }) => useRelativeTime(startTime, { skip }),
+            {
+              initialProps: { skip: true },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onIntervalChange: handleIntervalChange,
+                onRegister: handleRegister,
+              }),
+            }
+          );
+
+          expect(handleIntervalChange).not.toHaveBeenCalled();
+          expect(handleRegister).not.toHaveBeenCalled();
+
+          rerender({ skip: false });
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(
+            ONE_SECOND.value
+          );
+          expect(handleRegister).toHaveBeenCalledTimes(1);
+          expect(handleRegister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+        });
+
+        it('invokes onUnregister and onIntervalChange when the hook is initially called with skip set to false but then is called with skip set to true', () => {
+          const PoolTimeProvider = createPoolTimeProvider(
+            standardConfiguration
+          );
+
+          const handleIntervalChange = jest.fn();
+          const handleUnregister = jest.fn();
+
+          const { rerender } = renderHook(
+            ({ skip }) => useRelativeTime(startTime, { skip }),
+            {
+              initialProps: { skip: false },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider, {
+                onIntervalChange: handleIntervalChange,
+                onUnregister: handleUnregister,
+              }),
+            }
+          );
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(1);
+          expect(handleUnregister).not.toHaveBeenCalled();
+
+          rerender({ skip: true });
+
+          expect(handleIntervalChange).toHaveBeenCalledTimes(2);
+          expect(handleIntervalChange).toHaveBeenLastCalledWith(null);
+          expect(handleUnregister).toHaveBeenCalledTimes(1);
+          expect(handleUnregister).toHaveBeenLastCalledWith(ONE_SECOND.key);
+        });
+      });
+    });
+  });
+
+  describe('when there are multiple hooks rendered', () => {
+    type PropsPerHook = [number, { skip?: boolean }];
+    type UseRelativeTimesProps = PropsPerHook[];
+
+    const useRelativeTimes = (
+      inputs: UseRelativeTimesProps
+    ): { [index: number]: UseRelativeTimeResponse } => {
+      const numberOfHooks = useRef(inputs.length);
+
+      if (inputs.length !== numberOfHooks.current) {
+        throw new Error(
+          'If you are seeing this, that means the test tried to dynamically alter the number of hooks rendered. Double check your usage of the inputs prop for useRelativeTimes.'
         );
+      }
+
+      const hookResponses = inputs.reduce<{
+        [index: number]: UseRelativeTimeResponse;
+      }>((acc, props, index) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        acc[index] = useRelativeTime(...props);
+        return acc;
+      }, {});
+
+      return hookResponses;
+    };
+
+    it('returns the correct results for the hooks on initialization when both are the same time', () => {
+      const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+
+      const { result } = renderHook(({ inputs }) => useRelativeTimes(inputs), {
+        initialProps: {
+          inputs: [
+            [startTime, {}],
+            [startTime, {}],
+          ] as UseRelativeTimesProps,
+        },
+        wrapper: generateProviderTestWrapper(PoolTimeProvider),
+      });
+
+      expect(result.current).toEqual({
+        0: {
+          difference: 0,
+          time: startTime,
+        },
+        1: {
+          difference: 0,
+          time: startTime,
+        },
+      });
+    });
+
+    it('returns the correct results for the hooks on initialization when one is skipped and the other is not', () => {
+      const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+
+      const { result } = renderHook(({ inputs }) => useRelativeTimes(inputs), {
+        initialProps: {
+          inputs: [
+            [startTime, {}],
+            [startTime, { skip: true }],
+          ] as UseRelativeTimesProps,
+        },
+        wrapper: generateProviderTestWrapper(PoolTimeProvider),
+      });
+
+      expect(result.current).toEqual({
+        0: {
+          difference: 0,
+          time: startTime,
+        },
+        1: {
+          difference: 0,
+          time: startTime,
+        },
+      });
+    });
+
+    it('returns the correct results for the hooks on initialization when both are skipped', () => {
+      const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+
+      const { result } = renderHook(({ inputs }) => useRelativeTimes(inputs), {
+        initialProps: {
+          inputs: [
+            [startTime, { skip: true }],
+            [startTime, { skip: true }],
+          ] as UseRelativeTimesProps,
+        },
+        wrapper: generateProviderTestWrapper(PoolTimeProvider),
+      });
+
+      expect(result.current).toEqual({
+        0: {
+          difference: 0,
+          time: startTime,
+        },
+        1: {
+          difference: 0,
+          time: startTime,
+        },
+      });
+    });
+
+    it('returns the correct results for the hooks on initialization when both are skipped and neither target times are now', () => {
+      const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+
+      const { result } = renderHook(({ inputs }) => useRelativeTimes(inputs), {
+        initialProps: {
+          inputs: [
+            [startTime - ONE_SECOND.value, { skip: true }],
+            [startTime + ONE_SECOND.value, { skip: true }],
+          ] as UseRelativeTimesProps,
+        },
+        wrapper: generateProviderTestWrapper(PoolTimeProvider),
+      });
+
+      expect(result.current).toEqual({
+        0: {
+          difference: 0,
+          time: startTime,
+        },
+        1: {
+          difference: 0,
+          time: startTime,
+        },
       });
     });
   });
