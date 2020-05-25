@@ -8,6 +8,7 @@ import {
 import ConfigurationContext from './contexts/ConfigurationContext';
 import RegistrationContext from './contexts/RegistrationContext';
 import { ETERNITY } from './timeObjects';
+import roundTimeToSecond from './utilities/roundTimeToSecond';
 
 export interface PoolTimeProviderProps {
   readonly children: React.ReactNode;
@@ -256,40 +257,64 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
         setSlowestTime(slowestTime);
       }, [registrations]);
 
+      // Any time the slowest time changes, we need to update the time for that
+      // slowest time in order to guarantee that the accuracy specifications
+      // hold true.
+      useLayoutEffect(() => {
+        if (slowestTime) {
+          const {
+            within: { key },
+          } = slowestTime;
+          setTimes((previousTimes) => ({
+            ...previousTimes,
+            [slowestTime.within.key]: {
+              ...previousTimes[key],
+              time: roundTimeToSecond(Date.now()),
+            },
+          }));
+        }
+      }, [slowestTime]);
+
+      const hasPerformedInitialMount = useRef(false);
+
       useLayoutEffect(() => {
         if (slowestTime) {
           const id = setInterval(() => {
-            setTimes(
-              (previousTimes) =>
-                configuration.accuracies.reduce<{
-                  hasShortCircuited: boolean;
-                  nextTimes: {
-                    [timeKey: string]: TimeState;
-                  };
-                }>(
-                  (acc, { within: { context, key, value } }) => {
-                    if (acc.hasShortCircuited) {
-                      acc.nextTimes[key] = previousTimes[key];
-                      return acc;
-                    }
-                    const previousTimeRoundedToValue =
-                      Math.round(previousTimes[key].value / value) * value;
-                    const nowRoundedToValue =
-                      Math.round(Date.now() / value) * value;
-                    const timeSinceLastUpdate =
-                      nowRoundedToValue - previousTimeRoundedToValue;
-
-                    if (timeSinceLastUpdate >= value) {
-                      acc.nextTimes[key] = { context, time: Date.now(), value };
-                    } else {
-                      acc.nextTimes[key] = previousTimes[key];
-                      acc.hasShortCircuited = true;
-                    }
+            setTimes((previousTimes) => {
+              const nowRoundedToSecond = roundTimeToSecond(Date.now());
+              const { nextTimes } = configuration.accuracies.reduce<{
+                hasShortCircuited: boolean;
+                nextTimes: {
+                  [timeKey: string]: TimeState;
+                };
+              }>(
+                (acc, { within: { context, key, value } }) => {
+                  if (acc.hasShortCircuited) {
+                    acc.nextTimes[key] = previousTimes[key];
                     return acc;
-                  },
-                  { hasShortCircuited: false, nextTimes: {} }
-                ).nextTimes
-            );
+                  }
+                  const previousTimeRoundedToSecond = roundTimeToSecond(
+                    previousTimes[key].time
+                  );
+                  const timeSinceLastUpdate =
+                    nowRoundedToSecond - previousTimeRoundedToSecond;
+
+                  if (timeSinceLastUpdate >= value) {
+                    acc.nextTimes[key] = {
+                      context,
+                      time: nowRoundedToSecond,
+                      value,
+                    };
+                  } else {
+                    acc.nextTimes[key] = previousTimes[key];
+                    acc.hasShortCircuited = true;
+                  }
+                  return acc;
+                },
+                { hasShortCircuited: false, nextTimes: {} }
+              );
+              return nextTimes;
+            });
           }, slowestTime.within.value);
 
           onIntervalChangeRef.current &&
@@ -298,11 +323,11 @@ const createPoolTimeProvider = (configuration: Configuration): React.FC => {
           return (): void => {
             clearInterval(id);
           };
+        } else if (!hasPerformedInitialMount.current) {
+          hasPerformedInitialMount.current = true;
+        } else {
+          onIntervalChangeRef.current && onIntervalChangeRef.current(null);
         }
-        // If registrations changes, that will churn the slowestTimeRef in the
-        // event that the slowest time changes. Therefore, we can rely on that
-        // ref's .current value to re-trigger this effect.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [slowestTime]);
 
       return (
