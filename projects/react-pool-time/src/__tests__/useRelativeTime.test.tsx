@@ -16,6 +16,8 @@ import {
   ETERNITY,
   TEN_SECONDS,
   FIVE_SECONDS,
+  FIFTEEN_SECONDS,
+  THIRTY_SECONDS,
   ONE_MINUTE,
   SIX_HOURS,
 } from '../timeObjects';
@@ -160,6 +162,55 @@ describe('useRelativeTime()', () => {
         },
         errorMessage:
           'Invalid configuration object passed to createPoolTimeProvider. Expected accuracy entry to have keys for "upTo" and "within" with time objects as values, but instead received: {"extraKey":"[object Object]","upTo":"[object Object]","within":"[object Object]"}.',
+        title:
+          'when provided an accuracy entry that does not have exactly the correct keys',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: {
+                key: 'BAD_TIME_OBJECT_MISSING_A_CONTEXT',
+                value: 1000,
+              },
+              within: ONE_SECOND,
+            } as AccuracyEntry,
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"key":"BAD_TIME_OBJECT_MISSING_A_CONTEXT","value":1000}.',
+        title: 'when provided an time object that does not have a context',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: {
+                value: 1000,
+              } as TimeObjectWithContext,
+              within: ONE_SECOND,
+            } as AccuracyEntry,
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"value":1000}.',
+        title:
+          'when provided an accuracy entry that does not have exactly the correct keys',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: {
+                context: ONE_MINUTE.context,
+                key: 'BAD_TIME_OBJECT_MISSING_A_VALUE',
+              } as TimeObjectWithContext,
+              within: ONE_SECOND,
+            } as AccuracyEntry,
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"context":"[object Object]","key":"BAD_TIME_OBJECT_MISSING_A_VALUE"}.',
         title:
           'when provided an accuracy entry that does not have exactly the correct keys',
       },
@@ -731,6 +782,40 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: ONE_SECOND.value,
+          time: thirdTime,
+        });
+      });
+
+      it('returns the correct results when moving over an interval/accuracy bound in the future', () => {
+        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+
+        const { result } = renderHook(
+          () =>
+            useRelativeTime(startTime + TEN_SECONDS.value + FIVE_SECONDS.value),
+          {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider),
+          }
+        );
+
+        const initialResult = result.current;
+        expect(result.current).toEqual({
+          difference: 0 - TEN_SECONDS.value - FIVE_SECONDS.value,
+          time: startTime,
+        });
+
+        incrementTime(ONE_SECOND);
+
+        expect(result.current).toBe(initialResult);
+
+        // One millisecond before it should move over.
+        incrementTime(ONE_SECOND.value * 4 - 1);
+
+        expect(result.current).toBe(initialResult);
+
+        const thirdTime = incrementTime(1);
+
+        expect(result.current).toEqual({
+          difference: 0 - TEN_SECONDS.value,
           time: thirdTime,
         });
       });
@@ -1566,6 +1651,64 @@ describe('useRelativeTime()', () => {
           const PoolTimeProvider = createPoolTimeProvider(
             standardConfiguration
           );
+
+          const { result } = renderHook(
+            ({ inputs }) => useRelativeTimes(inputs),
+            {
+              initialProps: {
+                inputs: [
+                  [startTime, {}],
+                  [startTime - TEN_SECONDS.value, {}],
+                ] as UseRelativeTimesProps,
+              },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+
+          expect(result.current).toEqual({
+            0: {
+              difference: 0,
+              time: startTime,
+            },
+            1: {
+              difference: TEN_SECONDS.value,
+              time: startTime,
+            },
+          });
+          const initialSecondHookValue = result.current[1];
+
+          incrementTime(ONE_SECOND);
+
+          expect(result.current).toEqual({
+            0: {
+              difference: ONE_SECOND.value,
+              time: startTime + ONE_SECOND.value,
+            },
+            1: {
+              difference: TEN_SECONDS.value,
+              time: startTime,
+            },
+          });
+          expect(result.current[1]).toBe(initialSecondHookValue);
+        });
+
+        it('does not perform superfluous updates to less accurate time states when there are more extended accuracies', () => {
+          const PoolTimeProvider = createPoolTimeProvider({
+            accuracies: [
+              {
+                upTo: TEN_SECONDS,
+                within: ONE_SECOND,
+              },
+              {
+                upTo: THIRTY_SECONDS,
+                within: FIVE_SECONDS,
+              },
+              {
+                upTo: ETERNITY,
+                within: FIFTEEN_SECONDS,
+              },
+            ],
+          });
 
           const { result } = renderHook(
             ({ inputs }) => useRelativeTimes(inputs),

@@ -18,7 +18,7 @@ const findAccuracy = (
   targetTime: number
 ): AccuracyEntry => {
   const now = Date.now();
-  const difference = now - targetTime;
+  const difference = Math.abs(now - targetTime);
 
   const accuracy = accuracies.find(({ upTo }) => upTo.value > difference);
 
@@ -27,7 +27,7 @@ const findAccuracy = (
 
 const useOptimalContext = (
   targetTime: number,
-  { skip = false } = {}
+  skip: boolean
 ): React.Context<TimeContextValue> => {
   const configuration = useContext(ConfigurationContext);
 
@@ -55,7 +55,7 @@ const useRelativeTime = (
   targetTime: number,
   { skip = false } = {}
 ): UseRelativeTimeResponse => {
-  const optimalContext = useOptimalContext(targetTime, { skip });
+  const optimalContext = useOptimalContext(targetTime, skip);
 
   const { time } = useContext(optimalContext);
 
