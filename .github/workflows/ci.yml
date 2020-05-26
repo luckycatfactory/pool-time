@@ -14,9 +14,9 @@ jobs:
       - name: Build react-pool-time
         run: yarn build
         working-directory: ./projects/react-pool-time
-      - name: Build react-pool-time-documentation
+      - name: Build documentation
         run: yarn build
-        working-directory: ./projects/react-pool-time-documentation
+        working-directory: ./projects/documentation
     runs-on: ubuntu-latest
   format:
     steps:

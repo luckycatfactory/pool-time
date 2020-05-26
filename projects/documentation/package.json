@@ -1,8 +1,8 @@
 {
-  "name": "react-pool-time-documentation",
-  "description": "The documentation website for the react-pool-time package.",
+  "name": "pool-time-documentation",
+  "description": "The documentation website for the pool-time package.",
   "version": "0.1.0",
-  "author": "Kyle Mathews <mathews.kyle@gmail.com>",
+  "author": "Louis Cruz <louisstephancruz@me.com>",
   "dependencies": {
     "@zendeskgarden/react-buttons": "^8.9.0",
     "@zendeskgarden/react-forms": "^8.9.0",
@@ -42,9 +42,6 @@
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^4.0.0"
   },
-  "keywords": [
-    "gatsby"
-  ],
   "license": "MIT",
   "scripts": {
     "build": "gatsby build",
@@ -57,9 +54,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gatsbyjs/gatsby-starter-default"
-  },
-  "bugs": {
-    "url": "https://github.com/gatsbyjs/gatsby/issues"
+    "url": "https://github.com/louisscruz/pool-time"
   }
 }

@@ -1,8 +1,8 @@
 const configuration = {
   siteMetadata: {
-    title: 'react-pool-time',
-    description: 'This is the website for the react-pool-time package.',
-    author: '@react-pool-time',
+    title: 'pool-time',
+    description: 'This is the website for the pool-time package.',
+    author: 'Louis Cruz',
   },
   plugins: [
     'gatsby-plugin-typescript',
@@ -15,8 +15,8 @@ const configuration = {
     {
       resolve: 'gatsby-plugin-manifest',
       options: {
-        name: 'react-pool-time',
-        short_name: 'react-pool-time', //eslint-disable-line @typescript-eslint/camelcase
+        name: 'pool-time',
+        short_name: 'pool-time', //eslint-disable-line @typescript-eslint/camelcase
         start_url: '/', //eslint-disable-line @typescript-eslint/camelcase
         background_color: '#663399', //eslint-disable-line @typescript-eslint/camelcase
         theme_color: '#663399', //eslint-disable-line @typescript-eslint/camelcase
