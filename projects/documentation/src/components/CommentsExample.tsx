@@ -12,6 +12,8 @@ import {
   FIVE_SECONDS,
   TEN_SECONDS,
   THIRTY_SECONDS,
+  ONE_MINUTE,
+  FIVE_MINUTES,
   ETERNITY,
   useRelativeTime,
 } from '../../../react-pool-time/src';
@@ -44,8 +46,16 @@ const PoolTimeProvider = createPoolTimeProvider({
       within: FIVE_SECONDS,
     },
     {
-      upTo: ETERNITY,
+      upTo: ONE_MINUTE,
       within: TEN_SECONDS,
+    },
+    {
+      upTo: FIVE_MINUTES,
+      within: THIRTY_SECONDS,
+    },
+    {
+      upTo: ETERNITY,
+      within: ONE_MINUTE,
     },
   ],
 });
@@ -199,17 +209,19 @@ const Comment = React.memo(
 
 Comment.displayName = 'Comment';
 
-const currentUserAuthor = '@react-pool-time';
-const currentUserAvatar = faker.internet.avatar();
+interface CurrentUser {
+  readonly author: string;
+  readonly avatar: string;
+}
 
-const createComment = (text?: string): Comment => {
+const createComment = (text?: string, currentUser?: CurrentUser): Comment => {
   const isCurrentUser = Boolean(text);
 
   const authorToUse = isCurrentUser
-    ? currentUserAuthor
+    ? currentUser.author
     : faker.internet.userName();
   const avatarToUse = isCurrentUser
-    ? currentUserAvatar
+    ? currentUser.avatar
     : faker.internet.avatar();
   const textToUse = isCurrentUser ? text : faker.hacker.phrase();
   const now = Date.now();
@@ -225,6 +237,14 @@ const createComment = (text?: string): Comment => {
 };
 
 const Comments = React.memo(() => {
+  const currentUser = useMemo(
+    () => ({
+      author: '@pool-time',
+      avatar: faker.internet.avatar(),
+    }),
+    []
+  );
+
   const [comments, setComments] = useState(() => {
     const starterComment = createComment();
 
@@ -236,19 +256,22 @@ const Comments = React.memo(() => {
     };
   });
 
-  const addComment = useCallback((text?: string) => {
-    setComments((previousComments) => {
-      const newComment = createComment(text);
+  const addComment = useCallback(
+    (text?: string) => {
+      setComments((previousComments) => {
+        const newComment = createComment(text, currentUser);
 
-      return {
-        allIds: [newComment.id, ...previousComments.allIds],
-        byId: {
-          ...previousComments.byId,
-          [newComment.id]: newComment,
-        },
-      };
-    });
-  }, []);
+        return {
+          allIds: [newComment.id, ...previousComments.allIds],
+          byId: {
+            ...previousComments.byId,
+            [newComment.id]: newComment,
+          },
+        };
+      });
+    },
+    [currentUser]
+  );
 
   const removeComment = useCallback((id: string) => {
     setComments((previousComments) => {
