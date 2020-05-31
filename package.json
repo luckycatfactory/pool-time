@@ -1,8 +1,30 @@
 {
+  "bin": "./cli.js",
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "commitizen": "^4.1.2",
+    "cz-conventional-changelog": "^3.2.0",
+    "husky": "^4.2.5",
+    "prettier": "^2.0.5"
+  },
+  "husky": {
+    "hooks": {
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true"
+    }
+  },
   "name": "pool-time-packages",
   "private": true,
   "scripts": {
     "clean:dependencies": "rm -rf node_modules && rm -rf projects/react-pool-time/node_modules && rm -rf projects/documentation/node_modules",
+    "commit": "yarn git-cz",
+    "commit:check": "commitlint --from=HEAD~1",
+    "commit:check:ci": "commitlint",
     "eslint": "yarn eslint:fix",
     "eslint:base": "eslint . --ext .js,.jsx,.ts,.tsx",
     "eslint:check": "yarn eslint:base",
@@ -16,8 +38,5 @@
     "packages": [
       "projects/*"
     ]
-  },
-  "devDependencies": {
-    "prettier": "^2.0.5"
   }
 }
