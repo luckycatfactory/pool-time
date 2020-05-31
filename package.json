@@ -1,9 +1,20 @@
 {
   "bin": "./cli.js",
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "devDependencies": {
+    "commitizen": "^4.1.2",
+    "cz-conventional-changelog": "^3.2.0",
+    "prettier": "^2.0.5"
+  },
   "name": "pool-time-packages",
   "private": true,
   "scripts": {
     "clean:dependencies": "rm -rf node_modules && rm -rf projects/react-pool-time/node_modules && rm -rf projects/documentation/node_modules",
+    "commit": "yarn git-cz",
     "eslint": "yarn eslint:fix",
     "eslint:base": "eslint . --ext .js,.jsx,.ts,.tsx",
     "eslint:check": "yarn eslint:base",
@@ -17,10 +28,5 @@
     "packages": [
       "projects/*"
     ]
-  },
-  "devDependencies": {
-    "commitizen": "^4.1.2",
-    "cz-conventional-changelog": "^3.2.0",
-    "prettier": "^2.0.5"
   }
 }
