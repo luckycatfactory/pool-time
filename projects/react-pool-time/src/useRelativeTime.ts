@@ -1,4 +1,4 @@
-import { useContext, useLayoutEffect, useMemo } from 'react';
+import { useContext, useLayoutEffect, useMemo, useRef } from 'react';
 
 import ApplicationInitializationTimeContext from './contexts/ApplicationInitializationTimeContext';
 import ConfigurationContext from './contexts/ConfigurationContext';
@@ -8,10 +8,23 @@ import { TimeContextValue } from './utilities/generateTimeObject';
 
 export interface UseRelativeTimeResponse {
   readonly difference: number;
+  readonly getRoundedDifference: () => number;
   readonly time: number;
 }
 
 export type UseRelativeTime = () => UseRelativeTimeResponse;
+
+export enum RoundingStrategy {
+  CEILING = 'ceiling',
+  FLOOR = 'floor',
+  NONE = 'none',
+  ROUNDED = 'rounded',
+}
+
+export interface UseRelativeTimeOptions {
+  readonly roundingStrategy?: RoundingStrategy;
+  readonly skip?: boolean;
+}
 
 const findAccuracy = (
   accuracies: AccuracyEntry[],
@@ -51,13 +64,64 @@ const useOptimalContext = (
   return context;
 };
 
+const invalidRoundingStrategy = (roundingStrategy: unknown): never => {
+  throw new Error(
+    `Expected roundingStrategy to be one of [${Object.values(
+      RoundingStrategy
+    ).join(', ')}], but received ${roundingStrategy}.`
+  );
+};
+
+// Allowing for negative zero will probably introduce more headaches than its
+// worth for consumers. Let's just avoid the concept altogether.
+const coerceNegativeZero = (value: number): number =>
+  value === -0 ? 0 : value; // eslint-disable-line no-compare-neg-zero
+
+const performDifferenceRounding = (
+  difference: number,
+  accuracyValue: number,
+  roundingFunction: (input: number) => number
+): number =>
+  coerceNegativeZero(
+    roundingFunction(difference / accuracyValue) * accuracyValue
+  );
+
+const noOpRounding = (number: number): number => number;
+
+const handleRoundedDifference = (
+  difference: number,
+  roundingStrategy: RoundingStrategy,
+  accuracyValue: number
+): number => {
+  switch (roundingStrategy) {
+    case RoundingStrategy.ROUNDED: {
+      return performDifferenceRounding(difference, accuracyValue, Math.round);
+    }
+    case RoundingStrategy.CEILING: {
+      return performDifferenceRounding(difference, accuracyValue, Math.ceil);
+    }
+    case RoundingStrategy.FLOOR: {
+      return performDifferenceRounding(difference, accuracyValue, Math.floor);
+    }
+    case RoundingStrategy.NONE: {
+      return performDifferenceRounding(difference, accuracyValue, noOpRounding);
+    }
+    default: {
+      invalidRoundingStrategy(roundingStrategy);
+    }
+  }
+};
+
 const useRelativeTime = (
   targetTime: number,
-  { skip = false } = {}
+  {
+    roundingStrategy = RoundingStrategy.ROUNDED,
+    skip = false,
+  }: UseRelativeTimeOptions = {}
 ): UseRelativeTimeResponse => {
   const optimalContext = useOptimalContext(targetTime, skip);
 
-  const { time } = useContext(optimalContext);
+  const { time, value } = useContext(optimalContext);
 
   const difference = useMemo(() => (skip ? 0 : time - targetTime), [
     skip,
@@ -65,9 +129,38 @@ const useRelativeTime = (
     time,
   ]);
 
+  const differenceRef = useRef(difference);
+
+  useLayoutEffect(() => {
+    differenceRef.current = difference;
+  }, [difference]);
+
+  const roundingStrategyRef = useRef(roundingStrategy);
+
+  useLayoutEffect(() => {
+    roundingStrategyRef.current = roundingStrategy;
+  }, [roundingStrategy]);
+
+  const currentAccuracyValueRef = useRef(value);
+
+  useLayoutEffect(() => {
+    currentAccuracyValueRef.current = value;
+  }, [value]);
+
+  const getRoundedDifference = useRef(() => {
+    const { current: difference } = differenceRef;
+
+    return handleRoundedDifference(
+      difference,
+      roundingStrategyRef.current,
+      currentAccuracyValueRef.current
+    );
+  });
+
   const response = useMemo(
     () => ({
       difference,
+      getRoundedDifference: getRoundedDifference.current,
       time: skip ? Date.now() : time,
     }),
     [difference, skip, time]
