@@ -1,7 +1,10 @@
 import React, { useRef } from 'react';
 import { renderHook, act } from '@testing-library/react-hooks';
 
-import useRelativeTime, { UseRelativeTimeResponse } from '../useRelativeTime';
+import useRelativeTime, {
+  UseRelativeTimeResponse,
+  RoundingStrategy,
+} from '../useRelativeTime';
 import createPoolTimeProvider, {
   Configuration,
   PoolTimeProviderProps,
@@ -455,6 +458,7 @@ describe('useRelativeTime()', () => {
 
           expect(result.current).toEqual({
             difference: 0 - difference,
+            getRoundedDifference: expect.any(Function),
             time: startTime,
           });
         }
@@ -489,6 +493,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: ONE_SECOND.value,
+          getRoundedDifference: expect.any(Function),
           time: nextTime,
         });
       });
@@ -504,6 +509,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: ONE_SECOND.value * 2,
+          getRoundedDifference: expect.any(Function),
           time: nextTime,
         });
       });
@@ -520,6 +526,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: 0 - ONE_SECOND.value,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         });
 
@@ -527,6 +534,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: secondTime,
         });
 
@@ -534,6 +542,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: ONE_SECOND.value,
+          getRoundedDifference: expect.any(Function),
           time: thirdTime,
         });
       });
@@ -552,6 +561,7 @@ describe('useRelativeTime()', () => {
         const initialResult = result.current;
         expect(initialResult).toEqual({
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         });
 
@@ -564,6 +574,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: ONE_SECOND.value,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         });
       });
@@ -718,6 +729,7 @@ describe('useRelativeTime()', () => {
 
           expect(result.current).toEqual({
             difference: 0 - difference,
+            getRoundedDifference: expect.any(Function),
             time: startTime,
           });
         }
@@ -752,6 +764,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: ONE_SECOND.value,
+          getRoundedDifference: expect.any(Function),
           time: nextTime,
         });
       });
@@ -768,6 +781,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: 0 - ONE_SECOND.value,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         });
 
@@ -775,6 +789,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: secondTime,
         });
 
@@ -782,6 +797,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: ONE_SECOND.value,
+          getRoundedDifference: expect.any(Function),
           time: thirdTime,
         });
       });
@@ -800,6 +816,7 @@ describe('useRelativeTime()', () => {
         const initialResult = result.current;
         expect(result.current).toEqual({
           difference: 0 - TEN_SECONDS.value - FIVE_SECONDS.value,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         });
 
@@ -816,6 +833,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: 0 - TEN_SECONDS.value,
+          getRoundedDifference: expect.any(Function),
           time: thirdTime,
         });
       });
@@ -834,6 +852,7 @@ describe('useRelativeTime()', () => {
         const initialResult = result.current;
         expect(initialResult).toEqual({
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         });
 
@@ -846,6 +865,7 @@ describe('useRelativeTime()', () => {
 
         expect(result.current).toEqual({
           difference: ONE_SECOND.value,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         });
       });
@@ -868,6 +888,7 @@ describe('useRelativeTime()', () => {
         const resultAtNineSeconds = result.current;
         expect(resultAtNineSeconds).toEqual({
           difference: TEN_SECONDS.value - ONE_SECOND.value,
+          getRoundedDifference: expect.any(Function),
           time: startTime + TEN_SECONDS.value - ONE_SECOND.value,
         });
         expect(handleIntervalChange).toHaveBeenCalledTimes(1);
@@ -918,6 +939,7 @@ describe('useRelativeTime()', () => {
 
           expect(result.current).toEqual({
             difference: TEN_SECONDS.value,
+            getRoundedDifference: expect.any(Function),
             time: startTime + TEN_SECONDS.value,
           });
           expect(handleIntervalChange).toHaveBeenCalledTimes(2);
@@ -1144,10 +1166,12 @@ describe('useRelativeTime()', () => {
       expect(result.current).toEqual({
         0: {
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         },
         1: {
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         },
       });
@@ -1169,10 +1193,12 @@ describe('useRelativeTime()', () => {
       expect(result.current).toEqual({
         0: {
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         },
         1: {
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         },
       });
@@ -1194,10 +1220,12 @@ describe('useRelativeTime()', () => {
       expect(result.current).toEqual({
         0: {
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         },
         1: {
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         },
       });
@@ -1219,10 +1247,12 @@ describe('useRelativeTime()', () => {
       expect(result.current).toEqual({
         0: {
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         },
         1: {
           difference: 0,
+          getRoundedDifference: expect.any(Function),
           time: startTime,
         },
       });
@@ -1251,10 +1281,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: TEN_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
             1: {
               difference: 0,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
           });
@@ -1271,10 +1303,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: TEN_SECONDS.value + FIVE_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime + FIVE_SECONDS.value,
             },
             1: {
               difference: TEN_SECONDS.value + FIVE_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime + FIVE_SECONDS.value,
             },
           });
@@ -1380,10 +1414,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: TEN_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
             1: {
               difference: 0,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
           });
@@ -1398,10 +1434,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: TEN_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
             1: {
               difference: 0,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
           });
@@ -1477,10 +1515,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: TEN_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
             1: {
               difference: ONE_SECOND.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime + ONE_SECOND.value,
             },
           });
@@ -1547,10 +1587,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: 0,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
             1: {
               difference: 0,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
           });
@@ -1565,10 +1607,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: 0,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
             1: {
               difference: TEN_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
           });
@@ -1668,10 +1712,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: 0,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
             1: {
               difference: TEN_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
           });
@@ -1682,10 +1728,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: ONE_SECOND.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime + ONE_SECOND.value,
             },
             1: {
               difference: TEN_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
           });
@@ -1726,10 +1774,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: 0,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
             1: {
               difference: TEN_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
           });
@@ -1740,10 +1790,12 @@ describe('useRelativeTime()', () => {
           expect(result.current).toEqual({
             0: {
               difference: ONE_SECOND.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime + ONE_SECOND.value,
             },
             1: {
               difference: TEN_SECONDS.value,
+              getRoundedDifference: expect.any(Function),
               time: startTime,
             },
           });
@@ -1753,5 +1805,239 @@ describe('useRelativeTime()', () => {
     });
 
     // describe('when removing hooks', () => {});
+  });
+
+  describe('when getRoundedDifference is used', () => {
+    it('throws the correct error when an invalid rounding strategy is provided', () => {
+      const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+      const invalidStrategyString = 'INVALID';
+      const { result } = renderHook(
+        () =>
+          useRelativeTime(startTime, {
+            roundingStrategy: invalidStrategyString as RoundingStrategy,
+          }),
+        {
+          wrapper: generateProviderTestWrapper(PoolTimeProvider),
+        }
+      );
+
+      expect(() => {
+        result.current.getRoundedDifference();
+      }).toThrow(
+        `Expected roundingStrategy to be one of [ceiling, floor, none, rounded], but received ${invalidStrategyString}.`
+      );
+    });
+
+    describe('when default rounding behavior (ROUNDED) is used', () => {
+      it.each([
+        ['in the future', 500],
+        ['in the past', -499],
+      ])(
+        'rounds down when it should when the target time is %s',
+        (testKey, difference) => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const { result } = renderHook(
+            () => useRelativeTime(startTime + difference),
+            {
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+          expect(result.current.getRoundedDifference()).toBe(0);
+        }
+      );
+
+      it.each([
+        ['in the future', 501, -1000],
+        ['in the past', -500, 1000],
+      ])(
+        'rounds up when it should when the target time is %s',
+        (testKey, difference, expectedDifference) => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const { result } = renderHook(
+            () => useRelativeTime(startTime + difference),
+            {
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+          expect(result.current.getRoundedDifference()).toBe(
+            expectedDifference
+          );
+        }
+      );
+    });
+
+    describe('when ROUNDED rounding behavior is specified', () => {
+      it.each([
+        ['in the future', 500],
+        ['in the past', -499],
+      ])(
+        'rounds down when it should when the target time is %s',
+        (testKey, difference) => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const { result } = renderHook(
+            () => useRelativeTime(startTime + difference),
+            {
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+          expect(result.current.getRoundedDifference()).toBe(0);
+        }
+      );
+
+      it.each([
+        ['in the future', 501, -1000],
+        ['in the past', -500, 1000],
+      ])(
+        'rounds up when it should when the target time is %s',
+        (testKey, difference, expectedDifference) => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const { result } = renderHook(
+            () => useRelativeTime(startTime + difference),
+            {
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+          expect(result.current.getRoundedDifference()).toBe(
+            expectedDifference
+          );
+        }
+      );
+    });
+
+    describe('when FLOOR rounding behavior is specified', () => {
+      it.each([
+        ['at the threshold of a range', 0],
+        ['at the beginning of a range', 1],
+        ['at the end of a range', 999],
+      ])(
+        'returns the correct value when %s when the target time is in the past',
+        (testKey, difference) => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const { result } = renderHook(
+            () =>
+              useRelativeTime(startTime - difference, {
+                roundingStrategy: RoundingStrategy.FLOOR,
+              }),
+            {
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+          expect(result.current.getRoundedDifference()).toBe(0);
+        }
+      );
+
+      it.each([
+        ['at the threshold of a range', 1],
+        ['at the beginning of a range', 999],
+        ['at the end of a range', 1000],
+      ])(
+        'returns the correct value when %s when the target time is in the future',
+        (testKey, difference) => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const { result } = renderHook(
+            () =>
+              useRelativeTime(startTime + difference, {
+                roundingStrategy: RoundingStrategy.FLOOR,
+              }),
+            {
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+          expect(result.current.getRoundedDifference()).toBe(-1000);
+        }
+      );
+    });
+
+    describe('when CEILING rounding behavior is specified', () => {
+      it.each([
+        ['at the threshold of a range', 1],
+        ['at the beginning of a range', 999],
+        ['at the end of a range', 1000],
+      ])(
+        'returns the correct value when %s when the target time is in the past',
+        (testKey, difference) => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const { result } = renderHook(
+            () =>
+              useRelativeTime(startTime - difference, {
+                roundingStrategy: RoundingStrategy.CEILING,
+              }),
+            {
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+          expect(result.current.getRoundedDifference()).toBe(1000);
+        }
+      );
+
+      it.each([
+        ['at the threshold of a range', 0],
+        ['at the beginning of a range', 1],
+        ['at the end of a range', 999],
+      ])(
+        'returns the correct value when %s when the target time is in the future',
+        (testKey, difference) => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const { result } = renderHook(
+            () =>
+              useRelativeTime(startTime + difference, {
+                roundingStrategy: RoundingStrategy.CEILING,
+              }),
+            {
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+          expect(result.current.getRoundedDifference()).toBe(0);
+        }
+      );
+    });
+
+    describe('when the rounding strategy is set to NONE', () => {
+      const getRandomOffset = (): number =>
+        Math.floor(Math.random() * 1000) + 1;
+
+      it('provides the direct value when there is no difference', () => {
+        const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+        const { result } = renderHook(
+          () =>
+            useRelativeTime(startTime, {
+              roundingStrategy: RoundingStrategy.NONE,
+            }),
+          {
+            wrapper: generateProviderTestWrapper(PoolTimeProvider),
+          }
+        );
+        expect(result.current.getRoundedDifference()).toBe(0);
+      });
+
+      it.each([
+        ['in the past', (): number => getRandomOffset()],
+        ['in the future', (): number => 0 - getRandomOffset()],
+      ])(
+        'returns the direct difference without any rounding when %s',
+        (testKey, getOffset) => {
+          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const { rerender, result } = renderHook(
+            ({ targetTime }) =>
+              useRelativeTime(targetTime, {
+                roundingStrategy: RoundingStrategy.NONE,
+              }),
+            {
+              initialProps: { targetTime: startTime },
+              wrapper: generateProviderTestWrapper(PoolTimeProvider),
+            }
+          );
+
+          for (let i = 0; i < 25; i++) {
+            const offset = getOffset();
+            const targetTime = startTime - offset;
+
+            rerender({ targetTime });
+
+            expect(result.current.getRoundedDifference()).toBe(offset);
+          }
+        }
+      );
+    });
   });
 });
