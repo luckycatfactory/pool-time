@@ -1,5 +1,5 @@
 {
-  "name": "react-pool-time",
+  "name": "@pool-time/react-pool-time",
   "version": "0.0.1",
   "main": "index.js",
   "license": "MIT",
