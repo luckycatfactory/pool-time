@@ -78,9 +78,9 @@ const coerceNegativeZero = (value: number): number =>
   value === -0 ? 0 : value; // eslint-disable-line no-compare-neg-zero
 
 const performDifferenceRounding = (
-  roundingFunction: (input: number) => number,
   difference: number,
-  accuracyValue: number
+  accuracyValue: number,
+  roundingFunction: (input: number) => number
 ): number =>
   coerceNegativeZero(
     roundingFunction(difference / accuracyValue) * accuracyValue
@@ -95,16 +95,16 @@ const handleRoundedDifference = (
 ): number => {
   switch (roundingStrategy) {
     case RoundingStrategy.ROUNDED: {
-      return performDifferenceRounding(Math.round, difference, accuracyValue);
+      return performDifferenceRounding(difference, accuracyValue, Math.round);
     }
     case RoundingStrategy.CEILING: {
-      return performDifferenceRounding(Math.ceil, difference, accuracyValue);
+      return performDifferenceRounding(difference, accuracyValue, Math.ceil);
     }
     case RoundingStrategy.FLOOR: {
-      return performDifferenceRounding(Math.floor, difference, accuracyValue);
+      return performDifferenceRounding(difference, accuracyValue, Math.floor);
     }
     case RoundingStrategy.NONE: {
-      return performDifferenceRounding(noOpRounding, difference, accuracyValue);
+      return performDifferenceRounding(difference, accuracyValue, noOpRounding);
     }
     default: {
       invalidRoundingStrategy(roundingStrategy);
