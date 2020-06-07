@@ -30,8 +30,6 @@ jobs:
           node-version: "${{ steps.nvm.outputs.NVMRC }}"
       - name: Install dependencies
         run: yarn --offline --frozen-lockfile
-      - name: Commit Format
-        run: yarn commit:check:ci --from=$GITHUB_REF
       - name: ESLint
         run: yarn eslint:check
       - name: Prettier
