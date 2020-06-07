@@ -15,11 +15,41 @@ import SEO from '../components/Seo';
 const initializeCodeString = `
 import {
   createPoolTimeProvider,
-  useRelativeTime
-} from '@react-pool-time/react-pool-time';
+  useRelativeTime,
+  ONE_SECOND,
+  FIVE_SECONDS,
+  TEN_SECONDS,
+  THIRTY_SECONDS,
+  ONE_MINUTE,
+  FIVE_MINUTES,
+  ETERNITY
+} from '@pool-time/react-pool-time';
 
 // Step One: Create your configuration.
-const configuration = {};
+const configuration = {
+  accuracies: [
+    {
+      upTo: FIVE_SECONDS,
+      within: ONE_SECOND,
+    },
+    {
+      upTo: THIRTY_SECONDS,
+      within: FIVE_SECONDS,
+    },
+    {
+      upTo: ONE_MINUTE,
+      within: TEN_SECONDS,
+    },
+    {
+      upTo: FIVE_MINUTES,
+      within: THIRTY_SECONDS,
+    },
+    {
+      upTo: ETERNITY,
+      within: ONE_MINUTE,
+    },
+  ]
+};
 
 // Step Two: Initialize react-pool-time with your configuration.
 const PoolTimeProvider = createPoolTimeProvider(configuration);
@@ -29,16 +59,25 @@ export default PoolTimeProvider;
 
 const usageCodeString = `
 import React from 'react';
-import { useRelativeTime } from '@react-pool-time/react-pool-time';
+import { useRelativeTime } from '@pool-time/react-pool-time';
 
 import PoolTimeProvider from './PoolTimeProvider';
 
 const RelativeTime = React.memo(({ time }) => {
-  const relativeTime = useRelativeTime(time);
+  const {
+    /* difference, // If you'd prefer to get the raw difference, use this. */
+    /* time, // If you just need the time, use this. */
+    getRoundedDifference
+  } = useRelativeTime(time);
+
+  const timeAgo = useMemo(() => {
+    const elapsedTime = getRoundedDifference();
+    return \`\${elapsedTime}ms ago\`;
+  }, [getRoundedDifference]);
 
   return (
     <div>
-      {relativeTime}ms ago!
+      {timeAgo}
     </div>
   );
 });
@@ -72,11 +111,11 @@ const Installation = React.memo(() => (
       </Paragraph>
       <LG>Yarn</LG>
       <CodeBlock language={'bash'}>
-        {'yarn add @react-pool-time/react-pool-time'}
+        {'yarn add @pool-time/react-pool-time'}
       </CodeBlock>
       <LG>NPM</LG>
       <CodeBlock language={'bash'}>
-        {'npm install @react-pool-time/react-pool-time --save'}
+        {'npm install @pool-time/react-pool-time --save'}
       </CodeBlock>
     </Section>
     <Section>

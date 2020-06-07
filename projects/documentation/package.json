@@ -1,6 +1,6 @@
 {
-  "name": "pool-time-documentation",
-  "description": "The documentation website for the pool-time package.",
+  "name": "@pool-time/documentation",
+  "description": "The documentation website for the pool-time packages.",
   "version": "0.1.0",
   "author": "Louis Cruz <louisstephancruz@me.com>",
   "dependencies": {
@@ -54,6 +54,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/louisscruz/pool-time"
+    "url": "https://github.com/pool-time/pool-time"
   }
 }
