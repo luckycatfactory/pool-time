@@ -1,7 +1,4 @@
 {
-  "name": "@pool-time/documentation",
-  "description": "The documentation website for the pool-time packages.",
-  "version": "0.1.0",
   "author": "Louis Cruz <louisstephancruz@me.com>",
   "dependencies": {
     "@zendeskgarden/react-buttons": "^8.9.0",
@@ -28,6 +25,7 @@
     "react-syntax-highlighter": "^12.2.1",
     "styled-components": "^5.1.0"
   },
+  "description": "The documentation website for the pool-time packages.",
   "devDependencies": {
     "@types/faker": "^4.1.12",
     "@types/prettier": "^2.0.0",
@@ -43,17 +41,19 @@
     "eslint-plugin-react-hooks": "^4.0.0"
   },
   "license": "MIT",
-  "scripts": {
-    "build": "gatsby build",
-    "develop": "gatsby develop",
-    "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
-    "start": "npm run develop",
-    "serve": "gatsby serve",
-    "clean": "gatsby clean",
-    "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 1"
-  },
+  "name": "@pool-time/documentation",
   "repository": {
     "type": "git",
     "url": "https://github.com/pool-time/pool-time"
-  }
+  },
+  "scripts": {
+    "build": "gatsby build",
+    "clean": "gatsby clean",
+    "develop": "gatsby develop",
+    "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
+    "serve": "gatsby serve",
+    "start": "npm run develop",
+    "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 1"
+  },
+  "version": "0.1.0"
 }
