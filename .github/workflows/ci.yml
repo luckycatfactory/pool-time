@@ -46,7 +46,8 @@ jobs:
         run: yarn prettier:check
     runs-on: ubuntu-latest
   release:
-    # if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
+    # Notice that commitlint is not required as that only runs on non-master branches
     needs: ['build', 'format', 'test']
     runs-on: ubuntu-latest
     steps:
