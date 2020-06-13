@@ -19,10 +19,9 @@ jobs:
         run: yarn build
         working-directory: ./projects/documentation
   commitlint:
-    if: github.ref != 'refs/heads/master'
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    if: contains(github.ref, "release")
+    if: github.ref != 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
