@@ -84,6 +84,7 @@ jobs:
       - name: TEST
         shell: bash
         run: |
+          mv react-pool-time-dist projects/react-pool-time/dist
           ls projects/react-pool-time/dist
       - name: Install dependencies
         run: yarn --offline --frozen-lockfile
