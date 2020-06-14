@@ -29,6 +29,9 @@
   "peerDependencies": {
     "react": "^16.13.1"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "yarn clean && rollup -c",
     "clean": "rm -rf dist",
