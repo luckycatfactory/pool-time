@@ -34,8 +34,7 @@
     "prettier": "yarn prettier:fix",
     "prettier:base": "prettier 'projects/**/*.{js,ts,tsx}' --check",
     "prettier:check": "yarn prettier:base --check",
-    "prettier:fix": "yarn prettier:base --write",
-    "react-pool-time:semantic-release": "yarn --cwd projects/react-pool-time run semantic-release"
+    "prettier:fix": "yarn prettier:base --write"
   },
   "workspaces": {
     "packages": [
