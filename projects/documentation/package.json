@@ -42,6 +42,7 @@
   },
   "license": "MIT",
   "name": "@pool-time/documentation",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/pool-time/pool-time"
