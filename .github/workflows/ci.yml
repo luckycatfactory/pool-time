@@ -64,7 +64,7 @@ jobs:
         run: yarn prettier:check
     runs-on: ubuntu-latest
   release:
-    # if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     # Notice that commitlint is not required as that only runs on non-master branches
     needs: ['build-documentation', 'build-react-pool-time', 'format', 'test']
     runs-on: ubuntu-latest
@@ -81,13 +81,17 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: react-pool-time-dist
-      - name: TEST
+      - name: Move @react-pool-time dist
         shell: bash
         run: |
           mv react-pool-time-dist projects/react-pool-time/dist
-          ls projects/react-pool-time/dist
       - name: Install dependencies
         run: yarn --offline --frozen-lockfile
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        name: Release
+        run: yarn semantic-release
   test:
     runs-on: ubuntu-latest
     steps:
