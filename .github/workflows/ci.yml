@@ -91,7 +91,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         name: Release
-        run: yarn run semantic-release
+        run: yarn semantic-release
+        working-directory: ./projects/react-pool-time
   test:
     runs-on: ubuntu-latest
     steps:
