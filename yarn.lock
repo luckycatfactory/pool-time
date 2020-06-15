@@ -1937,6 +1937,11 @@
     lodash.debounce "^4.0.8"
     react-dev-utils "^9.1.0"
 
+"@pool-time/react-pool-time@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@pool-time/react-pool-time/-/react-pool-time-1.0.2.tgz#731683b90a2ae19c09822ebc1440862beb72f12f"
+  integrity sha512-HtXUUAgSl3MfQtLRiONIoa9atPAwjHa/ap7+TbENSACG4MD8dMWQDkCy9zDM0Ci9B+Qli+6nqnIoMo4fZ8bxoA==
+
 "@reach/router@^1.3.3":
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/@reach/router/-/router-1.3.3.tgz#58162860dce6c9449d49be86b0561b5ef46d80db"
