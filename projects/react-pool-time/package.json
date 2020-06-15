@@ -24,7 +24,7 @@
   },
   "license": "MIT",
   "main": "dist/index.umd.js",
-  "module": "dist/index.mjs",
+  "module": "dist/index.esm.js",
   "name": "@pool-time/react-pool-time",
   "peerDependencies": {
     "react": "^16.13.1"
