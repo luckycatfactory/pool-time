@@ -5,7 +5,6 @@ import { Field, Label, Textarea } from '@zendeskgarden/react-forms';
 import { Paragraph, SM, MD } from '@zendeskgarden/react-typography';
 import faker from 'faker';
 import formatDistanceStrict from 'date-fns/formatDistanceStrict';
-
 import {
   createPoolTimeProvider,
   ONE_SECOND,
@@ -16,7 +15,8 @@ import {
   FIVE_MINUTES,
   ETERNITY,
   useRelativeTime,
-} from '../../../react-pool-time/src';
+} from '@pool-time/react-pool-time';
+
 import getNextId from '../utilities/getNextId';
 import RenderCount from './RenderCount';
 
