@@ -1,5 +1,17 @@
 {
+  "author": {
+    "email": "louisstephancruz@me.com",
+    "name": "Louis Cruz"
+  },
+  "bugs": "https://github.com/pool-time/pool-time/issues",
   "browser": "dist/index.js",
+  "contributors": [
+    {
+      "email": "louisstephancruz@me.com",
+      "name": "Louis Cruz"
+    }
+  ],
+  "description": "A React provider and hook for efficient and configurable pooled relative time",
   "devDependencies": {
     "@babel/preset-env": "^7.9.6",
     "@babel/preset-react": "^7.9.4",
@@ -22,6 +34,13 @@
     "tslib": "^1.11.2",
     "typescript": "^3.8.3"
   },
+  "homepage": "https://github.com/pool-time/pool-time",
+  "keywords": [
+    "time pooling",
+    "time delegation",
+    "interval delegation",
+    "pooled time"
+  ],
   "license": "MIT",
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
@@ -31,6 +50,10 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pool-time/pool-time.git"
   },
   "sideEffects": false,
   "scripts": {
