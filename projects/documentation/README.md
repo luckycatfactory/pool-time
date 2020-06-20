@@ -1,3 +1,3 @@
-# Pool Time Documentation
+# Documentation
 
-This is the website for pool-time.
+This is the website for pool-time
