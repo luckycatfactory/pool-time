@@ -23,6 +23,7 @@ import {
   THIRTY_SECONDS,
   ONE_MINUTE,
   SIX_HOURS,
+  FIVE_MINUTES,
 } from '../timeObjects';
 
 jest.useFakeTimers();
@@ -178,10 +179,14 @@ describe('useRelativeTime()', () => {
               },
               within: ONE_SECOND,
             } as AccuracyEntry,
+            {
+              upTo: ETERNITY,
+              within: FIVE_MINUTES,
+            },
           ],
         },
         errorMessage:
-          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"key":"BAD_TIME_OBJECT_MISSING_A_CONTEXT","value":1000}.',
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, but instead received: {"key":"BAD_TIME_OBJECT_MISSING_A_CONTEXT","value":1000}.',
         title: 'when provided an time object that does not have a context',
       },
       {
@@ -196,7 +201,7 @@ describe('useRelativeTime()', () => {
           ],
         },
         errorMessage:
-          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"value":1000}.',
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a key and value, but instead received: {"value":1000}.',
         title:
           'when provided an accuracy entry that does not have exactly the correct keys',
       },
@@ -213,7 +218,7 @@ describe('useRelativeTime()', () => {
           ],
         },
         errorMessage:
-          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"context":"[object Object]","key":"BAD_TIME_OBJECT_MISSING_A_VALUE"}.',
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a key and value, but instead received: {"context":"[object Object]","key":"BAD_TIME_OBJECT_MISSING_A_VALUE"}.',
         title:
           'when provided an accuracy entry that does not have exactly the correct keys',
       },
@@ -230,7 +235,7 @@ describe('useRelativeTime()', () => {
           ],
         },
         errorMessage:
-          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"key":"BAD_TIME_OBJECT_MISSING_A_CONTEXT","value":1000}.',
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, but instead received: {"key":"BAD_TIME_OBJECT_MISSING_A_CONTEXT","value":1000}.',
         title: 'when provided an time object that does not have a context',
       },
       {
@@ -246,7 +251,7 @@ describe('useRelativeTime()', () => {
           ],
         },
         errorMessage:
-          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"context":"[object Object]","value":1000}.',
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a key and value, but instead received: {"context":"[object Object]","value":1000}.',
         title:
           'when provided an accuracy entry that does not have exactly the correct keys',
       },
@@ -263,9 +268,45 @@ describe('useRelativeTime()', () => {
           ],
         },
         errorMessage:
-          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, key, and value, but instead received: {"context":"[object Object]","key":"BAD_TIME_OBJECT_MISSING_A_VALUE"}.',
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a key and value, but instead received: {"context":"[object Object]","key":"BAD_TIME_OBJECT_MISSING_A_VALUE"}.',
         title:
           'when provided an accuracy entry that does not have exactly the correct keys',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: ETERNITY,
+              within: {
+                key: ONE_SECOND.key,
+                value: ONE_SECOND.value,
+              } as TimeObjectWithContext,
+            },
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, but instead received: {"key":"ONE_SECOND","value":1000}.',
+        title: 'when not provided a context for a within time object',
+      },
+      {
+        configuration: {
+          accuracies: [
+            {
+              upTo: {
+                key: ONE_MINUTE.key,
+                value: ONE_MINUTE.value,
+              } as TimeObjectWithContext,
+              within: ONE_SECOND,
+            },
+            {
+              upTo: ETERNITY,
+              within: FIVE_SECONDS,
+            },
+          ],
+        },
+        errorMessage:
+          'Invalid configuration object passed to createPoolTimeProvider. Expected time object to have a context, but instead received: {"key":"ONE_MINUTE","value":60000}.',
+        title: 'when not provided a context for a within time object',
       },
       {
         configuration: {
@@ -373,7 +414,11 @@ describe('useRelativeTime()', () => {
       },
     ];
 
-    describe('when not in production', () => {
+    describe.each([['test'], ['development']])('when in %s', (environment) => {
+      beforeEach(() => {
+        process.env.NODE_ENV = environment;
+      });
+
       it('does not throw an error when valid configurations are provided', () => {
         expect(() => {
           createPoolTimeProvider({

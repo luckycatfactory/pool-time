@@ -15,6 +15,27 @@ jobs:
       - name: Build documentation
         run: yarn build
         working-directory: ./projects/documentation
+  build-pool-time-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: nvm
+        name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+      - name: Use Node.js (.nvmrc)
+        uses: actions/setup-node@v1
+        with:
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+      - name: Install dependencies
+        run: yarn --offline --frozen-lockfile
+      - name: Build pool-time-core
+        run: yarn build
+        working-directory: ./projects/pool-time-core
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: pool-time-core-dist
+          path: projects/pool-time-core/dist
   build-react-pool-time:
     runs-on: ubuntu-latest
     steps:
@@ -64,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
   release:
     if: github.ref == 'refs/heads/master'
-    needs: ['build-documentation', 'build-react-pool-time', 'commitlint', 'format', 'test']
+    needs: ['build-documentation', 'build-react-pool-time', 'commitlint', 'format', 'test-react-pool-time']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -91,7 +112,27 @@ jobs:
         name: Release
         run: yarn semantic-release
         working-directory: ./projects/react-pool-time
-  test:
+  test-pool-time-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: nvm
+        name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+      - name: Use Node.js (.nvmrc)
+        uses: actions/setup-node@v1
+        with:
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+      - name: Install dependencies
+        run: yarn --offline --frozen-lockfile
+      - name: Test react-pool-time
+        run: yarn test:ci
+        working-directory: ./projects/pool-time-core
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+  test-react-pool-time:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
