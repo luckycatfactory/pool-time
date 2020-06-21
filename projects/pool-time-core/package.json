@@ -1,0 +1,38 @@
+{
+  "author": {
+    "email": "louisstephancruz@me.com",
+    "name": "Louis Cruz"
+  },
+  "description": "The core logic for pool-time package implementations",
+  "devDependencies": {
+    "@babel/preset-env": "^7.10.3",
+    "@babel/preset-typescript": "^7.10.1",
+    "@types/jest": "^26.0.0",
+    "@types/prettier": "^2.0.1",
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
+    "@typescript-eslint/parser": "^3.3.0",
+    "babel-jest": "^26.0.1",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-jest": "^23.14.0",
+    "jest": "^26.0.1",
+    "rollup": "^2.17.1",
+    "rollup-plugin-filesize": "^9.0.1",
+    "tslib": "^2.0.0",
+    "typescript": "^3.9.5"
+  },
+  "license": "MIT",
+  "main": "dist/index.umd.js",
+  "module": "dist/index.esm.js",
+  "name": "@pool-time/pool-time-core",
+  "repository": "https://github.com/pool-time/pool-time",
+  "scripts": {
+    "build": "yarn clean && rollup -c",
+    "clean": "rm -rf dist",
+    "release": "semantic-release",
+    "test": "yarn test:base --watch",
+    "test:base": "jest",
+    "test:ci": "yarn test:base --coverage"
+  },
+  "sideEffects": false,
+  "version": "0.0.1"
+}
