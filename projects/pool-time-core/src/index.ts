@@ -3,26 +3,45 @@ export interface BaseTimeObject {
   readonly value: number;
 }
 
-export interface CoreAccuracyEntry<T extends BaseTimeObject> {
+export interface CoreAccuracyEntry<T> {
   readonly upTo: BaseTimeObject;
-  readonly within: T;
+  readonly within: BaseTimeObject & T;
 }
 
-export interface CoreConfiguration<T extends BaseTimeObject> {
+export interface CoreConfiguration<T> {
   readonly accuracies: CoreAccuracyEntry<T>[];
 }
 
-export const ETERNITY: BaseTimeObject = {
-  key: 'ETERNITY',
-  value: Number.POSITIVE_INFINITY,
-};
-
-export interface PoolTimeOptions<T extends BaseTimeObject> {
+export interface PoolTimeOptions<T> {
   readonly configuration: CoreConfiguration<T>;
   onAccuracyEntryValidation?: (
     validatedAccuracyEntry: CoreAccuracyEntry<T>
   ) => void;
 }
+
+export interface Time {
+  time: number;
+  value: number;
+}
+
+type AdditionalTimeProperties<T> = Pick<T, Exclude<keyof T, BaseTimeObject>>;
+
+export type TimeStateEntry<T extends AdditionalTimeProperties<T>> = Time & T;
+
+interface RegistrationState {
+  [withinKey: string]: number;
+}
+
+interface TimeState<T extends AdditionalTimeProperties<T>> {
+  [timeKey: string]: TimeStateEntry<T>;
+}
+
+type getNextTimes<T> = (previousTimes: TimeState<T>) => TimeState<T>;
+
+export const ETERNITY: BaseTimeObject = {
+  key: 'ETERNITY',
+  value: Number.POSITIVE_INFINITY,
+};
 
 export function stringifyObject(object: object): string {
   return JSON.stringify(object, (key, value) =>
@@ -30,7 +49,11 @@ export function stringifyObject(object: object): string {
   );
 }
 
-function validateConfiguration<T extends BaseTimeObject>(
+function roundTimeToSecond(time: number): number {
+  return Math.round(time / 1000) * 1000;
+}
+
+function validateConfiguration<T extends AdditionalTimeProperties<T>>(
   configuration: CoreConfiguration<T>,
   onAccuracyEntryValidation: (
     validatedAccuracyEntry: CoreAccuracyEntry<T>
@@ -182,8 +205,13 @@ function validateConfiguration<T extends BaseTimeObject>(
   }
 }
 
-class PoolTime<T extends BaseTimeObject> {
+class PoolTime<T extends AdditionalTimeProperties<T>> {
   public configuration: CoreConfiguration<T>;
+
+  private intervalId: number;
+  private lowestCommonDuration: CoreAccuracyEntry<T>;
+  private registrations: RegistrationState;
+  private times: TimeState<T>;
 
   constructor({
     configuration,
@@ -193,6 +221,132 @@ class PoolTime<T extends BaseTimeObject> {
       validateConfiguration(configuration, onAccuracyEntryValidation);
     }
     this.configuration = configuration;
+    this.registrations = this.generateRegistrations();
+    this.times = this.generateTimes();
+
+    this.tickLowestCommonDuration = this.tickLowestCommonDuration.bind(this);
+  }
+
+  getLowestCommonDuration(): CoreAccuracyEntry<T> {
+    this.lowestCommonDuration = this.configuration.accuracies.find(
+      (accuracyEntry) => Boolean(this.registrations[accuracyEntry.within.key])
+    );
+
+    return this.lowestCommonDuration;
+  }
+
+  getRegistrations(): RegistrationState {
+    return this.registrations;
+  }
+
+  getTimes(): TimeState<T> {
+    return this.times;
+  }
+
+  register(
+    previousRegistrations: RegistrationState,
+    timeKey: string
+  ): RegistrationState {
+    this.registrations = {
+      ...previousRegistrations,
+      [timeKey]: previousRegistrations[timeKey] + 1,
+    };
+    return this.getRegistrations();
+  }
+
+  startTicking(
+    handleTick: (
+      getNextTimes: (previousTimes: TimeState<T>) => TimeState<T>
+    ) => void
+  ): void {
+    this.intervalId = setInterval(() => {
+      handleTick((previousTimes) => {
+        const nowRoundedToSecond = roundTimeToSecond(Date.now());
+        const { nextTimes } = this.configuration.accuracies.reduce<{
+          hasShortCircuited: boolean;
+          nextTimes: TimeState<T>;
+        }>(
+          (acc, { within }) => {
+            if (acc.hasShortCircuited) {
+              acc.nextTimes[within.key] = previousTimes[within.key];
+              return acc;
+            }
+            const previousTimeRoundedToSecond = roundTimeToSecond(
+              previousTimes[within.key].time
+            );
+            const timeSinceLastUpdate =
+              nowRoundedToSecond - previousTimeRoundedToSecond;
+
+            if (timeSinceLastUpdate >= within.value) {
+              acc.nextTimes[within.key] = {
+                ...within,
+                time: nowRoundedToSecond,
+                value: within.value,
+              };
+            } else {
+              acc.nextTimes[within.key] = previousTimes[within.key];
+              acc.hasShortCircuited = true;
+            }
+            return acc;
+          },
+          { hasShortCircuited: false, nextTimes: {} }
+        );
+        return nextTimes;
+      });
+    }, this.lowestCommonDuration.within.value);
+  }
+
+  stopTicking(): void {
+    clearInterval(this.intervalId);
+  }
+
+  tickLowestCommonDuration(previousTimes: TimeState<T>): TimeState<T> {
+    const {
+      within: { key },
+    } = this.lowestCommonDuration;
+    this.times = {
+      ...previousTimes,
+      [key]: {
+        ...previousTimes[key],
+        time: roundTimeToSecond(Date.now()),
+      },
+    };
+    return this.times;
+  }
+
+  unregister(
+    previousRegistrations: RegistrationState,
+    timeKey: string
+  ): RegistrationState {
+    this.registrations = {
+      ...previousRegistrations,
+      [timeKey]: previousRegistrations[timeKey] - 1,
+    };
+    return this.getRegistrations();
+  }
+
+  private generateRegistrations(): RegistrationState {
+    return this.configuration.accuracies.reduce<RegistrationState>(
+      (acc, { within: { key } }) => {
+        acc[key] = 0;
+        return acc;
+      },
+      {}
+    );
+  }
+
+  private generateTimes(): TimeState<T> {
+    return this.configuration.accuracies.reduce<TimeState<T>>(
+      (accumulator, { within }) => {
+        accumulator[within.key] = {
+          ...within,
+          time: Date.now(),
+          value: within.value,
+        };
+        return accumulator;
+      },
+      {}
+    );
   }
 }
 
