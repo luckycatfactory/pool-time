@@ -20,9 +20,6 @@ describe('PoolTime', () => {
       readonly context: object;
     }
 
-    type ReactLikeAccuracyEntry = CoreAccuracyEntry<ReactLikeTimeObject>;
-    type ReactLikeConfiguration = CoreAccuracyEntry<ReactLikeTimeObject>;
-
     interface InvalidConfigurationScenario {
       readonly configuration: TestConfiguration;
       readonly errorMessage: string;
@@ -334,10 +331,14 @@ describe('PoolTime', () => {
         ])
       )(
         'does not throw an error %s',
-        (title: string, configuration: TestConfiguration) => {
+        (
+          title: string,
+          configuration: TestConfiguration,
+          errorMessage: string
+        ) => {
           expect(() => {
             new PoolTime({ configuration });
-          }).not.toThrow();
+          }).not.toThrow(errorMessage);
         }
       );
 

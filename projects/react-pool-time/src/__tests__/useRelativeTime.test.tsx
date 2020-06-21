@@ -474,10 +474,10 @@ describe('useRelativeTime()', () => {
         ])
       )(
         'does not throw an error %s',
-        (title: string, configuration: Configuration) => {
+        (title: string, configuration: Configuration, errorMessage: string) => {
           expect(() => {
             createPoolTimeProvider(configuration);
-          }).not.toThrow();
+          }).not.toThrow(errorMessage);
         }
       );
     });
