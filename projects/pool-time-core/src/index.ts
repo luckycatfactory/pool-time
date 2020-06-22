@@ -221,16 +221,21 @@ class PoolTime<T extends AdditionalTimeProperties<T>> {
       validateConfiguration(configuration, onAccuracyEntryValidation);
     }
     this.configuration = configuration;
+    this.lowestCommonDuration = null;
     this.registrations = this.generateRegistrations();
     this.times = this.generateTimes();
 
+    this.getLowestCommonDuration = this.getLowestCommonDuration.bind(this);
     this.tickLowestCommonDuration = this.tickLowestCommonDuration.bind(this);
   }
 
-  getLowestCommonDuration(): CoreAccuracyEntry<T> {
-    this.lowestCommonDuration = this.configuration.accuracies.find(
-      (accuracyEntry) => Boolean(this.registrations[accuracyEntry.within.key])
-    );
+  getLowestCommonDuration(
+    previousRegistrations: RegistrationState
+  ): CoreAccuracyEntry<T> {
+    this.lowestCommonDuration =
+      this.configuration.accuracies.find((accuracyEntry) =>
+        Boolean(previousRegistrations[accuracyEntry.within.key])
+      ) || null;
 
     return this.lowestCommonDuration;
   }
@@ -259,6 +264,8 @@ class PoolTime<T extends AdditionalTimeProperties<T>> {
       getNextTimes: (previousTimes: TimeState<T>) => TimeState<T>
     ) => void
   ): void {
+    if (!this.lowestCommonDuration) return;
+
     this.intervalId = setInterval(() => {
       handleTick((previousTimes) => {
         const nowRoundedToSecond = roundTimeToSecond(Date.now());
@@ -298,6 +305,7 @@ class PoolTime<T extends AdditionalTimeProperties<T>> {
 
   stopTicking(): void {
     clearInterval(this.intervalId);
+    this.intervalId = null;
   }
 
   tickLowestCommonDuration(previousTimes: TimeState<T>): TimeState<T> {
@@ -340,7 +348,7 @@ class PoolTime<T extends AdditionalTimeProperties<T>> {
       (accumulator, { within }) => {
         accumulator[within.key] = {
           ...within,
-          time: Date.now(),
+          time: roundTimeToSecond(Date.now()),
           value: within.value,
         };
         return accumulator;

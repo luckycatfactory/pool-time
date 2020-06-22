@@ -69,7 +69,7 @@ function createPoolTimeProvider(configuration: Configuration): React.FC {
       poolTime.getRegistrations()
     );
     const [times, setTimes] = useState(() => poolTime.getTimes());
-    const [lowestCommonDuration, setLowestCommonDuration] = useState(undefined);
+    const [lowestCommonDuration, setLowestCommonDuration] = useState(null);
 
     const onRegisterRef = useRef<(timeKey: string) => void>(onRegister);
     const onUnregisterRef = useRef<(timeKey: string) => void>(onUnregister);
@@ -107,7 +107,7 @@ function createPoolTimeProvider(configuration: Configuration): React.FC {
     }, [onIntervalChange]);
 
     useLayoutEffect(() => {
-      setLowestCommonDuration(poolTime.getLowestCommonDuration());
+      setLowestCommonDuration(poolTime.getLowestCommonDuration(registrations));
     }, [registrations]);
 
     // Any time the slowest time changes, we need to update the time for that

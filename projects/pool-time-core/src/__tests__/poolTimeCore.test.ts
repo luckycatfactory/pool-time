@@ -5,7 +5,67 @@ import PoolTime, {
   ETERNITY,
 } from '../index';
 
+jest.useFakeTimers();
+
 describe('PoolTime', () => {
+  const originalNow = Date.now;
+  const mockInitializationTime = 1000;
+
+  beforeEach(() => {
+    Date.now = jest.fn(() => mockInitializationTime);
+  });
+
+  afterEach(() => {
+    Date.now = originalNow;
+  });
+
+  const ONE_SECOND: BaseTimeObject = {
+    key: 'ONE_SECOND',
+    value: 1000,
+  };
+  const FIVE_SECONDS: BaseTimeObject = {
+    key: 'FIVE_SECONDS',
+    value: 1000 * 5,
+  };
+  const TEN_SECONDS: BaseTimeObject = {
+    key: 'TEN_SECONDS',
+    value: 1000 * 10,
+  };
+  const ONE_MINUTE: BaseTimeObject = {
+    key: 'ONE_MINUTE',
+    value: 1000 * 60,
+  };
+
+  const configuration = {
+    accuracies: [
+      {
+        upTo: ONE_MINUTE,
+        within: ONE_SECOND,
+      },
+      {
+        upTo: ETERNITY,
+        within: FIVE_SECONDS,
+      },
+    ],
+  };
+
+  const threeLayerConfiguration = {
+    accuracies: [
+      {
+        upTo: ONE_SECOND,
+        within: ONE_SECOND,
+      },
+      {
+        upTo: ONE_MINUTE,
+        within: FIVE_SECONDS,
+      },
+      {
+        upTo: ETERNITY,
+        within: TEN_SECONDS,
+      },
+    ],
+  };
+
   describe('validation', () => {
     const originalNodeEnv = process.env.NODE_ENV;
 
@@ -25,23 +85,6 @@ describe('PoolTime', () => {
       readonly errorMessage: string;
       readonly title: string;
     }
-
-    const ONE_SECOND: BaseTimeObject = {
-      key: 'ONE_SECOND',
-      value: 1000,
-    };
-    const FIVE_SECONDS: BaseTimeObject = {
-      key: 'FIVE_SECONDS',
-      value: 1000 * 5,
-    };
-    const TEN_SECONDS: BaseTimeObject = {
-      key: 'TEN_SECONDS',
-      value: 1000 * 10,
-    };
-    const ONE_MINUTE: BaseTimeObject = {
-      key: 'ONE_MINUTE',
-      value: 1000 * 60,
-    };
 
     const ONE_REACT_LIKE_SECOND: ReactLikeTimeObject = {
       ...ONE_SECOND,
@@ -366,6 +409,304 @@ describe('PoolTime', () => {
         });
 
         expect(validator).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('#getLowestCommonDuration', () => {
+    it('returns null when it should', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      expect(
+        poolTime.getLowestCommonDuration({
+          [ONE_SECOND.key]: 0,
+          [FIVE_SECONDS.key]: 0,
+        })
+      ).toBe(null);
+    });
+
+    it('returns the correct accuracy when all durations have registrations', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      expect(
+        poolTime.getLowestCommonDuration({
+          [ONE_SECOND.key]: 1,
+          [FIVE_SECONDS.key]: 1,
+        })
+      ).toEqual(configuration.accuracies[0]);
+    });
+
+    it('returns the correct accuracy when it is a later ', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      expect(
+        poolTime.getLowestCommonDuration({
+          [ONE_SECOND.key]: 0,
+          [FIVE_SECONDS.key]: 1,
+        })
+      ).toEqual(configuration.accuracies[1]);
+    });
+  });
+
+  describe('#getRegistrations', () => {
+    it('returns the correct default registrations', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      expect(poolTime.getRegistrations()).toEqual({
+        [ONE_SECOND.key]: 0,
+        [FIVE_SECONDS.key]: 0,
+      });
+    });
+  });
+
+  describe('#getTimes', () => {
+    it('returns the correct default times', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      expect(poolTime.getTimes()).toEqual({
+        [ONE_SECOND.key]: {
+          key: ONE_SECOND.key,
+          time: mockInitializationTime,
+          value: ONE_SECOND.value,
+        },
+        [FIVE_SECONDS.key]: {
+          key: FIVE_SECONDS.key,
+          time: mockInitializationTime,
+          value: FIVE_SECONDS.value,
+        },
+      });
+    });
+
+    it('rounds time to the second', () => {
+      (Date.now as jest.Mock).mockImplementation(() => 1001);
+
+      const poolTime = new PoolTime({ configuration });
+
+      expect(poolTime.getTimes()).toEqual({
+        [ONE_SECOND.key]: {
+          key: ONE_SECOND.key,
+          time: mockInitializationTime,
+          value: ONE_SECOND.value,
+        },
+        [FIVE_SECONDS.key]: {
+          key: FIVE_SECONDS.key,
+          time: mockInitializationTime,
+          value: FIVE_SECONDS.value,
+        },
+      });
+    });
+  });
+
+  describe('#register', () => {
+    it('returns the correct state', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      expect(
+        poolTime.register(
+          {
+            [ONE_SECOND.key]: 0,
+            [FIVE_SECONDS.key]: 0,
+          },
+          ONE_SECOND.key
+        )
+      ).toEqual({
+        [ONE_SECOND.key]: 1,
+        [FIVE_SECONDS.key]: 0,
+      });
+    });
+  });
+
+  describe('#startTicking', () => {
+    it('does not call the handleTick callback if there are no registrations', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      const mockHandleTick = jest.fn();
+
+      poolTime.startTicking(mockHandleTick);
+
+      expect(mockHandleTick).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(1000);
+
+      expect(mockHandleTick).not.toHaveBeenCalled();
+    });
+
+    it('calls the handleTick callback with the correct value', () => {
+      const poolTime = new PoolTime({ configuration: threeLayerConfiguration });
+
+      const mockHandleTick = jest.fn();
+
+      const initialRegistrationState = {
+        [ONE_SECOND.key]: 0,
+        [FIVE_SECONDS.key]: 0,
+        [TEN_SECONDS.key]: 0,
+      };
+
+      const firstRegistrations = poolTime.register(
+        initialRegistrationState,
+        ONE_SECOND.key
+      );
+      poolTime.getLowestCommonDuration(firstRegistrations);
+      poolTime.startTicking(mockHandleTick);
+
+      expect(mockHandleTick).not.toHaveBeenCalled();
+
+      (Date.now as jest.Mock).mockImplementation(
+        () => mockInitializationTime + 1000
+      );
+      jest.advanceTimersByTime(1000);
+
+      expect(mockHandleTick).toHaveBeenCalledTimes(1);
+      expect(mockHandleTick).toHaveBeenLastCalledWith(expect.any(Function));
+      const updater = mockHandleTick.mock.calls[0][0];
+      const nextTimes = updater(poolTime.getTimes());
+
+      expect(nextTimes).toEqual({
+        [ONE_SECOND.key]: {
+          key: ONE_SECOND.key,
+          time: mockInitializationTime + 1000,
+          value: ONE_SECOND.value,
+        },
+        [FIVE_SECONDS.key]: {
+          key: FIVE_SECONDS.key,
+          time: mockInitializationTime,
+          value: FIVE_SECONDS.value,
+        },
+        [TEN_SECONDS.key]: {
+          key: TEN_SECONDS.key,
+          time: mockInitializationTime,
+          value: TEN_SECONDS.value,
+        },
+      });
+    });
+  });
+
+  describe('#stopTicking', () => {
+    it('ceases the interval when it should', () => {
+      const poolTime = new PoolTime({ configuration: threeLayerConfiguration });
+
+      const mockHandleTick = jest.fn();
+
+      const initialRegistrationState = {
+        [ONE_SECOND.key]: 0,
+        [FIVE_SECONDS.key]: 0,
+        [TEN_SECONDS.key]: 0,
+      };
+
+      const firstRegistrations = poolTime.register(
+        initialRegistrationState,
+        ONE_SECOND.key
+      );
+      poolTime.getLowestCommonDuration(firstRegistrations);
+      poolTime.startTicking(mockHandleTick);
+
+      expect(mockHandleTick).not.toHaveBeenCalled();
+
+      (Date.now as jest.Mock).mockImplementation(
+        () => mockInitializationTime + 1000
+      );
+      jest.advanceTimersByTime(1000);
+
+      expect(mockHandleTick).toHaveBeenCalledTimes(1);
+
+      poolTime.stopTicking();
+
+      (Date.now as jest.Mock).mockImplementation(
+        () => mockInitializationTime + 2000
+      );
+      jest.advanceTimersByTime(1000);
+
+      expect(mockHandleTick).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('#tickLowestCommonDuration', () => {
+    it('properly updates the lowest time in the simplest case', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      const firstRegistrations = poolTime.register(
+        { [ONE_SECOND.key]: 0, [FIVE_SECONDS.key]: 0 },
+        ONE_SECOND.key
+      );
+      poolTime.getLowestCommonDuration(firstRegistrations);
+      (Date.now as jest.Mock).mockImplementation(
+        () => mockInitializationTime + 1000
+      );
+
+      const nextTimes = poolTime.tickLowestCommonDuration({
+        [ONE_SECOND.key]: {
+          time: mockInitializationTime + 1000,
+          value: ONE_SECOND.value,
+        },
+        [FIVE_SECONDS.key]: {
+          time: mockInitializationTime,
+          value: FIVE_SECONDS.value,
+        },
+      });
+
+      expect(nextTimes).toEqual({
+        [ONE_SECOND.key]: {
+          time: mockInitializationTime + 1000,
+          value: ONE_SECOND.value,
+        },
+        [FIVE_SECONDS.key]: {
+          time: mockInitializationTime,
+          value: FIVE_SECONDS.value,
+        },
+      });
+    });
+
+    it('properly updates the lowest time in the more complicated case', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      const firstRegistrations = poolTime.register(
+        { [ONE_SECOND.key]: 0, [FIVE_SECONDS.key]: 0 },
+        FIVE_SECONDS.key
+      );
+      poolTime.getLowestCommonDuration(firstRegistrations);
+      (Date.now as jest.Mock).mockImplementation(
+        () => mockInitializationTime + 5000
+      );
+
+      const nextTimes = poolTime.tickLowestCommonDuration({
+        [ONE_SECOND.key]: {
+          time: mockInitializationTime,
+          value: ONE_SECOND.value,
+        },
+        [FIVE_SECONDS.key]: {
+          time: mockInitializationTime,
+          value: FIVE_SECONDS.value,
+        },
+      });
+
+      expect(nextTimes).toEqual({
+        [ONE_SECOND.key]: {
+          time: mockInitializationTime,
+          value: ONE_SECOND.value,
+        },
+        [FIVE_SECONDS.key]: {
+          time: mockInitializationTime + 5000,
+          value: FIVE_SECONDS.value,
+        },
+      });
+    });
+  });
+
+  describe('#unregister', () => {
+    it('returns the correct state', () => {
+      const poolTime = new PoolTime({ configuration });
+
+      expect(
+        poolTime.unregister(
+          {
+            [ONE_SECOND.key]: 1,
+            [FIVE_SECONDS.key]: 1,
+          },
+          ONE_SECOND.key
+        )
+      ).toEqual({
+        [ONE_SECOND.key]: 0,
+        [FIVE_SECONDS.key]: 1,
       });
     });
   });
