@@ -2650,11 +2650,6 @@
     lodash.debounce "^4.0.8"
     react-dev-utils "^9.1.0"
 
-"@pool-time/pool-time-core@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@pool-time/pool-time-core/-/pool-time-core-1.0.0.tgz#695ba65ff769e69e02a8895f6ae01fe533a6ba0e"
-  integrity sha512-cGqbrey7o/1zWrm/aaGGCJtGnKm0NPZVntnp6k1yC3WVhddDBUP6zJmy6X5qP9laK4FERF3354j0pCZtPUcCuA==
-
 "@pool-time/react-pool-time@1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@pool-time/react-pool-time/-/react-pool-time-1.0.3.tgz#9127a44912256c30bc64b9508e31e5cc3e4f15a8"
