@@ -84,7 +84,7 @@ jobs:
         run: yarn prettier:check
     runs-on: ubuntu-latest
   release-pool-time-core:
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
     needs: ['build-pool-time-core', 'commitlint', 'format', 'test-pool-time-core']
     runs-on: ubuntu-latest
     steps:

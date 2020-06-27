@@ -37,5 +37,9 @@
     "test:ci": "yarn test:base --coverage"
   },
   "sideEffects": false,
+  "source": "src/index.ts",
+  "ts:main": "src/index.ts",
+  "types": "dist/types/index.d.ts",
+  "unpkg": "dist/index.umd.js",
   "version": "0.0.1"
 }

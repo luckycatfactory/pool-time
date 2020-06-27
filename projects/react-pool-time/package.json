@@ -12,6 +12,9 @@
     }
   ],
   "description": "A React provider and hook for efficient and configurable pooled relative time",
+  "dependencies": {
+    "@pool-time/pool-time-core": "^1.0.0"
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.9.6",
     "@babel/preset-react": "^7.9.4",
