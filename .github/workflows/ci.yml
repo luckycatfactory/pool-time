@@ -83,7 +83,37 @@ jobs:
       - name: Prettier
         run: yarn prettier:check
     runs-on: ubuntu-latest
-  release:
+  release-pool-time-core:
+    # TEMP: We need to do an initial publish
+    # if: github.ref == 'refs/heads/master'
+    needs: ['build-pool-time-core', 'commitlint', 'format', 'test-pool-time-core']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: nvm
+        name: Read .nvmrc
+        run: echo "##[set-output name=NVMRC;]$(cat .nvmrc)"
+      - name: Use Node.js (.nvmrc)
+        uses: actions/setup-node@v1
+        with:
+          node-version: "${{ steps.nvm.outputs.NVMRC }}"
+      - name: Download pool-time-core
+        uses: actions/download-artifact@v1
+        with:
+          name: pool-time-core-dist
+      - name: Move pool-time-core dist
+        shell: bash
+        run: |
+          mv pool-time-core-dist projects/pool-time-core/dist
+      - name: Install dependencies
+        run: yarn --offline --frozen-lockfile
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        name: Release
+        run: yarn semantic-release
+        working-directory: ./projects/pool-time-core
+  release-react-pool-time:
     if: github.ref == 'refs/heads/master'
     needs: ['build-documentation', 'build-react-pool-time', 'commitlint', 'format', 'test-react-pool-time']
     runs-on: ubuntu-latest
@@ -125,7 +155,7 @@ jobs:
           node-version: "${{ steps.nvm.outputs.NVMRC }}"
       - name: Install dependencies
         run: yarn --offline --frozen-lockfile
-      - name: Test react-pool-time
+      - name: Test pool-time-core
         run: yarn test:ci
         working-directory: ./projects/pool-time-core
       - name: Upload coverage to Codecov
