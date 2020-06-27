@@ -54,13 +54,13 @@ If no consumers are rendered underneath the top-level provider, the top-level pr
 ### `npm`
 
 ```sh
-npm install @pool-time/react-pool-time --save
+npm install @pool-time/pool-time-core @pool-time/react-pool-time --save
 ```
 
 ### `yarn`
 
 ```sh
-yarn add @pool-time/react-pool-time
+yarn add @pool-time/pool-time-core @pool-time/react-pool-time
 ```
 
 ## Usage

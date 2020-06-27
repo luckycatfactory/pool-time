@@ -1,11 +1,14 @@
 import filesize from 'rollup-plugin-filesize';
 import typescript from '@rollup/plugin-typescript';
 
+const external = ['@pool-time/pool-time-core', 'react'];
+const input = 'src/index.ts';
+
 export default [
   // Generate code distributions
   {
-    external: ['react'],
-    input: 'src/index.ts',
+    external,
+    input,
     output: [
       {
         file: 'dist/index.js',
@@ -21,6 +24,7 @@ export default [
         file: 'dist/index.umd.js',
         format: 'umd',
         globals: {
+          '@pool-time/pool-time-core': 'PoolTimeCore',
           react: 'React',
         },
         name: 'ReactPoolTime',
@@ -37,8 +41,8 @@ export default [
   },
   // Generate type distributions
   {
-    external: ['react'],
-    input: 'src/index.ts',
+    external,
+    input,
     output: {
       dir: 'dist/types',
       sourcemap: true,
