@@ -5,7 +5,7 @@ import PoolTime, {
   PoolTimeOptions,
   Time,
   stringifyObject,
-} from '../../pool-time-core/src/index';
+} from '@pool-time/pool-time-core';
 
 import { TimeObjectWithContext } from './utilities/generateTimeObject';
 import ConfigurationContext from './contexts/ConfigurationContext';
