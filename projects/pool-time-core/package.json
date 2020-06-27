@@ -24,6 +24,9 @@
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
   "name": "@pool-time/pool-time-core",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": "https://github.com/pool-time/pool-time",
   "scripts": {
     "build": "yarn clean && rollup -c",
