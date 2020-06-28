@@ -32,11 +32,17 @@ interface RegistrationState {
   [withinKey: string]: number;
 }
 
-interface TimeState<T extends AdditionalTimeProperties<T>> {
+export interface TimeState<T extends AdditionalTimeProperties<T>> {
   [timeKey: string]: TimeStateEntry<T>;
 }
 
-type getNextTimes<T> = (previousTimes: TimeState<T>) => TimeState<T>;
+type unsubscribeFunction = () => void;
+
+type leastCommonDurationChangeCallback<T> = (
+  duration: CoreAccuracyEntry<T>
+) => void;
+
+type tickCallback<T> = (times: TimeState<T>) => void;
 
 export const ETERNITY: BaseTimeObject = {
   key: 'ETERNITY',
@@ -47,10 +53,6 @@ export function stringifyObject(object: object): string {
   return JSON.stringify(object, (key, value) =>
     key && value && typeof value !== 'number' ? '' + value : value
   );
-}
-
-function roundTimeToSecond(time: number): number {
-  return Math.round(time / 1000) * 1000;
 }
 
 function validateConfiguration<T extends AdditionalTimeProperties<T>>(
@@ -208,10 +210,13 @@ function validateConfiguration<T extends AdditionalTimeProperties<T>>(
 class PoolTime<T extends AdditionalTimeProperties<T>> {
   public configuration: CoreConfiguration<T>;
 
-  private intervalId: number;
-  private lowestCommonDuration: CoreAccuracyEntry<T>;
+  private leastCommonDuration: CoreAccuracyEntry<T>;
+  private leastCommonDurationChangeSubscriptions: leastCommonDurationChangeCallback<
+    T
+  >[];
   private registrations: RegistrationState;
   private times: TimeState<T>;
+  private tickCallbacks: tickCallback<T>[];
 
   constructor({
     configuration,
@@ -221,116 +226,121 @@ class PoolTime<T extends AdditionalTimeProperties<T>> {
       validateConfiguration(configuration, onAccuracyEntryValidation);
     }
     this.configuration = configuration;
-    this.lowestCommonDuration = null;
+    this.leastCommonDuration = null;
+    this.leastCommonDurationChangeSubscriptions = [];
     this.registrations = this.generateRegistrations();
+    this.tickCallbacks = [];
     this.times = this.generateTimes();
-
-    this.getLowestCommonDuration = this.getLowestCommonDuration.bind(this);
-    this.tickLowestCommonDuration = this.tickLowestCommonDuration.bind(this);
   }
 
-  getLowestCommonDuration(
-    previousRegistrations: RegistrationState
-  ): CoreAccuracyEntry<T> {
-    this.lowestCommonDuration =
-      this.configuration.accuracies.find((accuracyEntry) =>
-        Boolean(previousRegistrations[accuracyEntry.within.key])
-      ) || null;
+  subscribeToLeastCommonDurationChange(
+    callback: (duration: CoreAccuracyEntry<T>) => void
+  ): unsubscribeFunction {
+    this.leastCommonDurationChangeSubscriptions.push(callback);
 
-    return this.lowestCommonDuration;
+    return function unsubscribe(): void {
+      this.leastCommonDurationChangeSubscriptions = this.leastCommonDurationChangeSubscriptions.filter(
+        (registeredCallback: leastCommonDurationChangeCallback<T>) =>
+          registeredCallback !== callback
+      );
+    }.bind(this);
   }
 
-  getRegistrations(): RegistrationState {
-    return this.registrations;
+  subscribeToTick(callback: tickCallback<T>): unsubscribeFunction {
+    this.tickCallbacks.push(callback);
+
+    return function unsubscribe(): void {
+      this.tickCallbacks = this.tickCallbacks.filter(
+        (registeredCallback: tickCallback<T>) => registeredCallback !== callback
+      );
+    }.bind(this);
   }
 
   getTimes(): TimeState<T> {
     return this.times;
   }
 
-  register(
-    previousRegistrations: RegistrationState,
-    timeKey: string
-  ): RegistrationState {
-    this.registrations = {
-      ...previousRegistrations,
-      [timeKey]: previousRegistrations[timeKey] + 1,
-    };
-    return this.getRegistrations();
+  register(timeKey: string): unsubscribeFunction {
+    const previousNumberOfRegistrations = this.registrations[timeKey];
+    this.registrations[timeKey] = previousNumberOfRegistrations + 1;
+    this.handleRegistrationChange(previousNumberOfRegistrations);
+
+    return function unregister(): void {
+      const nextNumberOfRegistrations = this.registrations[timeKey] - 1;
+      this.registrations[timeKey] = nextNumberOfRegistrations;
+      this.handleRegistrationChange(previousNumberOfRegistrations);
+    }.bind(this);
   }
 
-  startTicking(
-    handleTick: (
-      getNextTimes: (previousTimes: TimeState<T>) => TimeState<T>
-    ) => void
-  ): void {
-    if (!this.lowestCommonDuration) return;
-
-    this.intervalId = setInterval(() => {
-      handleTick((previousTimes) => {
-        const nowRoundedToSecond = roundTimeToSecond(Date.now());
-        const { nextTimes } = this.configuration.accuracies.reduce<{
-          hasShortCircuited: boolean;
-          nextTimes: TimeState<T>;
-        }>(
-          (acc, { within }) => {
-            if (acc.hasShortCircuited) {
-              acc.nextTimes[within.key] = previousTimes[within.key];
-              return acc;
-            }
-            const previousTimeRoundedToSecond = roundTimeToSecond(
-              previousTimes[within.key].time
-            );
-            const timeSinceLastUpdate =
-              nowRoundedToSecond - previousTimeRoundedToSecond;
-
-            if (timeSinceLastUpdate >= within.value) {
-              acc.nextTimes[within.key] = {
-                ...within,
-                time: nowRoundedToSecond,
-                value: within.value,
-              };
-            } else {
-              acc.nextTimes[within.key] = previousTimes[within.key];
-              acc.hasShortCircuited = true;
-            }
-            return acc;
-          },
-          { hasShortCircuited: false, nextTimes: {} }
+  startTicking(): unsubscribeFunction {
+    if (!this.leastCommonDuration) {
+      if (process.env.NODE_ENV !== 'production') {
+        throw new Error(
+          "The pool-time instance can not be started when there are no registrations. This is likely an issue with the implementation of pool-time that you're using."
         );
-        return nextTimes;
-      });
-    }, this.lowestCommonDuration.within.value);
+      }
+
+      return function unsubscribe(): void {
+        // For consistency we return an unsubscribe, but this is no-op.
+      }.bind(this);
+    }
+
+    const intervalId = setInterval(() => {
+      const now = Date.now();
+      const { nextTimes } = this.configuration.accuracies.reduce<{
+        hasShortCircuited: boolean;
+        nextTimes: TimeState<T>;
+      }>(
+        (acc, { within }) => {
+          if (acc.hasShortCircuited) {
+            acc.nextTimes[within.key] = this.times[within.key];
+            return acc;
+          }
+          const previousTimes = this.times[within.key].time;
+          const timeSinceLastUpdate = now - previousTimes;
+
+          if (timeSinceLastUpdate >= within.value) {
+            acc.nextTimes[within.key] = {
+              ...within,
+              time: now,
+              value: within.value,
+            };
+          } else {
+            acc.nextTimes[within.key] = this.times[within.key];
+            acc.hasShortCircuited = true;
+          }
+          return acc;
+        },
+        { hasShortCircuited: false, nextTimes: {} }
+      );
+      this.times = nextTimes;
+      this.emitTick(this.times);
+    }, this.leastCommonDuration.within.value);
+
+    return function unsubscribe(): void {
+      clearInterval(intervalId);
+    }.bind(this);
   }
 
-  stopTicking(): void {
-    clearInterval(this.intervalId);
-    this.intervalId = null;
+  private emitLeastCommonDurationChange(
+    leastCommonDuration: CoreAccuracyEntry<T>
+  ): void {
+    this.leastCommonDurationChangeSubscriptions.forEach((callback) =>
+      callback(leastCommonDuration)
+    );
   }
 
-  tickLowestCommonDuration(previousTimes: TimeState<T>): TimeState<T> {
-    const {
-      within: { key },
-    } = this.lowestCommonDuration;
-    this.times = {
-      ...previousTimes,
-      [key]: {
-        ...previousTimes[key],
-        time: roundTimeToSecond(Date.now()),
-      },
-    };
-    return this.times;
+  private emitTick(times: TimeState<T>): void {
+    this.tickCallbacks.forEach((callback) => callback(times));
   }
 
-  unregister(
-    previousRegistrations: RegistrationState,
-    timeKey: string
-  ): RegistrationState {
-    this.registrations = {
-      ...previousRegistrations,
-      [timeKey]: previousRegistrations[timeKey] - 1,
-    };
-    return this.getRegistrations();
+  private findLeastCommonDuration(): CoreAccuracyEntry<T> {
+    const leastCommonDuration =
+      this.configuration.accuracies.find((accuracyEntry) =>
+        Boolean(this.registrations[accuracyEntry.within.key])
+      ) || null;
+
+    return leastCommonDuration;
   }
 
   private generateRegistrations(): RegistrationState {
@@ -348,13 +358,43 @@ class PoolTime<T extends AdditionalTimeProperties<T>> {
       (accumulator, { within }) => {
         accumulator[within.key] = {
           ...within,
-          time: roundTimeToSecond(Date.now()),
+          time: Date.now(),
           value: within.value,
         };
         return accumulator;
       },
       {}
     );
+  }
+
+  private handleRegistrationChange(
+    applicableNumberOfRegistrations: number
+  ): void {
+    if (applicableNumberOfRegistrations === 0) {
+      const currentLeastCommonDuration = this.leastCommonDuration;
+      const nextLeastCommonDuration = this.findLeastCommonDuration();
+
+      if (nextLeastCommonDuration !== currentLeastCommonDuration) {
+        this.leastCommonDuration = nextLeastCommonDuration;
+        this.emitLeastCommonDurationChange(this.leastCommonDuration);
+        this.tickLeastCommonDuration();
+      }
+    }
+  }
+
+  private tickLeastCommonDuration(): void {
+    if (!this.leastCommonDuration) return;
+    const {
+      within: { key },
+    } = this.leastCommonDuration;
+    this.times = {
+      ...this.times,
+      [key]: {
+        ...this.times[key],
+        time: Date.now(),
+      },
+    };
+    this.emitTick(this.times);
   }
 }
 

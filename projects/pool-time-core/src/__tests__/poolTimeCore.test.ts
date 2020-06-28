@@ -2,6 +2,7 @@ import PoolTime, {
   BaseTimeObject,
   CoreAccuracyEntry,
   CoreConfiguration,
+  TimeState,
   ETERNITY,
 } from '../index';
 
@@ -413,52 +414,6 @@ describe('PoolTime', () => {
     });
   });
 
-  describe('#getLowestCommonDuration', () => {
-    it('returns null when it should', () => {
-      const poolTime = new PoolTime({ configuration });
-
-      expect(
-        poolTime.getLowestCommonDuration({
-          [ONE_SECOND.key]: 0,
-          [FIVE_SECONDS.key]: 0,
-        })
-      ).toBe(null);
-    });
-
-    it('returns the correct accuracy when all durations have registrations', () => {
-      const poolTime = new PoolTime({ configuration });
-
-      expect(
-        poolTime.getLowestCommonDuration({
-          [ONE_SECOND.key]: 1,
-          [FIVE_SECONDS.key]: 1,
-        })
-      ).toEqual(configuration.accuracies[0]);
-    });
-
-    it('returns the correct accuracy when it is a later ', () => {
-      const poolTime = new PoolTime({ configuration });
-
-      expect(
-        poolTime.getLowestCommonDuration({
-          [ONE_SECOND.key]: 0,
-          [FIVE_SECONDS.key]: 1,
-        })
-      ).toEqual(configuration.accuracies[1]);
-    });
-  });
-
-  describe('#getRegistrations', () => {
-    it('returns the correct default registrations', () => {
-      const poolTime = new PoolTime({ configuration });
-
-      expect(poolTime.getRegistrations()).toEqual({
-        [ONE_SECOND.key]: 0,
-        [FIVE_SECONDS.key]: 0,
-      });
-    });
-  });
-
   describe('#getTimes', () => {
     it('returns the correct default times', () => {
       const poolTime = new PoolTime({ configuration });
@@ -476,237 +431,692 @@ describe('PoolTime', () => {
         },
       });
     });
-
-    it('rounds time to the second', () => {
-      (Date.now as jest.Mock).mockImplementation(() => 1001);
-
-      const poolTime = new PoolTime({ configuration });
-
-      expect(poolTime.getTimes()).toEqual({
-        [ONE_SECOND.key]: {
-          key: ONE_SECOND.key,
-          time: mockInitializationTime,
-          value: ONE_SECOND.value,
-        },
-        [FIVE_SECONDS.key]: {
-          key: FIVE_SECONDS.key,
-          time: mockInitializationTime,
-          value: FIVE_SECONDS.value,
-        },
-      });
-    });
   });
 
-  describe('#register', () => {
-    it('returns the correct state', () => {
-      const poolTime = new PoolTime({ configuration });
+  describe('registration behavior', () => {
+    describe('when a registration occurs', () => {
+      it('emits to least common duration change handlers when there is a change and there is one handler', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleLeastCommonDurationChange = jest.fn();
+        poolTime.subscribeToLeastCommonDurationChange(
+          mockHandleLeastCommonDurationChange
+        );
 
-      expect(
-        poolTime.register(
-          {
-            [ONE_SECOND.key]: 0,
-            [FIVE_SECONDS.key]: 0,
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(1);
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenLastCalledWith({
+          upTo: ONE_MINUTE,
+          within: ONE_SECOND,
+        });
+      });
+
+      it('emits to least common duration change handlers when there is a change and there are several handlers', () => {
+        const poolTime = new PoolTime({ configuration });
+        const firstMockHandleLeastCommonDurationChange = jest.fn();
+        const secondMockHandleLeastCommonDurationChange = jest.fn();
+        poolTime.subscribeToLeastCommonDurationChange(
+          firstMockHandleLeastCommonDurationChange
+        );
+        poolTime.subscribeToLeastCommonDurationChange(
+          secondMockHandleLeastCommonDurationChange
+        );
+
+        expect(firstMockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+        expect(
+          secondMockHandleLeastCommonDurationChange
+        ).not.toHaveBeenCalled();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(firstMockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(
+          1
+        );
+        expect(
+          firstMockHandleLeastCommonDurationChange
+        ).toHaveBeenLastCalledWith({
+          upTo: ONE_MINUTE,
+          within: ONE_SECOND,
+        });
+        expect(secondMockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(
+          1
+        );
+        expect(
+          secondMockHandleLeastCommonDurationChange
+        ).toHaveBeenLastCalledWith({
+          upTo: ONE_MINUTE,
+          within: ONE_SECOND,
+        });
+      });
+
+      it('emits to least common duration change handlers when a new smallest duration is registered', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleLeastCommonDurationChange = jest.fn();
+        poolTime.subscribeToLeastCommonDurationChange(
+          mockHandleLeastCommonDurationChange
+        );
+
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+
+        poolTime.register(FIVE_SECONDS.key);
+
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(1);
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenLastCalledWith({
+          upTo: ETERNITY,
+          within: FIVE_SECONDS,
+        });
+        mockHandleLeastCommonDurationChange.mockClear();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(1);
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenLastCalledWith({
+          upTo: ONE_MINUTE,
+          within: ONE_SECOND,
+        });
+      });
+
+      it('does not emit to any least common duration change handlers when there is no change', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleLeastCommonDurationChange = jest.fn();
+        poolTime.subscribeToLeastCommonDurationChange(
+          mockHandleLeastCommonDurationChange
+        );
+
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(1);
+        mockHandleLeastCommonDurationChange.mockClear();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+      });
+
+      it('properly removes least common duration change handlers when unsubscribed', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleLeastCommonDurationChange = jest.fn();
+        const unsubscribe = poolTime.subscribeToLeastCommonDurationChange(
+          mockHandleLeastCommonDurationChange
+        );
+
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+        unsubscribe();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+      });
+
+      it('properly emits to tick handlers when the least common duration changes', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleTick = jest.fn();
+        poolTime.subscribeToTick(mockHandleTick);
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleTick).toHaveBeenCalledTimes(1);
+        expect(mockHandleTick).toHaveBeenLastCalledWith({
+          [ONE_SECOND.key]: {
+            ...ONE_SECOND,
+            time: 1000,
           },
-          ONE_SECOND.key
-        )
-      ).toEqual({
-        [ONE_SECOND.key]: 1,
-        [FIVE_SECONDS.key]: 0,
+          [FIVE_SECONDS.key]: {
+            ...FIVE_SECONDS,
+            time: 1000,
+          },
+        });
+      });
+
+      it('properly emits to tick handlers when the least common duration changes and there are multiple handlers', () => {
+        const poolTime = new PoolTime({ configuration });
+        const firstMockHandleTick = jest.fn();
+        const secondMockHandleTick = jest.fn();
+        poolTime.subscribeToTick(firstMockHandleTick);
+        poolTime.subscribeToTick(secondMockHandleTick);
+
+        expect(firstMockHandleTick).not.toHaveBeenCalled();
+        expect(secondMockHandleTick).not.toHaveBeenCalled();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(firstMockHandleTick).toHaveBeenCalledTimes(1);
+        expect(firstMockHandleTick).toHaveBeenLastCalledWith({
+          [ONE_SECOND.key]: {
+            ...ONE_SECOND,
+            time: 1000,
+          },
+          [FIVE_SECONDS.key]: {
+            ...FIVE_SECONDS,
+            time: 1000,
+          },
+        });
+        expect(secondMockHandleTick).toHaveBeenCalledTimes(1);
+        expect(secondMockHandleTick).toHaveBeenLastCalledWith({
+          [ONE_SECOND.key]: {
+            ...ONE_SECOND,
+            time: 1000,
+          },
+          [FIVE_SECONDS.key]: {
+            ...FIVE_SECONDS,
+            time: 1000,
+          },
+        });
+      });
+
+      it('properly emits to tick handlers when the least common duration changes to a shorter duration', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleTick = jest.fn();
+        poolTime.subscribeToTick(mockHandleTick);
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        poolTime.register(FIVE_SECONDS.key);
+
+        expect(mockHandleTick).toHaveBeenCalledTimes(1);
+        expect(mockHandleTick).toHaveBeenLastCalledWith({
+          [ONE_SECOND.key]: {
+            ...ONE_SECOND,
+            time: 1000,
+          },
+          [FIVE_SECONDS.key]: {
+            ...FIVE_SECONDS,
+            time: 1000,
+          },
+        });
+
+        (Date.now as jest.Mock).mockImplementation(() => 1500);
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleTick).toHaveBeenCalledTimes(2);
+        expect(mockHandleTick).toHaveBeenLastCalledWith({
+          [ONE_SECOND.key]: {
+            ...ONE_SECOND,
+            time: 1500,
+          },
+          [FIVE_SECONDS.key]: {
+            ...FIVE_SECONDS,
+            time: 1000,
+          },
+        });
+      });
+
+      it('does not emit to tick handlers when the least common duration does not change', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleTick = jest.fn();
+        poolTime.subscribeToTick(mockHandleTick);
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleTick).toHaveBeenCalledTimes(1);
+        mockHandleTick.mockClear();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+      });
+
+      it('properly removes tick handlers when unsubscribed', () => {
+        const poolTime = new PoolTime({ configuration });
+        const firstMockHandleTick = jest.fn();
+        const secondMockHandleTick = jest.fn();
+        const firstUnsubscribe = poolTime.subscribeToTick(firstMockHandleTick);
+        const secondUnsubscribe = poolTime.subscribeToTick(
+          secondMockHandleTick
+        );
+
+        expect(firstMockHandleTick).not.toHaveBeenCalled();
+        expect(secondMockHandleTick).not.toHaveBeenCalled();
+        firstUnsubscribe();
+        secondUnsubscribe();
+
+        poolTime.register(ONE_SECOND.key);
+
+        expect(firstMockHandleTick).not.toHaveBeenCalled();
+        expect(secondMockHandleTick).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when an unregistration occurs', () => {
+      it('emits to least common duration change handlers when there is a change and there is one handler', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleLeastCommonDurationChange = jest.fn();
+        poolTime.subscribeToLeastCommonDurationChange(
+          mockHandleLeastCommonDurationChange
+        );
+
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+
+        const unregister = poolTime.register(ONE_SECOND.key);
+
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(1);
+        mockHandleLeastCommonDurationChange.mockClear();
+
+        unregister();
+
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(1);
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenLastCalledWith(
+          null
+        );
+      });
+
+      it('emits to least common duration change handlers when there is a change and there is one handler', () => {
+        const poolTime = new PoolTime({ configuration });
+        const firstMockHandleLeastCommonDurationChange = jest.fn();
+        const secondMockHandleLeastCommonDurationChange = jest.fn();
+        poolTime.subscribeToLeastCommonDurationChange(
+          firstMockHandleLeastCommonDurationChange
+        );
+        poolTime.subscribeToLeastCommonDurationChange(
+          secondMockHandleLeastCommonDurationChange
+        );
+
+        expect(firstMockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+        expect(
+          secondMockHandleLeastCommonDurationChange
+        ).not.toHaveBeenCalled();
+
+        const unregister = poolTime.register(ONE_SECOND.key);
+
+        expect(firstMockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(
+          1
+        );
+        firstMockHandleLeastCommonDurationChange.mockClear();
+        expect(secondMockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(
+          1
+        );
+        secondMockHandleLeastCommonDurationChange.mockClear();
+
+        unregister();
+
+        expect(firstMockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(
+          1
+        );
+        expect(
+          firstMockHandleLeastCommonDurationChange
+        ).toHaveBeenLastCalledWith(null);
+        expect(secondMockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(
+          1
+        );
+        expect(
+          secondMockHandleLeastCommonDurationChange
+        ).toHaveBeenLastCalledWith(null);
+      });
+
+      it('emits to least common duration change handlers when the previous smallest duration is completely unregistered', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleLeastCommonDurationChange = jest.fn();
+        poolTime.subscribeToLeastCommonDurationChange(
+          mockHandleLeastCommonDurationChange
+        );
+
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+
+        poolTime.register(FIVE_SECONDS.key);
+        const unregisterOneSecond = poolTime.register(ONE_SECOND.key);
+        mockHandleLeastCommonDurationChange.mockClear();
+
+        unregisterOneSecond();
+
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenCalledTimes(1);
+        expect(mockHandleLeastCommonDurationChange).toHaveBeenLastCalledWith({
+          upTo: ETERNITY,
+          within: FIVE_SECONDS,
+        });
+      });
+
+      it('does not emit to any least common duration change handlers when there is no change', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleLeastCommonDurationChange = jest.fn();
+        poolTime.subscribeToLeastCommonDurationChange(
+          mockHandleLeastCommonDurationChange
+        );
+
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+
+        poolTime.register(ONE_SECOND.key);
+        const unregister = poolTime.register(ONE_SECOND.key);
+        mockHandleLeastCommonDurationChange.mockClear();
+
+        unregister();
+
+        expect(mockHandleLeastCommonDurationChange).not.toHaveBeenCalled();
+      });
+
+      it('properly emits to tick handlers when the least common duration changes', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleTick = jest.fn();
+        poolTime.subscribeToTick(mockHandleTick);
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        const unregisterOneSecond = poolTime.register(ONE_SECOND.key);
+        poolTime.register(FIVE_SECONDS.key);
+        mockHandleTick.mockClear();
+
+        (Date.now as jest.Mock).mockImplementation(() => 1500);
+
+        unregisterOneSecond();
+
+        expect(mockHandleTick).toHaveBeenCalledTimes(1);
+        expect(mockHandleTick).toHaveBeenLastCalledWith({
+          [ONE_SECOND.key]: {
+            ...ONE_SECOND,
+            time: 1000,
+          },
+          [FIVE_SECONDS.key]: {
+            ...FIVE_SECONDS,
+            time: 1500,
+          },
+        });
+      });
+
+      it('properly emits to tick handlers when the least common duration changes and there are multiple handlers', () => {
+        const poolTime = new PoolTime({ configuration });
+        const firstMockHandleTick = jest.fn();
+        const secondMockHandleTick = jest.fn();
+        poolTime.subscribeToTick(firstMockHandleTick);
+        poolTime.subscribeToTick(secondMockHandleTick);
+
+        expect(firstMockHandleTick).not.toHaveBeenCalled();
+        expect(secondMockHandleTick).not.toHaveBeenCalled();
+
+        const unregisterOneSecond = poolTime.register(ONE_SECOND.key);
+        poolTime.register(FIVE_SECONDS.key);
+        firstMockHandleTick.mockClear();
+        secondMockHandleTick.mockClear();
+
+        (Date.now as jest.Mock).mockImplementation(() => 1500);
+
+        unregisterOneSecond();
+
+        expect(firstMockHandleTick).toHaveBeenCalledTimes(1);
+        expect(firstMockHandleTick).toHaveBeenLastCalledWith({
+          [ONE_SECOND.key]: {
+            ...ONE_SECOND,
+            time: 1000,
+          },
+          [FIVE_SECONDS.key]: {
+            ...FIVE_SECONDS,
+            time: 1500,
+          },
+        });
+        expect(secondMockHandleTick).toHaveBeenCalledTimes(1);
+        expect(secondMockHandleTick).toHaveBeenLastCalledWith({
+          [ONE_SECOND.key]: {
+            ...ONE_SECOND,
+            time: 1000,
+          },
+          [FIVE_SECONDS.key]: {
+            ...FIVE_SECONDS,
+            time: 1500,
+          },
+        });
+      });
+
+      it('does not emit to tick handlers when the least common duration does not change', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleTick = jest.fn();
+        poolTime.subscribeToTick(mockHandleTick);
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        const firstUnregister = poolTime.register(ONE_SECOND.key);
+        const secondUnregister = poolTime.register(ONE_SECOND.key);
+        mockHandleTick.mockClear();
+
+        firstUnregister();
+        secondUnregister();
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+      });
+
+      it('does emit to tick handlers when there is still a least common duration', () => {
+        const poolTime = new PoolTime({ configuration });
+        const mockHandleTick = jest.fn();
+        poolTime.subscribeToTick(mockHandleTick);
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        poolTime.register(ONE_SECOND.key);
+        const unregister = poolTime.register(FIVE_SECONDS.key);
+        mockHandleTick.mockClear();
+
+        unregister();
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('#startTicking', () => {
-    it('does not call the handleTick callback if there are no registrations', () => {
-      const poolTime = new PoolTime({ configuration });
+    const advanceTimeBy = (timeInMilliseconds: number, repeat = 1): void => {
+      const initialTime = Date.now();
+      for (let i = 0; i < repeat; i++) {
+        const nextTime = initialTime + timeInMilliseconds * (i + 1);
+        (Date.now as jest.Mock).mockImplementation(() => nextTime);
+        jest.advanceTimersByTime(timeInMilliseconds);
+      }
+    };
 
+    const generatePoolTimeWithOneRegistrationEach = (): {
+      initialTimes: TimeState<{}>;
+      mockHandleTick: jest.Mock;
+      poolTime: PoolTime<{}>;
+    } => {
       const mockHandleTick = jest.fn();
-
-      poolTime.startTicking(mockHandleTick);
-
-      expect(mockHandleTick).not.toHaveBeenCalled();
-
-      jest.advanceTimersByTime(1000);
-
-      expect(mockHandleTick).not.toHaveBeenCalled();
-    });
-
-    it('calls the handleTick callback with the correct value', () => {
-      const poolTime = new PoolTime({ configuration: threeLayerConfiguration });
-
-      const mockHandleTick = jest.fn();
-
-      const initialRegistrationState = {
-        [ONE_SECOND.key]: 0,
-        [FIVE_SECONDS.key]: 0,
-        [TEN_SECONDS.key]: 0,
-      };
-
-      const firstRegistrations = poolTime.register(
-        initialRegistrationState,
-        ONE_SECOND.key
-      );
-      poolTime.getLowestCommonDuration(firstRegistrations);
-      poolTime.startTicking(mockHandleTick);
-
-      expect(mockHandleTick).not.toHaveBeenCalled();
-
-      (Date.now as jest.Mock).mockImplementation(
-        () => mockInitializationTime + 1000
-      );
-      jest.advanceTimersByTime(1000);
-
-      expect(mockHandleTick).toHaveBeenCalledTimes(1);
-      expect(mockHandleTick).toHaveBeenLastCalledWith(expect.any(Function));
-      const updater = mockHandleTick.mock.calls[0][0];
-      const nextTimes = updater(poolTime.getTimes());
-
-      expect(nextTimes).toEqual({
-        [ONE_SECOND.key]: {
-          key: ONE_SECOND.key,
-          time: mockInitializationTime + 1000,
-          value: ONE_SECOND.value,
-        },
-        [FIVE_SECONDS.key]: {
-          key: FIVE_SECONDS.key,
-          time: mockInitializationTime,
-          value: FIVE_SECONDS.value,
-        },
-        [TEN_SECONDS.key]: {
-          key: TEN_SECONDS.key,
-          time: mockInitializationTime,
-          value: TEN_SECONDS.value,
-        },
+      const poolTime = new PoolTime({
+        configuration: threeLayerConfiguration,
       });
-    });
-  });
+      poolTime.subscribeToTick(mockHandleTick);
+      poolTime.register(ONE_SECOND.key);
+      poolTime.register(FIVE_SECONDS.key);
+      poolTime.register(TEN_SECONDS.key);
+      // None of these tests will concern themselves with the least common
+      // duration handling, so let's just clear the mock.
+      mockHandleTick.mockClear();
 
-  describe('#stopTicking', () => {
-    it('ceases the interval when it should', () => {
-      const poolTime = new PoolTime({ configuration: threeLayerConfiguration });
+      const initialTimes = poolTime.getTimes();
 
-      const mockHandleTick = jest.fn();
+      return { initialTimes, mockHandleTick, poolTime };
+    };
 
-      const initialRegistrationState = {
-        [ONE_SECOND.key]: 0,
-        [FIVE_SECONDS.key]: 0,
-        [TEN_SECONDS.key]: 0,
-      };
+    describe('when it should not start an interval', () => {
+      it.each([['test'], ['development']])(
+        'throws the correct error if called before registrations are in when in %s',
+        (targetEnvironment) => {
+          process.env.NODE_ENV = targetEnvironment;
+          const poolTime = new PoolTime({ configuration });
 
-      const firstRegistrations = poolTime.register(
-        initialRegistrationState,
-        ONE_SECOND.key
-      );
-      poolTime.getLowestCommonDuration(firstRegistrations);
-      poolTime.startTicking(mockHandleTick);
-
-      expect(mockHandleTick).not.toHaveBeenCalled();
-
-      (Date.now as jest.Mock).mockImplementation(
-        () => mockInitializationTime + 1000
-      );
-      jest.advanceTimersByTime(1000);
-
-      expect(mockHandleTick).toHaveBeenCalledTimes(1);
-
-      poolTime.stopTicking();
-
-      (Date.now as jest.Mock).mockImplementation(
-        () => mockInitializationTime + 2000
-      );
-      jest.advanceTimersByTime(1000);
-
-      expect(mockHandleTick).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('#tickLowestCommonDuration', () => {
-    it('properly updates the lowest time in the simplest case', () => {
-      const poolTime = new PoolTime({ configuration });
-
-      const firstRegistrations = poolTime.register(
-        { [ONE_SECOND.key]: 0, [FIVE_SECONDS.key]: 0 },
-        ONE_SECOND.key
-      );
-      poolTime.getLowestCommonDuration(firstRegistrations);
-      (Date.now as jest.Mock).mockImplementation(
-        () => mockInitializationTime + 1000
+          expect(() => {
+            poolTime.startTicking();
+          }).toThrow(
+            "The pool-time instance can not be started when there are no registrations. This is likely an issue with the implementation of pool-time that you're using."
+          );
+        }
       );
 
-      const nextTimes = poolTime.tickLowestCommonDuration({
-        [ONE_SECOND.key]: {
-          time: mockInitializationTime + 1000,
-          value: ONE_SECOND.value,
-        },
-        [FIVE_SECONDS.key]: {
-          time: mockInitializationTime,
-          value: FIVE_SECONDS.value,
-        },
-      });
+      it('fails gracefully in if called before registrations are in for production', () => {
+        process.env.NODE_ENV = 'production';
+        const poolTime = new PoolTime({ configuration });
 
-      expect(nextTimes).toEqual({
-        [ONE_SECOND.key]: {
-          time: mockInitializationTime + 1000,
-          value: ONE_SECOND.value,
-        },
-        [FIVE_SECONDS.key]: {
-          time: mockInitializationTime,
-          value: FIVE_SECONDS.value,
-        },
+        let stopTicking: () => void;
+
+        expect(() => {
+          stopTicking = poolTime.startTicking();
+        }).not.toThrow();
+
+        expect(() => {
+          stopTicking();
+        }).not.toThrow();
       });
     });
 
-    it('properly updates the lowest time in the more complicated case', () => {
-      const poolTime = new PoolTime({ configuration });
+    describe('when it should start an interval', () => {
+      it('does not immediately emit a tick', () => {
+        const {
+          mockHandleTick,
+          poolTime,
+        } = generatePoolTimeWithOneRegistrationEach();
 
-      const firstRegistrations = poolTime.register(
-        { [ONE_SECOND.key]: 0, [FIVE_SECONDS.key]: 0 },
-        FIVE_SECONDS.key
-      );
-      poolTime.getLowestCommonDuration(firstRegistrations);
-      (Date.now as jest.Mock).mockImplementation(
-        () => mockInitializationTime + 5000
-      );
+        poolTime.startTicking();
 
-      const nextTimes = poolTime.tickLowestCommonDuration({
-        [ONE_SECOND.key]: {
-          time: mockInitializationTime,
-          value: ONE_SECOND.value,
-        },
-        [FIVE_SECONDS.key]: {
-          time: mockInitializationTime,
-          value: FIVE_SECONDS.value,
-        },
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        advanceTimeBy(999);
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
       });
 
-      expect(nextTimes).toEqual({
-        [ONE_SECOND.key]: {
-          time: mockInitializationTime,
-          value: ONE_SECOND.value,
-        },
-        [FIVE_SECONDS.key]: {
-          time: mockInitializationTime + 5000,
-          value: FIVE_SECONDS.value,
-        },
-      });
-    });
-  });
+      it('properly emits a single tick when only the shortest duration should be updated', () => {
+        const {
+          initialTimes,
+          mockHandleTick,
+          poolTime,
+        } = generatePoolTimeWithOneRegistrationEach();
 
-  describe('#unregister', () => {
-    it('returns the correct state', () => {
-      const poolTime = new PoolTime({ configuration });
+        poolTime.startTicking();
 
-      expect(
-        poolTime.unregister(
-          {
-            [ONE_SECOND.key]: 1,
-            [FIVE_SECONDS.key]: 1,
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        advanceTimeBy(1000);
+
+        expect(mockHandleTick).toHaveBeenCalledTimes(1);
+        expect(mockHandleTick).toHaveBeenLastCalledWith({
+          ...initialTimes,
+          [ONE_SECOND.key]: {
+            ...initialTimes[ONE_SECOND.key],
+            time: mockInitializationTime + 1000,
           },
-          ONE_SECOND.key
-        )
-      ).toEqual({
-        [ONE_SECOND.key]: 0,
-        [FIVE_SECONDS.key]: 1,
+        });
+      });
+
+      it('properly emits a several ticks when only the shortest duration should be updated', () => {
+        const {
+          initialTimes,
+          mockHandleTick,
+          poolTime,
+        } = generatePoolTimeWithOneRegistrationEach();
+
+        poolTime.startTicking();
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        advanceTimeBy(1000, 4);
+
+        expect(mockHandleTick).toHaveBeenCalledTimes(4);
+        expect(mockHandleTick).toHaveBeenLastCalledWith({
+          ...initialTimes,
+          [ONE_SECOND.key]: {
+            ...initialTimes[ONE_SECOND.key],
+            time: mockInitializationTime + 4000,
+          },
+        });
+      });
+
+      it('properly emits a tick with the correct times when another time needs to be updated', () => {
+        const {
+          initialTimes,
+          mockHandleTick,
+          poolTime,
+        } = generatePoolTimeWithOneRegistrationEach();
+
+        poolTime.startTicking();
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        advanceTimeBy(4000);
+
+        mockHandleTick.mockClear();
+
+        advanceTimeBy(1000);
+
+        expect(mockHandleTick).toHaveBeenCalledTimes(1);
+        expect(mockHandleTick).toHaveBeenLastCalledWith({
+          ...initialTimes,
+          [ONE_SECOND.key]: {
+            ...initialTimes[ONE_SECOND.key],
+            time: mockInitializationTime + 5000,
+          },
+          [FIVE_SECONDS.key]: {
+            ...initialTimes[FIVE_SECONDS.key],
+            time: mockInitializationTime + 5000,
+          },
+        });
+      });
+
+      it('properly emits a tick with the correct times when multiple other times need to be updated', () => {
+        const {
+          initialTimes,
+          mockHandleTick,
+          poolTime,
+        } = generatePoolTimeWithOneRegistrationEach();
+
+        poolTime.startTicking();
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+
+        advanceTimeBy(1000, 9);
+
+        mockHandleTick.mockClear();
+
+        advanceTimeBy(1000);
+
+        expect(mockHandleTick).toHaveBeenCalledTimes(1);
+        expect(mockHandleTick).toHaveBeenLastCalledWith({
+          ...initialTimes,
+          [ONE_SECOND.key]: {
+            ...initialTimes[ONE_SECOND.key],
+            time: mockInitializationTime + 10000,
+          },
+          [FIVE_SECONDS.key]: {
+            ...initialTimes[FIVE_SECONDS.key],
+            time: mockInitializationTime + 10000,
+          },
+          [TEN_SECONDS.key]: {
+            ...initialTimes[TEN_SECONDS.key],
+            time: mockInitializationTime + 10000,
+          },
+        });
+      });
+    });
+
+    describe('when it should stop an interval', () => {
+      it('does not immediately emit a tick', () => {
+        const {
+          mockHandleTick,
+          poolTime,
+        } = generatePoolTimeWithOneRegistrationEach();
+
+        const stopTicking = poolTime.startTicking();
+
+        stopTicking();
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
+      });
+
+      it('ceases all future tick emits', () => {
+        const {
+          mockHandleTick,
+          poolTime,
+        } = generatePoolTimeWithOneRegistrationEach();
+
+        const stopTicking = poolTime.startTicking();
+
+        stopTicking();
+
+        advanceTimeBy(1000, 10);
+
+        expect(mockHandleTick).not.toHaveBeenCalled();
       });
     });
   });
