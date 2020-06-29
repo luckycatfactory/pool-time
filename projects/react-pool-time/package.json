@@ -16,7 +16,6 @@
     "@babel/preset-env": "^7.9.6",
     "@babel/preset-react": "^7.9.4",
     "@babel/preset-typescript": "^7.9.0",
-    "@pool-time/pool-time-core": "^1.0.1",
     "@rollup/plugin-typescript": "^4.1.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/jest": "^25.2.3",
@@ -47,7 +46,6 @@
   "module": "dist/index.esm.js",
   "name": "@pool-time/react-pool-time",
   "peerDependencies": {
-    "@pool-time/pool-time-core": "^1.0.1",
     "react": "^16.13.1"
   },
   "publishConfig": {
@@ -70,5 +68,8 @@
   "ts:main": "src/index.ts",
   "types": "dist/types/index.d.ts",
   "unpkg": "dist/index.umd.js",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "dependencies": {
+    "@pool-time/pool-time-core": "^2.1.0"
+  }
 }
