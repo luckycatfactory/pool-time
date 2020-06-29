@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { renderHook, act } from '@testing-library/react-hooks';
+import PoolTime from '@pool-time/pool-time-core';
 
 import useRelativeTime, {
   UseRelativeTimeResponse,
@@ -421,14 +422,18 @@ describe('useRelativeTime()', () => {
 
       it('does not throw an error when valid configurations are provided', () => {
         expect(() => {
-          createPoolTimeProvider({
-            accuracies: [
-              {
-                upTo: ETERNITY,
-                within: ONE_SECOND,
+          createPoolTimeProvider(
+            new PoolTime({
+              configuration: {
+                accuracies: [
+                  {
+                    upTo: ETERNITY,
+                    within: ONE_SECOND,
+                  },
+                ],
               },
-            ],
-          });
+            })
+          );
         }).not.toThrow();
       });
 
@@ -442,7 +447,7 @@ describe('useRelativeTime()', () => {
         'throws the expected error %s',
         (title: string, configuration: Configuration, errorMessage: string) => {
           expect(() => {
-            createPoolTimeProvider(configuration);
+            createPoolTimeProvider(new PoolTime({ configuration }));
           }).toThrow(errorMessage);
         }
       );
@@ -455,14 +460,18 @@ describe('useRelativeTime()', () => {
 
       it('does not throw an error when valid configurations are provided', () => {
         expect(() => {
-          createPoolTimeProvider({
-            accuracies: [
-              {
-                upTo: ETERNITY,
-                within: ONE_SECOND,
+          createPoolTimeProvider(
+            new PoolTime({
+              configuration: {
+                accuracies: [
+                  {
+                    upTo: ETERNITY,
+                    within: ONE_SECOND,
+                  },
+                ],
               },
-            ],
-          });
+            })
+          );
         }).not.toThrow();
       });
 
@@ -476,7 +485,7 @@ describe('useRelativeTime()', () => {
         'does not throw an error %s',
         (title: string, configuration: Configuration, errorMessage: string) => {
           expect(() => {
-            createPoolTimeProvider(configuration);
+            createPoolTimeProvider(new PoolTime({ configuration }));
           }).not.toThrow(errorMessage);
         }
       );
@@ -492,7 +501,9 @@ describe('useRelativeTime()', () => {
       ])(
         'returns the correct initial result when the target time is in the %s',
         (testKey, difference) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
 
           const { result } = renderHook(
             () => useRelativeTime(startTime + difference),
@@ -510,7 +521,9 @@ describe('useRelativeTime()', () => {
       );
 
       it('returns the previous result up until the next tick occurs', () => {
-        const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: simpleConfiguration })
+        );
 
         const { result } = renderHook(() => useRelativeTime(startTime), {
           wrapper: generateProviderTestWrapper(PoolTimeProvider),
@@ -528,7 +541,9 @@ describe('useRelativeTime()', () => {
       });
 
       it('returns the correct result after one tick', () => {
-        const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: simpleConfiguration })
+        );
 
         const { result } = renderHook(() => useRelativeTime(startTime), {
           wrapper: generateProviderTestWrapper(PoolTimeProvider),
@@ -544,7 +559,9 @@ describe('useRelativeTime()', () => {
       });
 
       it('returns the correct result after multiple ticks', () => {
-        const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: simpleConfiguration })
+        );
 
         const { result } = renderHook(() => useRelativeTime(startTime), {
           wrapper: generateProviderTestWrapper(PoolTimeProvider),
@@ -560,7 +577,9 @@ describe('useRelativeTime()', () => {
       });
 
       it('returns the correct result when moving from the future to the present to the past', () => {
-        const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: simpleConfiguration })
+        );
 
         const { result } = renderHook(
           () => useRelativeTime(startTime + ONE_SECOND.value),
@@ -593,7 +612,9 @@ describe('useRelativeTime()', () => {
       });
 
       it('returns the correct value when the hook is skipped, then time moves forward but not to the next tick, then the hook is no longer skipped', () => {
-        const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: simpleConfiguration })
+        );
 
         const { result, rerender } = renderHook(
           ({ skip }) => useRelativeTime(startTime - ONE_SECOND.value, { skip }),
@@ -626,7 +647,9 @@ describe('useRelativeTime()', () => {
 
       describe('event handlers', () => {
         it('invokes onIntervalChange with the correct value', () => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
 
           const handleIntervalChange = jest.fn();
 
@@ -643,7 +666,9 @@ describe('useRelativeTime()', () => {
         });
 
         it('invokes onRegister with the correct value on initialization', () => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
 
           const handleRegister = jest.fn();
 
@@ -658,7 +683,9 @@ describe('useRelativeTime()', () => {
         });
 
         it('invokes onUnregister with the correct value on unmount', () => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
 
           const handleUnregister = jest.fn();
 
@@ -677,7 +704,9 @@ describe('useRelativeTime()', () => {
         });
 
         it('does not invoke onRegister or onIntervalChange when the hook is called with skip set to true', () => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
 
           const handleIntervalChange = jest.fn();
           const handleRegister = jest.fn();
@@ -694,7 +723,9 @@ describe('useRelativeTime()', () => {
         });
 
         it('invokes onRegister and onIntervalChange when the hook is initially called with skip set to true but then is called with skip set to false', () => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
 
           const handleIntervalChange = jest.fn();
           const handleRegister = jest.fn();
@@ -724,7 +755,9 @@ describe('useRelativeTime()', () => {
         });
 
         it('invokes onUnregister and onIntervalChange when the hook is initially called with skip set to false but then is called with skip set to true', () => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
 
           const handleIntervalChange = jest.fn();
           const handleUnregister = jest.fn();
@@ -762,7 +795,7 @@ describe('useRelativeTime()', () => {
         'returns the correct initial result when the target time is in the %s',
         (testKey, difference) => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const { result } = renderHook(
@@ -781,7 +814,9 @@ describe('useRelativeTime()', () => {
       );
 
       it('returns the previous result up until the next tick occurs', () => {
-        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: standardConfiguration })
+        );
 
         const { result } = renderHook(() => useRelativeTime(startTime), {
           wrapper: generateProviderTestWrapper(PoolTimeProvider),
@@ -799,7 +834,9 @@ describe('useRelativeTime()', () => {
       });
 
       it('returns the correct result after one tick', () => {
-        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: standardConfiguration })
+        );
 
         const { result } = renderHook(() => useRelativeTime(startTime), {
           wrapper: generateProviderTestWrapper(PoolTimeProvider),
@@ -815,7 +852,9 @@ describe('useRelativeTime()', () => {
       });
 
       it('returns the correct result when moving from the future to the present to the past', () => {
-        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: standardConfiguration })
+        );
 
         const { result } = renderHook(
           () => useRelativeTime(startTime + ONE_SECOND.value),
@@ -848,7 +887,9 @@ describe('useRelativeTime()', () => {
       });
 
       it('returns the correct results when moving over an interval/accuracy bound in the future', () => {
-        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: standardConfiguration })
+        );
 
         const { result } = renderHook(
           () =>
@@ -884,7 +925,9 @@ describe('useRelativeTime()', () => {
       });
 
       it('returns the correct value when the hook is skipped, then time moves forward but not to the next tick, then the hook is no longer skipped', () => {
-        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: standardConfiguration })
+        );
 
         const { result, rerender } = renderHook(
           ({ skip }) => useRelativeTime(startTime - ONE_SECOND.value, { skip }),
@@ -916,7 +959,9 @@ describe('useRelativeTime()', () => {
       });
 
       it('does not move up to the next accuracy while still within scope of the current accuracy', () => {
-        const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: standardConfiguration })
+        );
 
         const handleIntervalChange = jest.fn();
         const { result } = renderHook(() => useRelativeTime(startTime), {
@@ -946,7 +991,7 @@ describe('useRelativeTime()', () => {
       describe('event handlers', () => {
         it('invokes onIntervalChange with the correct value', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleIntervalChange = jest.fn();
@@ -965,7 +1010,7 @@ describe('useRelativeTime()', () => {
 
         it('moves the interval up to the next accuracy when it should', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleIntervalChange = jest.fn();
@@ -995,7 +1040,7 @@ describe('useRelativeTime()', () => {
 
         it('invokes onRegister with the correct value on initialization', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleRegister = jest.fn();
@@ -1012,7 +1057,7 @@ describe('useRelativeTime()', () => {
 
         it('invokes onUnregister with the correct value on unmount', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleUnregister = jest.fn();
@@ -1033,7 +1078,7 @@ describe('useRelativeTime()', () => {
 
         it('invokes onUnregister with the correct value and then onRegister with the correct value when moving to the next interval up', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleRegister = jest.fn();
@@ -1060,7 +1105,7 @@ describe('useRelativeTime()', () => {
 
         it('invokes onUnregister after having moved up to the next interval and then unmounting', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleRegister = jest.fn();
@@ -1087,7 +1132,7 @@ describe('useRelativeTime()', () => {
 
         it('does not invoke onRegister or onIntervalChange when the hook is called with skip set to true', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleIntervalChange = jest.fn();
@@ -1106,7 +1151,7 @@ describe('useRelativeTime()', () => {
 
         it('invokes onRegister and onIntervalChange when the hook is initially called with skip set to true but then is called with skip set to false', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleIntervalChange = jest.fn();
@@ -1138,7 +1183,7 @@ describe('useRelativeTime()', () => {
 
         it('invokes onUnregister and onIntervalChange when the hook is initially called with skip set to false but then is called with skip set to true', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleIntervalChange = jest.fn();
@@ -1196,7 +1241,9 @@ describe('useRelativeTime()', () => {
     };
 
     it('returns the correct results for the hooks on initialization when both are the same time', () => {
-      const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+      const PoolTimeProvider = createPoolTimeProvider(
+        new PoolTime({ configuration: standardConfiguration })
+      );
 
       const { result } = renderHook(({ inputs }) => useRelativeTimes(inputs), {
         initialProps: {
@@ -1223,7 +1270,9 @@ describe('useRelativeTime()', () => {
     });
 
     it('returns the correct results for the hooks on initialization when one is skipped and the other is not', () => {
-      const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+      const PoolTimeProvider = createPoolTimeProvider(
+        new PoolTime({ configuration: standardConfiguration })
+      );
 
       const { result } = renderHook(({ inputs }) => useRelativeTimes(inputs), {
         initialProps: {
@@ -1250,7 +1299,9 @@ describe('useRelativeTime()', () => {
     });
 
     it('returns the correct results for the hooks on initialization when both are skipped', () => {
-      const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+      const PoolTimeProvider = createPoolTimeProvider(
+        new PoolTime({ configuration: standardConfiguration })
+      );
 
       const { result } = renderHook(({ inputs }) => useRelativeTimes(inputs), {
         initialProps: {
@@ -1277,7 +1328,9 @@ describe('useRelativeTime()', () => {
     });
 
     it('returns the correct results for the hooks on initialization when both are skipped and neither target times are now', () => {
-      const PoolTimeProvider = createPoolTimeProvider(standardConfiguration);
+      const PoolTimeProvider = createPoolTimeProvider(
+        new PoolTime({ configuration: standardConfiguration })
+      );
 
       const { result } = renderHook(({ inputs }) => useRelativeTimes(inputs), {
         initialProps: {
@@ -1307,7 +1360,7 @@ describe('useRelativeTime()', () => {
       describe('when the newly added hook requires the same accuracy', () => {
         it('returns the correct results', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const { result, rerender } = renderHook(
@@ -1361,7 +1414,7 @@ describe('useRelativeTime()', () => {
 
         it('does not change the interval', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleIntervalChange = jest.fn();
@@ -1400,7 +1453,7 @@ describe('useRelativeTime()', () => {
 
         it('properly registers the new hook', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleRegister = jest.fn();
@@ -1440,7 +1493,7 @@ describe('useRelativeTime()', () => {
       describe('when the newly added hook requires more accuracy', () => {
         it('returns the correct results', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const { rerender, result } = renderHook(
@@ -1492,7 +1545,7 @@ describe('useRelativeTime()', () => {
 
         it('properly updates the interval to the more accurate interval', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleIntervalChange = jest.fn();
@@ -1532,7 +1585,7 @@ describe('useRelativeTime()', () => {
 
         it('properly updates previous state if it is stale', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const { rerender, result } = renderHook(
@@ -1573,7 +1626,7 @@ describe('useRelativeTime()', () => {
 
         it('properly registers the new hook', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleRegister = jest.fn();
@@ -1613,7 +1666,7 @@ describe('useRelativeTime()', () => {
       describe('when the newly added hook requires less accuracy', () => {
         it('returns the correct results', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const { rerender, result } = renderHook(
@@ -1665,7 +1718,7 @@ describe('useRelativeTime()', () => {
 
         it('does not update the interval', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleIntervalChange = jest.fn();
@@ -1702,7 +1755,7 @@ describe('useRelativeTime()', () => {
 
         it('properly registers the new hook', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const handleRegister = jest.fn();
@@ -1738,7 +1791,7 @@ describe('useRelativeTime()', () => {
 
         it('does not perform superfluous updates to less accurate time states', () => {
           const PoolTimeProvider = createPoolTimeProvider(
-            standardConfiguration
+            new PoolTime({ configuration: standardConfiguration })
           );
 
           const { result } = renderHook(
@@ -1786,22 +1839,26 @@ describe('useRelativeTime()', () => {
         });
 
         it('does not perform superfluous updates to less accurate time states when there are more extended accuracies', () => {
-          const PoolTimeProvider = createPoolTimeProvider({
-            accuracies: [
-              {
-                upTo: TEN_SECONDS,
-                within: ONE_SECOND,
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({
+              configuration: {
+                accuracies: [
+                  {
+                    upTo: TEN_SECONDS,
+                    within: ONE_SECOND,
+                  },
+                  {
+                    upTo: THIRTY_SECONDS,
+                    within: FIVE_SECONDS,
+                  },
+                  {
+                    upTo: ETERNITY,
+                    within: FIFTEEN_SECONDS,
+                  },
+                ],
               },
-              {
-                upTo: THIRTY_SECONDS,
-                within: FIVE_SECONDS,
-              },
-              {
-                upTo: ETERNITY,
-                within: FIFTEEN_SECONDS,
-              },
-            ],
-          });
+            })
+          );
 
           const { result } = renderHook(
             ({ inputs }) => useRelativeTimes(inputs),
@@ -1854,7 +1911,9 @@ describe('useRelativeTime()', () => {
 
   describe('when getRoundedDifference is used', () => {
     it('throws the correct error when an invalid rounding strategy is provided', () => {
-      const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+      const PoolTimeProvider = createPoolTimeProvider(
+        new PoolTime({ configuration: simpleConfiguration })
+      );
       const invalidStrategyString = 'INVALID';
       const { result } = renderHook(
         () =>
@@ -1880,7 +1939,9 @@ describe('useRelativeTime()', () => {
       ])(
         'rounds down when it should when the target time is %s',
         (testKey, difference) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
           const { result } = renderHook(
             () => useRelativeTime(startTime + difference),
             {
@@ -1897,7 +1958,9 @@ describe('useRelativeTime()', () => {
       ])(
         'rounds up when it should when the target time is %s',
         (testKey, difference, expectedDifference) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
           const { result } = renderHook(
             () => useRelativeTime(startTime + difference),
             {
@@ -1918,7 +1981,9 @@ describe('useRelativeTime()', () => {
       ])(
         'rounds down when it should when the target time is %s',
         (testKey, difference) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
           const { result } = renderHook(
             () => useRelativeTime(startTime + difference),
             {
@@ -1935,7 +2000,9 @@ describe('useRelativeTime()', () => {
       ])(
         'rounds up when it should when the target time is %s',
         (testKey, difference, expectedDifference) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
           const { result } = renderHook(
             () => useRelativeTime(startTime + difference),
             {
@@ -1957,7 +2024,9 @@ describe('useRelativeTime()', () => {
       ])(
         'returns the correct value when %s when the target time is in the past',
         (testKey, difference) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
           const { result } = renderHook(
             () =>
               useRelativeTime(startTime - difference, {
@@ -1978,7 +2047,9 @@ describe('useRelativeTime()', () => {
       ])(
         'returns the correct value when %s when the target time is in the future',
         (testKey, difference) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
           const { result } = renderHook(
             () =>
               useRelativeTime(startTime + difference, {
@@ -2001,7 +2072,9 @@ describe('useRelativeTime()', () => {
       ])(
         'returns the correct value when %s when the target time is in the past',
         (testKey, difference) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
           const { result } = renderHook(
             () =>
               useRelativeTime(startTime - difference, {
@@ -2022,7 +2095,9 @@ describe('useRelativeTime()', () => {
       ])(
         'returns the correct value when %s when the target time is in the future',
         (testKey, difference) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
           const { result } = renderHook(
             () =>
               useRelativeTime(startTime + difference, {
@@ -2042,7 +2117,9 @@ describe('useRelativeTime()', () => {
         Math.floor(Math.random() * 1000) + 1;
 
       it('provides the direct value when there is no difference', () => {
-        const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+        const PoolTimeProvider = createPoolTimeProvider(
+          new PoolTime({ configuration: simpleConfiguration })
+        );
         const { result } = renderHook(
           () =>
             useRelativeTime(startTime, {
@@ -2061,7 +2138,9 @@ describe('useRelativeTime()', () => {
       ])(
         'returns the direct difference without any rounding when %s',
         (testKey, getOffset) => {
-          const PoolTimeProvider = createPoolTimeProvider(simpleConfiguration);
+          const PoolTimeProvider = createPoolTimeProvider(
+            new PoolTime({ configuration: simpleConfiguration })
+          );
           const { rerender, result } = renderHook(
             ({ targetTime }) =>
               useRelativeTime(targetTime, {
