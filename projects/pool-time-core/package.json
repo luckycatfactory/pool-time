@@ -45,6 +45,7 @@
   "repository": "https://github.com/pool-time/pool-time",
   "scripts": {
     "build": "yarn clean && rollup -c",
+    "build:watch": "yarn clean && rollup -c -w",
     "clean": "rm -rf dist",
     "release": "semantic-release",
     "test": "yarn test:base --watch",

@@ -233,6 +233,10 @@ class PoolTime<T extends AdditionalTimeProperties<T>> {
     this.times = this.generateTimes();
   }
 
+  flushInitialEmitQueue(): void {
+    this.emitLeastCommonDurationChange(this.leastCommonDuration);
+  }
+
   subscribeToLeastCommonDurationChange(
     callback: (duration: CoreAccuracyEntry<T>) => void
   ): unsubscribeFunction {
@@ -325,9 +329,9 @@ class PoolTime<T extends AdditionalTimeProperties<T>> {
   private emitLeastCommonDurationChange(
     leastCommonDuration: CoreAccuracyEntry<T>
   ): void {
-    this.leastCommonDurationChangeSubscriptions.forEach((callback) =>
-      callback(leastCommonDuration)
-    );
+    this.leastCommonDurationChangeSubscriptions.forEach((callback) => {
+      callback(leastCommonDuration);
+    });
   }
 
   private emitTick(times: TimeState<T>): void {
@@ -373,7 +377,6 @@ class PoolTime<T extends AdditionalTimeProperties<T>> {
     if (applicableNumberOfRegistrations === 0) {
       const currentLeastCommonDuration = this.leastCommonDuration;
       const nextLeastCommonDuration = this.findLeastCommonDuration();
-
       if (nextLeastCommonDuration !== currentLeastCommonDuration) {
         this.leastCommonDuration = nextLeastCommonDuration;
         this.emitLeastCommonDurationChange(this.leastCommonDuration);
