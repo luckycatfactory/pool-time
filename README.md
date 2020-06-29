@@ -68,6 +68,7 @@ yarn add @pool-time/pool-time-core @pool-time/react-pool-time
 ### Initialize the Provider
 
 ```jsx
+import PoolTime from '@pool-time/pool-time-core';
 import {
   createPoolTimeProvider,
   useRelativeTime,
@@ -80,31 +81,33 @@ import {
   ETERNITY
 } from '@pool-time/react-pool-time';
 
-// Step One: Create your configuration.
-const configuration = {
-  accuracies: [
-    {
-      upTo: FIVE_SECONDS,
-      within: ONE_SECOND,
-    },
-    {
-      upTo: THIRTY_SECONDS,
-      within: FIVE_SECONDS,
-    },
-    {
-      upTo: ONE_MINUTE,
-      within: TEN_SECONDS,
-    },
-    {
-      upTo: FIVE_MINUTES,
-      within: THIRTY_SECONDS,
-    },
-    {
-      upTo: ETERNITY,
-      within: ONE_MINUTE,
-    },
-  ]
-};
+// Step One: Initialize a PoolTime instance with your configuration.
+const poolTime = new PoolTime({
+  configuration: {
+    accuracies: [
+      {
+        upTo: FIVE_SECONDS,
+        within: ONE_SECOND,
+      },
+      {
+        upTo: THIRTY_SECONDS,
+        within: FIVE_SECONDS,
+      },
+      {
+        upTo: ONE_MINUTE,
+        within: TEN_SECONDS,
+      },
+      {
+        upTo: FIVE_MINUTES,
+        within: THIRTY_SECONDS,
+      },
+      {
+        upTo: ETERNITY,
+        within: ONE_MINUTE,
+      },
+    ]
+  }
+});
 
 // Step Two: Initialize react-pool-time with your configuration.
 const PoolTimeProvider = createPoolTimeProvider(configuration);

@@ -2,7 +2,6 @@ import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import PoolTime, {
   CoreAccuracyEntry,
   CoreConfiguration,
-  PoolTimeOptions,
   Time,
   stringifyObject,
 } from '@pool-time/pool-time-core';
@@ -27,15 +26,11 @@ export type AccuracyEntry = CoreAccuracyEntry<ReactTimeContextProperty>;
 
 export type Configuration = CoreConfiguration<ReactTimeContextProperty>;
 
-function createPoolTimeProvider(configuration: Configuration): React.FC {
-  const poolTimeOptions: PoolTimeOptions<ReactTimeContextProperty> = {
-    configuration,
-  };
-
+function createPoolTimeProvider(
+  poolTime: PoolTime<ReactTimeContextProperty>
+): React.NamedExoticComponent<PoolTimeProviderProps> {
   if (process.env.NODE_ENV !== 'production') {
-    poolTimeOptions.onAccuracyEntryValidation = function reactAccuracyEntryValidation(
-      validatedAccuracyEntry: AccuracyEntry
-    ): void {
+    poolTime.configuration.accuracies.forEach((validatedAccuracyEntry) => {
       if (
         validatedAccuracyEntry.upTo !== ETERNITY &&
         !(validatedAccuracyEntry.upTo as TimeObjectWithContext).context
@@ -54,10 +49,8 @@ function createPoolTimeProvider(configuration: Configuration): React.FC {
           )}.`
         );
       }
-    };
+    });
   }
-
-  const poolTime = new PoolTime<ReactTimeContextProperty>(poolTimeOptions);
 
   const PoolTimeProvider = React.memo(function PoolTimeProvider({
     children,
@@ -132,7 +125,7 @@ function createPoolTimeProvider(configuration: Configuration): React.FC {
     }, [lowestCommonDuration]);
 
     return (
-      <ConfigurationContext.Provider value={configuration}>
+      <ConfigurationContext.Provider value={poolTime.configuration}>
         <RegistrationContext.Provider value={handleRegistration}>
           {Object.keys(times).reduce((accumulator, timeKey) => {
             const timeObject = times[timeKey];
