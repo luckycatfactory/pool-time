@@ -65,11 +65,21 @@ function createPoolTimeProvider(configuration: Configuration): React.FC {
     onRegister,
     onUnregister,
   }: PoolTimeProviderProps) {
-    const [registrations, setRegistrations] = useState(() =>
-      poolTime.getRegistrations()
-    );
     const [times, setTimes] = useState(() => poolTime.getTimes());
     const [lowestCommonDuration, setLowestCommonDuration] = useState(null);
+
+    useLayoutEffect(() => {
+      const unsubscribeFromLeastCommonDurationChange = poolTime.subscribeToLeastCommonDurationChange(
+        setLowestCommonDuration
+      );
+      const unsubscribeFromTick = poolTime.subscribeToTick(setTimes);
+      poolTime.flushInitialEmitQueue();
+
+      return function cleanup(): void {
+        unsubscribeFromLeastCommonDurationChange();
+        unsubscribeFromTick();
+      };
+    }, []);
 
     const onRegisterRef = useRef<(timeKey: string) => void>(onRegister);
     const onUnregisterRef = useRef<(timeKey: string) => void>(onUnregister);
@@ -83,17 +93,13 @@ function createPoolTimeProvider(configuration: Configuration): React.FC {
     }, [onUnregister]);
 
     const handleRegistration = useCallback((timeKey) => {
-      setRegistrations((previousRegistrations) =>
-        poolTime.register(previousRegistrations, timeKey)
-      );
+      const unregister = poolTime.register(timeKey);
 
       onRegisterRef.current && onRegisterRef.current(timeKey);
 
       return {
         unregister: (): void => {
-          setRegistrations((previousRegistrations) =>
-            poolTime.unregister(previousRegistrations, timeKey)
-          );
+          unregister();
 
           onUnregisterRef.current && onUnregisterRef.current(timeKey);
         },
@@ -106,29 +112,17 @@ function createPoolTimeProvider(configuration: Configuration): React.FC {
       onIntervalChangeRef.current = onIntervalChange;
     }, [onIntervalChange]);
 
-    useLayoutEffect(() => {
-      setLowestCommonDuration(poolTime.getLowestCommonDuration(registrations));
-    }, [registrations]);
-
-    // Any time the slowest time changes, we need to update the time for that
-    // slowest time in order to guarantee that the accuracy specifications
-    // hold true.
-    useLayoutEffect(() => {
-      if (!lowestCommonDuration) return;
-      setTimes(poolTime.tickLowestCommonDuration);
-    }, [lowestCommonDuration]);
-
     const hasPerformedInitialMount = useRef(false);
 
     useLayoutEffect(() => {
       if (lowestCommonDuration) {
-        poolTime.startTicking(setTimes);
+        const stopTicking = poolTime.startTicking();
 
         onIntervalChangeRef.current &&
           onIntervalChangeRef.current(lowestCommonDuration.within.value);
 
         return function cleanup(): void {
-          poolTime.stopTicking();
+          stopTicking();
         };
       } else if (!hasPerformedInitialMount.current) {
         hasPerformedInitialMount.current = true;

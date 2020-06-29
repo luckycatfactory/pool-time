@@ -618,9 +618,9 @@ describe('useRelativeTime()', () => {
         rerender({ skip: false });
 
         expect(result.current).toEqual({
-          difference: ONE_SECOND.value,
+          difference: ONE_SECOND.value + 499,
           getRoundedDifference: expect.any(Function),
-          time: startTime,
+          time: startTime + 499,
         });
       });
 
@@ -909,9 +909,9 @@ describe('useRelativeTime()', () => {
         rerender({ skip: false });
 
         expect(result.current).toEqual({
-          difference: ONE_SECOND.value,
+          difference: ONE_SECOND.value + 499,
           getRoundedDifference: expect.any(Function),
-          time: startTime,
+          time: startTime + 499,
         });
       });
 
