@@ -414,6 +414,56 @@ describe('PoolTime', () => {
     });
   });
 
+  describe('#flushInitialEmitQueue', () => {
+    it('emits the correct least common duration to the appropriate handlers', () => {
+      const poolTime = new PoolTime({ configuration });
+      const firstMockHandler = jest.fn();
+      const secondMockHandler = jest.fn();
+
+      poolTime.register(ONE_SECOND.key);
+
+      poolTime.subscribeToLeastCommonDurationChange(firstMockHandler);
+      poolTime.subscribeToLeastCommonDurationChange(secondMockHandler);
+
+      expect(firstMockHandler).not.toHaveBeenCalled();
+      expect(secondMockHandler).not.toHaveBeenCalled();
+
+      poolTime.flushInitialEmitQueue();
+
+      expect(firstMockHandler).toHaveBeenCalledTimes(1);
+      expect(firstMockHandler).toHaveBeenLastCalledWith({
+        upTo: ONE_MINUTE,
+        within: ONE_SECOND,
+      });
+      expect(secondMockHandler).toHaveBeenCalledTimes(1);
+      expect(secondMockHandler).toHaveBeenLastCalledWith({
+        upTo: ONE_MINUTE,
+        within: ONE_SECOND,
+      });
+    });
+
+    it('does not emit any kind of tick', () => {
+      const poolTime = new PoolTime({ configuration });
+      const firstMockHandler = jest.fn();
+      const secondMockHandler = jest.fn();
+
+      poolTime.register(ONE_SECOND.key);
+
+      poolTime.subscribeToTick(firstMockHandler);
+      poolTime.subscribeToTick(secondMockHandler);
+
+      poolTime.startTicking();
+
+      expect(firstMockHandler).not.toHaveBeenCalled();
+      expect(secondMockHandler).not.toHaveBeenCalled();
+
+      poolTime.flushInitialEmitQueue();
+
+      expect(firstMockHandler).not.toHaveBeenCalled();
+      expect(secondMockHandler).not.toHaveBeenCalled();
+    });
+  });
+
   describe('#getTimes', () => {
     it('returns the correct default times', () => {
       const poolTime = new PoolTime({ configuration });
