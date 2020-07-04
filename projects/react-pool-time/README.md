@@ -54,13 +54,13 @@ If no consumers are rendered underneath the top-level provider, the top-level pr
 ### `npm`
 
 ```sh
-npm install @pool-time/pool-time-core @pool-time/react-pool-time --save
+npm install @luckycatfactory/pool-time-core @luckycatfactory/react-pool-time --save
 ```
 
 ### `yarn`
 
 ```sh
-yarn add @pool-time/pool-time-core @pool-time/react-pool-time
+yarn add @luckycatfactory/pool-time-core @luckycatfactory/react-pool-time
 ```
 
 ## Usage
@@ -68,7 +68,7 @@ yarn add @pool-time/pool-time-core @pool-time/react-pool-time
 ### Initialize the Provider
 
 ```jsx
-import PoolTime from '@pool-time/pool-time-core';
+import PoolTime from '@luckycatfactory/pool-time-core';
 import {
   createPoolTimeProvider,
   useRelativeTime,
@@ -79,7 +79,7 @@ import {
   ONE_MINUTE,
   FIVE_MINUTES,
   ETERNITY
-} from '@pool-time/react-pool-time';
+} from '@luckycatfactory/react-pool-time';
 
 // Step One: Initialize a PoolTime instance with your configuration.
 const poolTime = new PoolTime({
@@ -119,7 +119,7 @@ export default PoolTimeProvider;
 
 ```jsx
 import React from 'react';
-import { useRelativeTime } from '@pool-time/react-pool-time';
+import { useRelativeTime } from '@luckycatfactory/react-pool-time';
 
 import PoolTimeProvider from './PoolTimeProvider';
 

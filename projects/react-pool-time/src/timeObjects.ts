@@ -1,7 +1,7 @@
 import generateTimeObject from './utilities/generateTimeObject';
 
 // META
-export { ETERNITY } from '@pool-time/pool-time-core';
+export { ETERNITY } from '@luckycatfactory/pool-time-core';
 
 // SECONDS
 export const ONE_SECOND = generateTimeObject('ONE_SECOND', 1000);

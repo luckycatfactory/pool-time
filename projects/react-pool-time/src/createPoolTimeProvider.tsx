@@ -4,7 +4,7 @@ import PoolTime, {
   CoreConfiguration,
   Time,
   stringifyObject,
-} from '@pool-time/pool-time-core';
+} from '@luckycatfactory/pool-time-core';
 
 import { TimeObjectWithContext } from './utilities/generateTimeObject';
 import ConfigurationContext from './contexts/ConfigurationContext';

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { renderHook, act } from '@testing-library/react-hooks';
-import PoolTime from '@pool-time/pool-time-core';
+import PoolTime from '@luckycatfactory/pool-time-core';
 
 import useRelativeTime, {
   UseRelativeTimeResponse,
