@@ -4,13 +4,16 @@
     "name": "Louis Cruz"
   },
   "browser": "dist/index.js",
-  "bugs": "https://github.com/pool-time/pool-time/issues",
+  "bugs": "https://github.com/luckycatfactory/pool-time/issues",
   "contributors": [
     {
       "email": "louisstephancruz@me.com",
       "name": "Louis Cruz"
     }
   ],
+  "dependencies": {
+    "@luckycatfactory/pool-time-core": "^1.0.0"
+  },
   "description": "A React provider and hook for efficient and configurable pooled relative time",
   "devDependencies": {
     "@babel/preset-env": "^7.9.6",
@@ -34,7 +37,7 @@
     "tslib": "^1.11.2",
     "typescript": "^3.8.3"
   },
-  "homepage": "https://github.com/pool-time/react-pool-time",
+  "homepage": "https://github.com/luckycatfactory/react-pool-time",
   "keywords": [
     "time pooling",
     "time delegation",
@@ -44,8 +47,9 @@
   "license": "MIT",
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
-  "name": "@pool-time/react-pool-time",
+  "name": "@luckycatfactory/react-pool-time",
   "peerDependencies": {
+    "@luckycatfactory/pool-time-core": "^1.0.0",
     "react": "^16.13.1"
   },
   "publishConfig": {
@@ -53,7 +57,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/pool-time/pool-time.git"
+    "url": "https://github.com/luckycatfactory/pool-time.git"
   },
   "scripts": {
     "build": "yarn clean && rollup -c",
@@ -68,8 +72,5 @@
   "ts:main": "src/index.ts",
   "types": "dist/types/index.d.ts",
   "unpkg": "dist/index.umd.js",
-  "version": "0.0.1",
-  "dependencies": {
-    "@pool-time/pool-time-core": "^2.1.0"
-  }
+  "version": "0.0.1"
 }

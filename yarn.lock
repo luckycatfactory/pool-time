@@ -1673,6 +1673,11 @@
     core-js "^3.4.1"
     regenerator-runtime "^0.13.3"
 
+"@luckycatfactory/pool-time-core@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@luckycatfactory/pool-time-core/-/pool-time-core-1.0.0.tgz#a114af94b768a845eeeb87a95ebe7b260c2b9ea8"
+  integrity sha512-VY8q3vKM2v/KyzVqyn4ygaqVfI8vCuDmDw7YAyWi+2Ghg0P0wjjVAXkbWbRNJHFM3K9d06TBWKRYleQW2wZ9Fg==
+
 "@marionebl/sander@^0.6.0":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@marionebl/sander/-/sander-0.6.1.tgz#1958965874f24bc51be48875feb50d642fc41f7b"
@@ -1936,11 +1941,6 @@
     html-entities "^1.2.1"
     lodash.debounce "^4.0.8"
     react-dev-utils "^9.1.0"
-
-"@pool-time/pool-time-core@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@pool-time/pool-time-core/-/pool-time-core-2.1.0.tgz#6eeb860e4fcc5f74659eb92fb4b112ea2b87ca6f"
-  integrity sha512-LzkCfsE92Vx8ANE/upwlnbQv6BnstOow/YnAnG5BBjPgA35K+xRJc3PFKXzKPxPGHJ2zDlvmK7uHZ97ivkrdyQ==
 
 "@pool-time/react-pool-time@1.0.3":
   version "1.0.3"
