@@ -5,6 +5,7 @@ import { Field, Label, Textarea } from '@zendeskgarden/react-forms';
 import { Paragraph, SM, MD } from '@zendeskgarden/react-typography';
 import faker from 'faker';
 import formatDistanceStrict from 'date-fns/formatDistanceStrict';
+import PoolTime from '@luckycatfactory/pool-time-core';
 import {
   createPoolTimeProvider,
   ONE_SECOND,
@@ -15,7 +16,7 @@ import {
   FIVE_MINUTES,
   ETERNITY,
   useRelativeTime,
-} from '@pool-time/react-pool-time';
+} from '@luckycatfactory/react-pool-time';
 
 import getNextId from '../utilities/getNextId';
 import RenderCount from './RenderCount';
@@ -35,30 +36,34 @@ interface Comment {
 
 type CommentProps = Comment & { onRemoveComment: (id: string) => void };
 
-const PoolTimeProvider = createPoolTimeProvider({
-  accuracies: [
-    {
-      upTo: FIVE_SECONDS,
-      within: ONE_SECOND,
-    },
-    {
-      upTo: THIRTY_SECONDS,
-      within: FIVE_SECONDS,
-    },
-    {
-      upTo: ONE_MINUTE,
-      within: TEN_SECONDS,
-    },
-    {
-      upTo: FIVE_MINUTES,
-      within: THIRTY_SECONDS,
-    },
-    {
-      upTo: ETERNITY,
-      within: ONE_MINUTE,
-    },
-  ],
+const poolTime = new PoolTime({
+  configuration: {
+    accuracies: [
+      {
+        upTo: FIVE_SECONDS,
+        within: ONE_SECOND,
+      },
+      {
+        upTo: THIRTY_SECONDS,
+        within: FIVE_SECONDS,
+      },
+      {
+        upTo: ONE_MINUTE,
+        within: TEN_SECONDS,
+      },
+      {
+        upTo: FIVE_MINUTES,
+        within: THIRTY_SECONDS,
+      },
+      {
+        upTo: ETERNITY,
+        within: ONE_MINUTE,
+      },
+    ],
+  },
 });
+
+const PoolTimeProvider = createPoolTimeProvider(poolTime);
 
 const Container = styled.div`
   background-color: #f0f0f0f0;
