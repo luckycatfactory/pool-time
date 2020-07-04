@@ -4,7 +4,7 @@
     "name": "Louis Cruz"
   },
   "browser": "dist/index.js",
-  "bugs": "https://github.com/pool-time/pool-time/issues",
+  "bugs": "https://github.com/luckycatfactory/pool-time/issues",
   "contributors": [
     {
       "email": "louisstephancruz@me.com",
@@ -28,7 +28,7 @@
     "tslib": "^2.0.0",
     "typescript": "^3.9.5"
   },
-  "homepage": "https://github.com/pool-time/pool-time-core",
+  "homepage": "https://github.com/luckycatfactory/pool-time-core",
   "keywords": [
     "time pooling",
     "time delegation",
@@ -38,11 +38,11 @@
   "license": "MIT",
   "main": "dist/index.umd.js",
   "module": "dist/index.esm.js",
-  "name": "@pool-time/pool-time-core",
+  "name": "@luckycatfactory/pool-time-core",
   "publishConfig": {
     "access": "public"
   },
-  "repository": "https://github.com/pool-time/pool-time",
+  "repository": "https://github.com/luckycatfactory/pool-time",
   "scripts": {
     "build": "yarn clean && rollup -c",
     "build:watch": "yarn clean && rollup -c -w",
