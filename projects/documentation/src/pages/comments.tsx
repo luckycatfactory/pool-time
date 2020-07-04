@@ -7,30 +7,34 @@ import SEO from '../components/Seo';
 import CodeBlock from '../components/CodeBlock';
 
 const configurationExampleString = `
-const PoolTimeProvider = createPoolTimeProvider({
-  accuracies: [
-    {
-      upTo: FIVE_SECONDS,
-      within: ONE_SECOND,
-    },
-    {
-      upTo: THIRTY_SECONDS,
-      within: FIVE_SECONDS,
-    },
-    {
-      upTo: ONE_MINUTE,
-      within: TEN_SECONDS,
-    },
-    {
-      upTo: FIVE_MINUTES,
-      within: THIRTY_SECONDS,
-    },
-    {
-      upTo: ETERNITY,
-      within: ONE_MINUTE,
-    },
-  ],
+const poolTime = new PoolTime({
+  configuration: {
+    accuracies: [
+      {
+        upTo: FIVE_SECONDS,
+        within: ONE_SECOND,
+      },
+      {
+        upTo: THIRTY_SECONDS,
+        within: FIVE_SECONDS,
+      },
+      {
+        upTo: ONE_MINUTE,
+        within: TEN_SECONDS,
+      },
+      {
+        upTo: FIVE_MINUTES,
+        within: THIRTY_SECONDS,
+      },
+      {
+        upTo: ETERNITY,
+        within: ONE_MINUTE,
+      },
+    ],
+  },
 });
+
+const PoolTimeProvider = createPoolTimeProvider(poolTime);
 `;
 
 const Comments = React.memo(() => (

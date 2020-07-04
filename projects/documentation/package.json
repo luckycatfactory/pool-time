@@ -1,7 +1,8 @@
 {
   "author": "Louis Cruz <louisstephancruz@me.com>",
   "dependencies": {
-    "@pool-time/react-pool-time": "1.0.3",
+    "@luckycatfactory/pool-time-core": "^1.0.0",
+    "@luckycatfactory/react-pool-time": "^1.0.0",
     "@zendeskgarden/react-buttons": "^8.9.0",
     "@zendeskgarden/react-forms": "^8.9.0",
     "@zendeskgarden/react-theming": "^8.9.0",
@@ -42,11 +43,11 @@
     "eslint-plugin-react-hooks": "^4.0.0"
   },
   "license": "MIT",
-  "name": "@pool-time/documentation",
+  "name": "@luckycatfactory/pool-time-documentation",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/pool-time/pool-time"
+    "url": "https://github.com/luckycatfactory/pool-time"
   },
   "scripts": {
     "build": "gatsby build",

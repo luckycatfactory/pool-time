@@ -1678,6 +1678,13 @@
   resolved "https://registry.yarnpkg.com/@luckycatfactory/pool-time-core/-/pool-time-core-1.0.0.tgz#a114af94b768a845eeeb87a95ebe7b260c2b9ea8"
   integrity sha512-VY8q3vKM2v/KyzVqyn4ygaqVfI8vCuDmDw7YAyWi+2Ghg0P0wjjVAXkbWbRNJHFM3K9d06TBWKRYleQW2wZ9Fg==
 
+"@luckycatfactory/react-pool-time@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@luckycatfactory/react-pool-time/-/react-pool-time-1.0.0.tgz#5108a9a5a0fafc510df985fdbd19f8177bc7121a"
+  integrity sha512-TeQRvaefE3EsxjWZMQEb0v+JLi0mPjLTWNPmbA9IPehF2UZqdjR1iFIIt60Q3HzF1+WLIVPVUUvstYvayZnxug==
+  dependencies:
+    "@luckycatfactory/pool-time-core" "^1.0.0"
+
 "@marionebl/sander@^0.6.0":
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/@marionebl/sander/-/sander-0.6.1.tgz#1958965874f24bc51be48875feb50d642fc41f7b"
@@ -1941,11 +1948,6 @@
     html-entities "^1.2.1"
     lodash.debounce "^4.0.8"
     react-dev-utils "^9.1.0"
-
-"@pool-time/react-pool-time@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@pool-time/react-pool-time/-/react-pool-time-1.0.3.tgz#9127a44912256c30bc64b9508e31e5cc3e4f15a8"
-  integrity sha512-+CoeEVAxVJeYK9v15SOa97x3pzARO36mLSkl5c/Be5w6PxQ4smMVfkAcctCLNLjredeTl1tiIl3FURN3j1z3Dg==
 
 "@reach/router@^1.3.3":
   version "1.3.3"
