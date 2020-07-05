@@ -28,6 +28,7 @@
     "tslib": "^2.0.0",
     "typescript": "^3.9.5"
   },
+  "files": ["dist"],
   "homepage": "https://github.com/luckycatfactory/pool-time-core",
   "keywords": [
     "time pooling",
