@@ -57,6 +57,5 @@
     "serve": "gatsby serve",
     "start": "npm run develop",
     "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 1"
-  },
-  "version": "0.1.0"
+  }
 }
