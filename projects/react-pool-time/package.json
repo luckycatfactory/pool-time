@@ -37,6 +37,7 @@
     "tslib": "^1.11.2",
     "typescript": "^3.8.3"
   },
+  "files": ["dist"],
   "homepage": "https://github.com/luckycatfactory/react-pool-time",
   "keywords": [
     "time pooling",
