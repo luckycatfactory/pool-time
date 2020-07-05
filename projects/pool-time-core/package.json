@@ -11,7 +11,7 @@
       "name": "Louis Cruz"
     }
   ],
-  "description": "The core logic for pool-time package implementations",
+  "description": "The core logic for a declarative relative time management system meant to make applications more performant, accurate, and intentional in their time updates.",
   "devDependencies": {
     "@babel/preset-env": "^7.10.3",
     "@babel/preset-typescript": "^7.10.1",
