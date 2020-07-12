@@ -6,10 +6,10 @@ import PoolTime, {
   stringifyObject,
 } from '@luckycatfactory/pool-time-core';
 
-import { TimeObjectWithContext } from './utilities/generateTimeObject';
 import ConfigurationContext from './contexts/ConfigurationContext';
 import RegistrationContext from './contexts/RegistrationContext';
 import { ETERNITY } from './timeObjects';
+import { TimeObjectWithContext } from './utilities/generateTimeObject';
 
 export interface PoolTimeProviderProps {
   readonly children: React.ReactNode;

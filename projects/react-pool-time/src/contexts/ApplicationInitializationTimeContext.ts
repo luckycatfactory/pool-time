@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { TimeContextValue } from '../utilities/generateTimeObject';
 
 const ApplicationInitializationTimeContext = React.createContext<
